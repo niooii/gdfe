@@ -1,5 +1,5 @@
 #include <render/vk/buffers.h>
-#include <render/gpu_types.h>
+#include "gpu_types.h"
 
 bool buffers_create(
     VkRenderContext* context,
@@ -27,7 +27,7 @@ bool buffers_create(
     VkMemoryAllocateInfo alloc_info = {
         .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
         .allocationSize = mem_req.size,
-        .memoryTypeIndex = utils_find_memory_type_idx(context, mem_req.memoryTypeBits, mem_property_flags)
+        .memoryTypeIndex = GDF_VkUtilsFindMemTypeIdx(context, mem_req.memoryTypeBits, mem_property_flags)
     };
     VK_RETURN_FALSE_ASSERT(
         vkAllocateMemory(device->handle, &alloc_info, context->device.allocator, &out_buf->memory)

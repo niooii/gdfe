@@ -1,6 +1,6 @@
-#include <render/vk/utils.h>
+#include <../../include/render/vk/utils.h>
 
-#include <os/io.h>
+#include <../../include/os/io.h>
 
 VkFormat utils_find_supported_depth_format(VkPhysicalDevice physical_device) 
 {
@@ -26,7 +26,7 @@ VkFormat utils_find_supported_depth_format(VkPhysicalDevice physical_device)
     return VK_FORMAT_UNDEFINED;
 }
 
-bool utils_create_shader_module(VkRenderContext* context, const char* src_rel_path, VkShaderModule* out_module) 
+bool GDF_VkUtilsLoadShader(VkRenderContext* context, const char* src_rel_path, VkShaderModule* out_module)
 {
     u64 src_size = GDF_GetFileSize(src_rel_path);
     char code[src_size];
@@ -53,7 +53,7 @@ bool utils_create_shader_module(VkRenderContext* context, const char* src_rel_pa
     return res == VK_SUCCESS;
 }
 
-i32 utils_find_memory_type_idx(VkRenderContext* context, u32 type_filter, u32 property_flags) 
+i32 GDF_VkUtilsFindMemTypeIdx(VkRenderContext* context, u32 type_filter, u32 property_flags)
 {
     VkPhysicalDeviceMemoryProperties memory_properties;
     vkGetPhysicalDeviceMemoryProperties(context->device.physical_info->handle, &memory_properties);

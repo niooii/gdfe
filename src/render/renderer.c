@@ -4,10 +4,25 @@
 #include <render/vk/os.h>
 #include <render/renderer.h>
 #include <vulkan/vk_enum_string_helper.h>
-#include <stdio.h>
 
 typedef struct GDF_Renderer_T {
-    GDF_RendererState state;
+    u64 frame_number;
+
+    // Camera (and view and projection) stuff
+    u32 framebuffer_width;
+    u32 framebuffer_height;
+
+    // Holds the current state of the game
+    // TODO! maybe decouple from game state?
+    // GDF_Game* game;
+    // GDF_HashMap(ivec3, ChunkMesh*) chunk_meshes;
+    // GDF_Set(ivec3) queued_remeshes;
+
+    GDF_RENDER_MODE render_mode;
+
+    GDF_Camera* camera;
+
+    VkRenderContext vk_ctx;
 } GDF_Renderer_T;
 
 VKAPI_ATTR VkBool32 VKAPI_CALL __vk_dbg_callback(
@@ -1505,6 +1520,8 @@ bool vk_renderer_begin_frame(GDF_RendererState* state, f32 delta_time)
     };
     vkCmdSetScissor(cmd_buffer, 0, 1, &scissor);
 
+    // TODO! draw UI
+
     // TODO! prerender callbacks here.
     // if (!vk_game_renderer_draw(vk_ctx, state, resource_idx, delta_time))
     // {
@@ -1512,6 +1529,34 @@ bool vk_renderer_begin_frame(GDF_RendererState* state, f32 delta_time)
     //     // TODO! handle some weird sync stuff here
     //     return false;
     // }
+
+    // draw debug grid
+    vkCmdBindPipeline(cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, context->grid_pipeline.handle);
+
+    vkCmdBindVertexBuffers(cmd_buffer, 0, 1, &context->up_facing_plane_vbo.handle, offsets);
+    vkCmdBindIndexBuffer(cmd_buffer, context->up_facing_plane_index_buffer.handle, 0, VK_INDEX_TYPE_UINT16);
+
+    vkCmdBindDescriptorSets(
+        cmd_buffer,
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        context->grid_pipeline.layout,
+        0,
+        1,
+        &context->global_vp_ubo_sets[resource_idx],
+        0,
+        NULL
+    );
+
+    vkCmdPushConstants(
+        cmd_buffer,
+        context->grid_pipeline.layout,
+        VK_SHADER_STAGE_VERTEX_BIT,
+        0,
+        sizeof(vec3),
+        &active_camera->pos
+    );
+
+    vkCmdDrawIndexed(cmd_buffer, 6, 1, 0, 0, 0);
 
     // TODO! post processing here
 

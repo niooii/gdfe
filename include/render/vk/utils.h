@@ -3,8 +3,14 @@
 #include <core.h>
 #include <render/vk_types.h>
 
-// defined by spec apparently
-inline bool vk_result_is_success(VkResult result)
+#define FOR_EACH_FRAME_IN_FLIGHT(max_frames, code) \
+    for(int i = 0; i < max_frames; i++) { \
+        code \
+    }
+
+
+// As defined by spec. for quick error checking
+FORCEINLINE bool GDF_VkUtilsIsSuccess(VkResult result)
 {
     switch (result) {
         // Success Codes
@@ -40,9 +46,9 @@ inline bool vk_result_is_success(VkResult result)
         case VK_ERROR_NATIVE_WINDOW_IN_USE_KHR:
         case VK_ERROR_OUT_OF_DATE_KHR:
         case VK_ERROR_INCOMPATIBLE_DISPLAY_KHR:
+        case VK_ERROR_INVALID_EXTERNAL_HANDLE:
         case VK_ERROR_INVALID_SHADER_NV:
         case VK_ERROR_OUT_OF_POOL_MEMORY:
-        case VK_ERROR_INVALID_EXTERNAL_HANDLE:
         case VK_ERROR_FRAGMENTATION:
         case VK_ERROR_INVALID_DEVICE_ADDRESS_EXT:
         case VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT:
@@ -53,6 +59,7 @@ inline bool vk_result_is_success(VkResult result)
 
 VkFormat utils_find_supported_depth_format(VkPhysicalDevice physical_device);
 
-bool utils_create_shader_module(VkRenderContext* context, const char* src_rel_path, VkShaderModule* out_module);
+// Will return VK_NULL_HANDLE if failed.
+VkShaderModule GDF_VkUtilsLoadShader(VkRenderContext* context, const char* src_rel_path);
 
-i32 utils_find_memory_type_idx(VkRenderContext* context, u32 type_filter, u32 property_flags);
+i32 GDF_VkUtilsFindMemTypeIdx(VkRenderContext* context, u32 type_filter, u32 property_flags);

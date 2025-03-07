@@ -36,6 +36,7 @@ add_library(${PROJECT_NAME} ${SOURCE_FILES} ${EXTERN_FILES}
         src/gdfe.c
         src/input/internal.h
         src/os/window_internal.h
+        src/render/core_renderer.h
 )
 
 target_link_libraries(${PROJECT_NAME}
