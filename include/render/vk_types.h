@@ -112,55 +112,6 @@ typedef struct vk_image {
 } vk_image;
 
 /* ======================================= */
-/* ===== ALL PIPELINES ===== */
-/* ======================================= */
-
-typedef struct block_textures {
-    vk_device* device;
-    VkAllocationCallbacks* allocator;
-    
-    vk_image texture_array;
-    VkDeviceMemory texture_array_memory;
-    VkSampler sampler;
-} block_textures;
-
-typedef struct pipeline_block {
-    VkPipeline handle;
-    VkPipelineLayout layout;
-
-    VkPipeline wireframe_handle;
-    VkPipelineLayout wireframe_layout;
-    
-    VkShaderModule vert;
-    VkShaderModule frag;
-
-    // Shader storage buffer, accessed through instancing.
-    buffer face_data_ssbo;
-
-    block_textures block_textures;
-    buffer block_lookup_ssbo;
-    VkDescriptorPool descriptor_pool;
-    GDF_LIST(VkDescriptorSet) descriptor_sets;
-    GDF_LIST(VkDescriptorSetLayout) descriptor_layouts;
-} pipeline_block;
-
-typedef struct pipeline_ui {
-    VkPipeline handle;
-    VkPipelineLayout layout;
-    
-    VkShaderModule vert;
-    VkShaderModule frag;
-} pipeline_ui;
-
-typedef struct pipeline_grid {
-    VkPipeline handle;
-    VkPipelineLayout layout;
-    
-    VkShaderModule vert;
-    VkShaderModule frag;
-} pipeline_grid;
-
-/* ======================================= */
 /* ===== OTHER TYPES ===== */
 /* ======================================= */
 
@@ -178,23 +129,7 @@ typedef struct vk_swapchain {
     u32 image_count;
 } vk_swapchain;
 
-typedef struct vk_formats {
-    VkFormat image_format;
-    VkColorSpaceKHR image_color_space;
-    VkFormat depth_format;
-} vk_formats;
-
-/* ======================================= */
-/* ===== TEXTURE TYPES ===== */
-/* ======================================= */
-
-// TODO! make texture loading system more general perhaps..
-typedef struct vk_texture {
-    vk_image image;
-    const char* image_path;
-} vk_texture;
-
-typedef struct VkRenderContext { 
+typedef struct VkRenderContext {
     VkInstance instance;
     VkSurfaceKHR surface;
     vk_swapchain swapchain;
@@ -209,14 +144,17 @@ typedef struct VkRenderContext {
     VkDeviceMemory msaa_image_memory;
     VkImageView msaa_image_view;
 
-    // All pipelines used in application
-    pipeline_block block_pipeline;
-    pipeline_grid grid_pipeline;
-    pipeline_ui ui_pipeline;
+    // All default pipelines used in application
+    // TODO! disable these if the user requests fully custom rendering. 
+    VkPipeline post_process;
     VkShaderModule builtin_shaders[GDF_VK_SHADER_MODULE_INDEX_MAX];
     VkRenderPass renderpasses[GDF_VK_RENDERPASS_INDEX_MAX];
     
-    vk_formats formats;
+    struct {
+        VkFormat image_format;
+        VkColorSpaceKHR image_color_space;
+        VkFormat depth_format;
+    } formats;
 
     // All vertex shaders will get input from these uniform buffers.
     GDF_LIST(vk_uniform_buffer) uniform_buffers;

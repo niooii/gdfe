@@ -13,26 +13,6 @@ typedef enum GDF_RENDER_MODE {
     GDF_RENDER_MODE_WIREFRAME,
 } GDF_RENDER_MODE;
 
-typedef struct GDF_RendererState {
-    u64 frame_number;
-
-    // Camera (and view and projection) stuff
-    u32 framebuffer_width;
-    u32 framebuffer_height;
-
-    // Holds the current state of the game
-    // TODO! maybe decouple from game state?
-    // GDF_Game* game;
-    // GDF_HashMap(ivec3, ChunkMesh*) chunk_meshes;
-    // GDF_Set(ivec3) queued_remeshes;
-
-    GDF_RENDER_MODE render_mode;
-
-    GDF_Camera* camera;
-
-    VkRenderContext vk_ctx;
-} GDF_RendererState;
-
 struct GDF_Renderer_T;
 typedef struct GDF_Renderer_T* GDF_Renderer;
 

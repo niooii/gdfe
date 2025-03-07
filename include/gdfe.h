@@ -68,6 +68,10 @@ typedef struct GDF_Config {
     // Disable the internal quit event when pressing 'Esc' or closing the window.
     // Additionally disables the grave keybind for locking/unlocking the cursor.
     bool disable_default_events;
+    // If set, the default renderer will not be initialized, including any
+    // vulkan stuff. The pointer to the render state passed in many callbacks
+    // will be NULL. 
+    bool disable_default_renderer;    
 } GDF_Config;
 
 // Initialization info for the GDF engine.
@@ -88,16 +92,6 @@ typedef struct GDF_InitInfo {
 } GDF_InitInfo;
 
 bool GDF_Init(GDF_InitInfo);
-
-bool GDF_SetFrameCallback(bool (*callback)(f64 delta_time, void* state), void* state);
-// The provided function is called after the core renderer is initialized.
-bool GDF_SetInitRendererCallback(bool (*callback)(const GDF_RendererState* render_state, void* state), void* state);
-// The provided function is called right before postprocessing effects are rendered.
-// Custom rendering should happen here.
-bool GDF_SetPrerenderCallback(bool (*callback)(f64 delta_time, const GDF_RendererState* render_state, void* state), void* state);
-// The provided function is called after the frame is drawn, and the frame number is incremented.
-// However, resource_idx remains the same.
-bool GDF_SetPostrenderCallback(bool (*callback)(f64 delta_time, const GDF_RendererState* render_state, void* state), void* state);
 
 // Returns the number of seconds ran for, or -1 if something failed.
 f64 GDF_Run();
