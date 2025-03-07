@@ -209,10 +209,9 @@ typedef struct VkRenderContext {
     VkDeviceMemory msaa_image_memory;
     VkImageView msaa_image_view;
 
-    // All pipelines used in application
-    pipeline_block block_pipeline;
-    pipeline_grid grid_pipeline;
-    pipeline_ui ui_pipeline;
+    // All default pipelines used in application
+    // TODO! disable these if the user requests fully custom rendering. 
+    VkPipeline post_process;
     VkShaderModule builtin_shaders[GDF_VK_SHADER_MODULE_INDEX_MAX];
     VkRenderPass renderpasses[GDF_VK_RENDERPASS_INDEX_MAX];
     
