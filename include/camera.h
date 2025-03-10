@@ -1,76 +1,247 @@
 #pragma once
 
 #include <core.h>
-#include <math/math_types.h>
 #include <math/math.h>
 
-typedef struct GDF_Camera {
-    vec3 pos;
-    // IN DEGREES
-    // hello me from 2 months ago, please use radians. everything uses radians. 
-    // pleqase use radians. thank you.
-    f32 pitch;
-    // IN DEGREES
-    f32 yaw;
+typedef struct GDF_Camera_T* GDF_Camera;
 
-    mat4 view_matrix;
-    mat4 perspective_matrix;
-    // view_matrix * perspective_matrix
-    mat4 view_perspective;
+typedef struct GDF_CameraCreateInfo {
+    // Rotation around the x-axis
+    f32 pitch;
+    // Rotation around the y-axis
+    f32 yaw;
+    // Rotation around the z-axis
+    f32 roll;
+
+    // The world position of the camera.
+    vec3 pos;
 
     f32 aspect_ratio;
     f32 fov;
     f32 near_clip;
     f32 far_clip;
-} GDF_Camera;
+} GDF_CameraCreateInfo;
 
-static FORCEINLINE void __recalc_view_perspective(GDF_Camera* camera)
-{
-    camera->view_perspective = mat4_mul(camera->view_matrix, camera->perspective_matrix);
-}
+/**
+ * @brief Create a new camera. Must be explicitly destroyed.
+ *
+ * @param camera_info Information about the camera to create
+ */
+GDF_Camera GDF_CameraCreate(GDF_CameraCreateInfo* camera_info);
 
-FORCEINLINE void camera_recalc_view_matrix(GDF_Camera* camera)
-{
-    camera->view_matrix = mat4_view(camera->pos, camera->yaw * DEG_TO_RAD, camera->pitch * DEG_TO_RAD);
-    __recalc_view_perspective(camera);
-}
+/**
+ * @brief Destroy and deallocate the camera
+ *
+ * @param camera The camera to destroy
+ */
+void GDF_CameraDestroy(GDF_Camera camera);
 
-FORCEINLINE void camera_recalc_perspective_matrix(GDF_Camera* camera)
-{
-    camera->perspective_matrix = mat4_perspective(camera->fov, camera->aspect_ratio, camera->near_clip, camera->far_clip);
-    __recalc_view_perspective(camera);
-}
+/**
+ * @brief Set the pitch of the camera (rotation around X axis)
+ *
+ * @param camera The camera to modify
+ * @param pitch The new pitch value in radians
+ */
+void GDF_CameraSetPitch(GDF_Camera camera, f32 pitch);
 
-FORCEINLINE void camera_recalc_matrices(GDF_Camera* camera)
-{
-    camera->view_matrix = mat4_view(camera->pos, camera->yaw * DEG_TO_RAD, camera->pitch * DEG_TO_RAD);
-    camera->perspective_matrix = mat4_perspective(camera->fov, camera->aspect_ratio, camera->near_clip, camera->far_clip);
-    __recalc_view_perspective(camera);
-}
+/**
+ * @brief Set the yaw of the camera (rotation around Y axis)
+ *
+ * @param camera The camera to modify
+ * @param yaw The new yaw value in radians
+ */
+void GDF_CameraSetYaw(GDF_Camera camera, f32 yaw);
 
-FORCEINLINE void camera_init_default(GDF_Camera* out_camera)
-{
-    out_camera->aspect_ratio = 1.77777f;
-    out_camera->fov = 50 * DEG_TO_RAD;
-    out_camera->near_clip = 0.01f;
-    out_camera->far_clip = 1000;
+/**
+ * @brief Set the roll of the camera (rotation around Z/front axis)
+ *
+ * @param camera The camera to modify
+ * @param roll The new roll value in radians
+ */
+void GDF_CameraSetRoll(GDF_Camera camera, f32 roll);
 
-    camera_recalc_matrices(out_camera);
-}
+/**
+ * @brief Set the pitch, yaw and roll of the camera all at once
+ *
+ * @param camera The camera to modify
+ * @param pyr The new pitch, yaw, and roll values as a vec3 (in radians)
+ */
+void GDF_CameraSetRotation(GDF_Camera camera, vec3 pyr);
 
-FORCEINLINE void camera_init_perspective(GDF_Camera* out_camera, f32 aspect_ratio, f32 fov, f32 near_clip, f32 far_clip)
-{
-    out_camera->aspect_ratio = aspect_ratio;
-    out_camera->fov = fov;
-    out_camera->near_clip = near_clip;
-    out_camera->far_clip = far_clip;
+/**
+ * @brief Adds to the pitch of the camera (rotation around X axis)
+ *
+ * @param camera The camera to modify
+ * @param pitch The new pitch value in radians
+ */
+void GDF_CameraAddPitch(GDF_Camera camera, f32 pitch);
 
-    camera_recalc_matrices(out_camera);
-}
+/**
+ * @brief Adds to the yaw of the camera (rotation around Y axis)
+ *
+ * @param camera The camera to modify
+ * @param yaw The new yaw value in radians
+ */
+void GDF_CameraAddYaw(GDF_Camera camera, f32 yaw);
 
-FORCEINLINE void camera_init_position(GDF_Camera* out_camera, vec3 pos)
-{
-    out_camera->pos = pos;
+/**
+ * @brief Adds to the roll of the camera (rotation around Z/front axis)
+ *
+ * @param camera The camera to modify
+ * @param roll The new roll value in radians
+ */
+void GDF_CameraAddRoll(GDF_Camera camera, f32 roll);
 
-    camera_recalc_matrices(out_camera);
-}
+/**
+ * @brief Set the pitch, yaw and roll of the camera all at once
+ *
+ * @param camera The camera to modify
+ * @param pyr The new pitch, yaw, and roll values as a vec3 (in radians)
+ */
+void GDF_CameraAddRotation(GDF_Camera camera, vec3 pyr);
+
+/**
+ * @brief Set the position of the camera in world space
+ *
+ * @param camera The camera to modify
+ * @param position The new position as a vec3
+ */
+void GDF_CameraSetPosition(GDF_Camera camera, vec3 position);
+
+/**
+ * @brief Set the aspect ratio of the camera
+ *
+ * @param camera The camera to modify
+ * @param aspect_ratio The new aspect ratio (width/height)
+ */
+void GDF_CameraSetAspectRatio(GDF_Camera camera, f32 aspect_ratio);
+
+/**
+ * @brief Set the field of view of the camera
+ *
+ * @param camera The camera to modify
+ * @param fov The new field of view in radians
+ */
+void GDF_CameraSetFOV(GDF_Camera camera, f32 fov);
+
+/**
+ * @brief Set the near clip plane distance
+ *
+ * @param camera The camera to modify
+ * @param near_clip The distance to the near clip plane
+ */
+void GDF_CameraSetNearClip(GDF_Camera camera, f32 near_clip);
+
+/**
+ * @brief Set the far clip plane distance
+ *
+ * @param camera The camera to modify
+ * @param far_clip The distance to the far clip plane
+ */
+void GDF_CameraSetFarClip(GDF_Camera camera, f32 far_clip);
+
+/**
+ * @brief Get the pitch of the camera (rotation around X axis)
+ *
+ * @param camera The camera to get the pitch from
+ * @return f32 The current pitch value in radians
+ */
+f32 GDF_CameraGetPitch(GDF_Camera camera);
+
+/**
+ * @brief Get the yaw of the camera (rotation around Y axis)
+ *
+ * @param camera The camera to get the yaw from
+ * @return f32 The current yaw value in radians
+ */
+f32 GDF_CameraGetYaw(GDF_Camera camera);
+
+/**
+ * @brief Get the roll of the camera (rotation around Z/front axis)
+ *
+ * @param camera The camera to get the roll from
+ * @return f32 The current roll value in radians
+ */
+f32 GDF_CameraGetRoll(GDF_Camera camera);
+
+/**
+ * @brief Get the complete rotation of the camera
+ *
+ * @param camera The camera to get the rotation from
+ * @return vec3 The current pitch, yaw, and roll values as a vec3 (in radians)
+ */
+vec3 GDF_CameraGetRotation(GDF_Camera camera);
+
+/**
+ * @brief Get the position of the camera in world space
+ *
+ * @param camera The camera to get the position from
+ * @return vec3 The current position as a vec3
+ */
+vec3 GDF_CameraGetPosition(GDF_Camera camera);
+
+/**
+ * @brief Get the aspect ratio of the camera
+ *
+ * @param camera The camera to get the aspect ratio from
+ * @return f32 The current aspect ratio (width/height)
+ */
+f32 GDF_CameraGetAspectRatio(GDF_Camera camera);
+
+/**
+ * @brief Get the field of view of the camera
+ *
+ * @param camera The camera to get the FOV from
+ * @return f32 The current field of view in radians
+ */
+f32 GDF_CameraGetFOV(GDF_Camera camera);
+
+/**
+ * @brief Get the near clip plane distance
+ *
+ * @param camera The camera to get the near clip plane from
+ * @return f32 The distance to the near clip plane
+ */
+f32 GDF_CameraGetNearClip(GDF_Camera camera);
+
+/**
+ * @brief Get the far clip plane distance
+ *
+ * @param camera The camera to get the far clip plane from
+ * @return f32 The distance to the far clip plane
+ */
+f32 GDF_CameraGetFarClip(GDF_Camera camera);
+
+/**
+ * @brief Get the view matrix of the camera
+ *
+ * @param camera The camera to get the view matrix from
+ * @return mat4 The current view matrix
+ */
+mat4 GDF_CameraGetViewMatrix(GDF_Camera camera);
+
+/**
+ * @brief Get the perspective matrix of the camera
+ *
+ * @param camera The camera to get the perspective matrix from
+ * @return mat4 The current perspective matrix
+ */
+mat4 GDF_CameraGetPerspectiveMatrix(GDF_Camera camera);
+
+/**
+ * @brief Get the combined view-perspective matrix of the camera
+ *
+ * @param camera The camera to get the combined matrix from
+ * @return mat4 The current view-perspective matrix
+ */
+mat4 GDF_CameraGetViewPerspectiveMatrix(GDF_Camera camera);
+
+/**
+ * @brief Get the three orientation vectors
+ *
+ * @param camera The camera to retrieve the vectors from
+ * @param forward Output parameter for the forward direction vector
+ * @param right Output parameter for the right direction vector
+ * @param up Output parameter for the up direction vector
+ */
+void GDF_CameraOrientation(GDF_Camera camera, vec3* forward, vec3* right, vec3* up);

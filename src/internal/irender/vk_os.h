@@ -1,6 +1,7 @@
 #pragma once
 
 #include <core.h>
+#include <os/window.h>
 #include <render/vk_types.h>
 
 // Accepts a GDF_LIST of extention names and pushes the required ones.

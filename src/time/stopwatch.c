@@ -12,7 +12,7 @@ GDF_Stopwatch GDF_StopwatchCreate()
     return stopwatch;
 }
 
-f64 GDF_StopwatchElasped(GDF_Stopwatch stopwatch)
+f64 GDF_StopwatchElapsed(GDF_Stopwatch stopwatch)
 {
     return GDF_GetAbsoluteTime() - stopwatch->start_time;
 }

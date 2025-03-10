@@ -57,8 +57,6 @@ FORCEINLINE bool GDF_VkUtilsIsSuccess(VkResult result)
     }
 }
 
-VkFormat utils_find_supported_depth_format(VkPhysicalDevice physical_device);
-
 // Will return VK_NULL_HANDLE if failed.
 VkShaderModule GDF_VkUtilsLoadShader(VkRenderContext* context, const char* src_rel_path);
 

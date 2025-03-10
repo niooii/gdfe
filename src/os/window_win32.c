@@ -34,7 +34,7 @@ LRESULT CALLBACK process_msg(HWND hwnd, u32 msg, WPARAM w_param, LPARAM l_param)
 {
     GDF_Window window = GDF_HashmapGet(windows, &hwnd);
     if (!window)
-        return 0;
+        return DefWindowProc(hwnd, msg, w_param, l_param);
     switch (msg)
     {
         case WM_ERASEBKGND:
@@ -367,7 +367,7 @@ void GDF_VK_GetRequiredExtensionNames(const char*** names_list)
     GDF_LIST_Push(*names_list, &"VK_KHR_win32_surface");
 }
 
-#include <render/vk/os.h>
+#include "../internal/irender/vk_os.h"
 bool GDF_VK_CreateSurface(GDF_Window window, VkRenderContext* context)
 {
     VkWin32SurfaceCreateInfoKHR create_info = {VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR};

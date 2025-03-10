@@ -1,7 +1,7 @@
 #include <input.h>
 #include <event.h>
 #include <os/window.h>
-#include <math/math_types.h>
+#include <math/math.h>
 
 typedef struct keyboard_state {
     bool key_states[256];

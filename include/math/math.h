@@ -2,7 +2,66 @@
 
 #include <def.h>
 #include <mem.h>
-#include "math_types.h"
+
+typedef union vec2_u {
+    f32 elements[2];
+    struct {
+        f32 x;
+        f32 y;
+    };
+} vec2;
+
+typedef union vec3_u {
+    f32 elements[3];
+    struct {
+        f32 x;
+        f32 y;
+        f32 z;
+    };
+} vec3;
+
+typedef union vec4_u {
+    f32 elements[4];
+    struct {
+        f32 x;
+        f32 y;
+        f32 z;
+        f32 w;
+    };
+} vec4;
+
+typedef union ivec2_u {
+    i32 elements[2];
+    struct {
+        i32 x;
+        i32 y;
+    };
+} ivec2;
+
+typedef union ivec3_u {
+    i32 elements[3];
+    struct {
+        i32 x;
+        i32 y;
+        i32 z;
+    };
+} ivec3;
+
+typedef union ivec4_u {
+    i32 elements[4];
+    struct {
+        i32 x;
+        i32 y;
+        i32 z;
+        i32 w;
+    };
+} ivec4;
+
+typedef vec4 Quaternion;
+
+typedef union mat4_u {
+    f32 data[16];
+} mat4;
 
 #define PI 3.14159265358979323846f
 #define PI_2 2.0f * PI
@@ -14,8 +73,8 @@
 #define SQRT_THREE 1.73205080756887729352f
 #define SQRT_ONE_OVER_TWO 0.70710678118654752440f
 #define SQRT_ONE_OVER_THREE 0.57735026918962576450f
-#define DEG_TO_RAD PI / 180.0f
-#define RAD_TO_DEG 180.0f / PI
+#define DEG_TO_RAD(deg) (PI * deg / 180.0f)
+#define RAD_TO_DEG(radians) (180.0f * radians / PI)
 
 // The multiplier to convert seconds to milliseconds.
 #define SEC_TO_MS 1000.0f
@@ -66,11 +125,11 @@ FORCEINLINE f32 gpowf(f32 x, f32 pow)
     return powf(x, pow);
 }
 
-i32 random();
-i32 random_in_range(i32 min, i32 max);
+i32 GDF_Random();
+i32 GDF_RandomRange(i32 min, i32 max);
 
-f32 frandom();
-f32 frandom_in_range(f32 min, f32 max);
+f32 GDF_FRandom();
+f32 GDF_FRandomRange(f32 min, f32 max);
 
 // ------------------------------------------
 // Vector 2
@@ -753,6 +812,42 @@ FORCEINLINE void ivec3_negate(ivec3* vector)
     vector->z = -vector->z;
 }
 
+/**
+ * @brief Calculates orientation vectors based on yaw, pitch, and roll angles
+ *
+ * @param yaw Rotation around Y axis (left/right) in radians
+ * @param pitch Rotation around X axis (up/down) in radians
+ * @param roll Rotation around Z axis (tilt) in radians
+ * @param forward Output parameter for forward direction vector
+ * @param right Output parameter for right direction vector
+ * @param up Output parameter for up direction vector
+ */
+FORCEINLINE void vec3_orientation(float yaw, float pitch, float roll,
+    vec3* forward, vec3* right, vec3* up)
+{
+    forward->x = gsin(yaw) * gcos(pitch);
+    forward->y = gsin(pitch);
+    forward->z = gcos(yaw) * gcos(pitch);
+    vec3_normalize(forward);
+
+    vec3 world_up = { 0.0f, 1.0f, 0.0f };
+    *right = vec3_normalized(vec3_cross(world_up, *forward));
+    *up = vec3_cross(*forward, *right);
+
+    if (roll != 0.0f) {
+        float c_roll = gcos(roll);
+        float s_roll = gsin(roll);
+
+        vec3 og_right = *right;
+
+        right->x = c_roll * og_right.x + s_roll * up->x;
+        right->y = c_roll * og_right.y + s_roll * up->y;
+        right->z = c_roll * og_right.z + s_roll * up->z;
+
+        *up = vec3_cross(*forward, *right);
+    }
+}
+
 extern ivec3 ivec3_adjacent_offsets[6];
 
 // ------------------------------------------
@@ -1093,28 +1188,42 @@ FORCEINLINE mat4 mat4_inverse(mat4 matrix)
 }
 
 /**
- * NOTE: this may not work as intended ...
  * @brief Returns the view matrix for the specified camera parameters.
- * 
+ *
  * @param pos The position the camera is in.
- * @param yaw The yaw of the camera.
- * @param pitch The pitch of the camera.
+ * @param yaw The yaw of the camera (rotation around Y axis).
+ * @param pitch The pitch of the camera (rotation around X axis).
+ * @param roll The roll of the camera (rotation around Z/front axis).
  * @return A view matrix.
- * 
+ *
  */
-FORCEINLINE mat4 mat4_view(vec3 pos, f32 yaw, f32 pitch) 
+FORCEINLINE mat4 mat4_view(vec3 pos, f32 yaw, f32 pitch, f32 roll)
 {
-    vec3 front;
-    front.x = gsin(yaw) * gcos(pitch);
-    front.y = gsin(pitch);
-    front.z = gcos(yaw) * gcos(pitch);
-    vec3_normalize(&front);
+    vec3 forward = vec3_forward(yaw, pitch);
 
-    vec3 up = { 0.0f, 1.0f, 0.0f };
-    vec3 right = vec3_normalized(vec3_cross(up, front));
-    up = vec3_cross(front, right);
+    vec3 world_up = { 0.0f, 1.0f, 0.0f };
+    vec3 right = vec3_normalized(vec3_cross(world_up, forward));
+    vec3 up = vec3_cross(forward, right);
 
-    return mat4_look_at(pos, vec3_add(pos, front), up);
+    //  roll by rotating right and up vectors around front
+    if (roll != 0.0f) {
+        // make rotation matrix for roll around front axis
+        f32 c_roll = gcos(roll);
+        f32 s_roll = gsin(roll);
+
+        // Save original right vector
+        vec3 og_right = right;
+
+        // rotate right and up vectors
+        right.x = c_roll * og_right.x + s_roll * up.x;
+        right.y = c_roll * og_right.y + s_roll * up.y;
+        right.z = c_roll * og_right.z + s_roll * up.z;
+
+        // recalc up vector to ensure orthogonality
+        up = vec3_cross(forward, right);
+    }
+
+    return mat4_look_at(pos, vec3_add(pos, forward), up);
 }
 
 /**
@@ -1474,14 +1583,4 @@ FORCEINLINE Quaternion quaternion_slerp(Quaternion q_0, Quaternion q_1, f32 perc
         (v0.z * s0) + (v1.z * s1),
         (v0.w * s0) + (v1.w * s1)
     };
-}
-
-FORCEINLINE f32 deg_to_rad(f32 degrees)
-{
-    return degrees * DEG_TO_RAD;
-}
-
-FORCEINLINE f32 rad_to_deg(f32 radians)
-{
-    return radians * RAD_TO_DEG;
 }

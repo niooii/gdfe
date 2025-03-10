@@ -1,5 +1,5 @@
 #include <render/vk/buffers.h>
-#include "gpu_types.h"
+#include <render/vk/utils.h>
 
 bool buffers_create(
     VkRenderContext* context,

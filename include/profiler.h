@@ -24,17 +24,17 @@
     GDF_Stopwatch ___profiler_sw = GDF_StopwatchCreate();
 
 #define GDFP_LOG() \
-    log_output(LOG_LEVEL_TIME, "[%lfs]", GDF_StopwatchElasped(___profiler_sw)); \
+    log_output(LOG_LEVEL_TIME, "[%lfs]", GDF_StopwatchElapsed(___profiler_sw)); \
 
 #define GDFP_LOG_MSG(msg) \
-    log_output(LOG_LEVEL_TIME, "[%lfs] \"%s\"", GDF_StopwatchElasped(___profiler_sw), msg);
+    log_output(LOG_LEVEL_TIME, "[%lfs] \"%s\"", GDF_StopwatchElapsed(___profiler_sw), msg);
 
 #define GDFP_LOG_RESET() \
-    log_output(LOG_LEVEL_TIME, "[%lfs]", GDF_StopwatchElasped(___profiler_sw)); \
+    log_output(LOG_LEVEL_TIME, "[%lfs]", GDF_StopwatchElapsed(___profiler_sw)); \
     GDF_StopwatchReset(___profiler_sw);
 
 #define GDFP_LOG_MSG_RESET(msg) \
-    log_output(LOG_LEVEL_TIME, "[%lfs] \"%s\"", GDF_StopwatchElasped(___profiler_sw), msg); \
+    log_output(LOG_LEVEL_TIME, "[%lfs] \"%s\"", GDF_StopwatchElapsed(___profiler_sw), msg); \
     GDF_StopwatchReset(___profiler_sw);
 
 #define GDFP_END() \

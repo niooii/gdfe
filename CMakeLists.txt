@@ -19,7 +19,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Ofast -fno-plt -fuse-ld=lld -funroll-loops -finline-functions -fomit-frame-pointer -fno-exceptions -ftree-vectorize -fvectorize -fslp-vectorize -DNDEBUG -DGDF_RELEASE")
 else()
     set(PROFILE_DIR "debug")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Og -DDEBUG")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g3 -O0 -fno-omit-frame-pointer -DDEBUG")
 endif()
 
 function(find_src_files result search_dir)
@@ -29,15 +29,12 @@ function(find_src_files result search_dir)
     set(${result} ${source_files} PARENT_SCOPE)
 endfunction()
 
-find_src_files(SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src")
-find_src_files(EXTERN_FILES "${CMAKE_CURRENT_SOURCE_DIR}/extern")
-add_library(${PROJECT_NAME} ${SOURCE_FILES} ${EXTERN_FILES}
-        include/gdfe.h
-        src/gdfe.c
-        src/input/internal.h
-        src/os/window_internal.h
-        src/render/core_renderer.h
-)
+find_src_files(GDFE_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
+find_src_files(GDFE_EXTERN "${CMAKE_CURRENT_SOURCE_DIR}/extern")
+
+SET_SOURCE_FILES_PROPERTIES(${GDFE_SRC} ${GDFE_EXTERN} PROPERTIES LANGUAGE C)
+
+add_library(${PROJECT_NAME} ${GDFE_SRC} ${GDFE_EXTERN})
 
 target_link_libraries(${PROJECT_NAME}
         PRIVATE
@@ -46,7 +43,14 @@ target_link_libraries(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME}
         PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
+)
+
+target_include_directories(${PROJECT_NAME}
+        PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/extern
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/internal
 )

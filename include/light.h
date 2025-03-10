@@ -1,7 +1,7 @@
 #pragma once
 
 #include <core.h>
-#include <math/math_types.h>
+#include <math/math.h>
 
 typedef struct PointLight {
     vec3 pos;

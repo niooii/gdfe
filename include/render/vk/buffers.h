@@ -1,10 +1,7 @@
 #pragma once
 
 #include <core.h>
-#include "utils.h"
 #include <render/vk_types.h>
-#include <render/gpu_types.h>
-#include <render/renderer.h>
 
 bool buffers_create(
     VkRenderContext* context,

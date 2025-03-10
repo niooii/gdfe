@@ -6,6 +6,7 @@
 typedef struct Transform {
     vec3 pos;
     // Rotation is always in radians.
+    // Represents pitch, yaw and roll.
     vec3 rot;
     vec3 scale;
     mat4 model_matrix;

@@ -8,7 +8,7 @@
 #include <collections/hashmap.h>
 #include <os/thread.h>
 #include <os/sysinfo.h>
-#include <core.h>
+#include <../include/core.h>
 
 #define MAX_MSG_LEN 16384
 #define ENTRIES_BUFFER_CAPACITY 1024
@@ -137,7 +137,7 @@ unsigned long flushing_thread_fn(void* args)
     while(1)
     {
         // TODO! create timer abstraction to run functions periodically
-        if (GDF_StopwatchElasped(stopwatch) * 1000 > FLUSH_INTERVAL_MS)
+        if (GDF_StopwatchElapsed(stopwatch) * 1000 > FLUSH_INTERVAL_MS)
         {
             GDF_StopwatchReset(stopwatch);
             // TODO! optimized IO

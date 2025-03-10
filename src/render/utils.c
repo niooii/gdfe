@@ -1,32 +1,8 @@
-#include <../../include/render/vk/utils.h>
+#include <render/vk/utils.h>
 
-#include <../../include/os/io.h>
+#include <os/io.h>
 
-VkFormat utils_find_supported_depth_format(VkPhysicalDevice physical_device) 
-{
-    VkFormat depth_formats[] = 
-    {
-        VK_FORMAT_D32_SFLOAT,
-        VK_FORMAT_D32_SFLOAT_S8_UINT,
-        VK_FORMAT_D24_UNORM_S8_UINT
-    };
-    u32 format_count = sizeof(depth_formats) / sizeof(depth_formats[0]);
-
-    for (u32 i = 0; i < format_count; i++) 
-    {
-        VkFormatProperties format_properties;
-        vkGetPhysicalDeviceFormatProperties(physical_device, depth_formats[i], &format_properties);
-
-        if (format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) 
-        {
-            return depth_formats[i];
-        }
-    }
-
-    return VK_FORMAT_UNDEFINED;
-}
-
-bool GDF_VkUtilsLoadShader(VkRenderContext* context, const char* src_rel_path, VkShaderModule* out_module)
+VkShaderModule GDF_VkUtilsLoadShader(VkRenderContext* context, const char* src_rel_path)
 {
     u64 src_size = GDF_GetFileSize(src_rel_path);
     char code[src_size];
@@ -43,14 +19,18 @@ bool GDF_VkUtilsLoadShader(VkRenderContext* context, const char* src_rel_path, V
         .pCode = ((u32*)code),
     };
 
+    VkShaderModule shader_module = VK_NULL_HANDLE;
     VkResult res = vkCreateShaderModule(
         context->device.handle,
         &create_info,
         context->device.allocator,
-        out_module
+        &shader_module
     );
 
-    return res == VK_SUCCESS;
+    if (res != VK_SUCCESS)
+        return VK_NULL_HANDLE;
+
+    return shader_module;
 }
 
 i32 GDF_VkUtilsFindMemTypeIdx(VkRenderContext* context, u32 type_filter, u32 property_flags)

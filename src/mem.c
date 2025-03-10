@@ -1,6 +1,6 @@
 #include <mem.h>
 
-#include <core.h>
+#include <../include/core.h>
 
 // TODO: Custom string lib
 #include <string.h>

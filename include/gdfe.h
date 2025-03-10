@@ -14,7 +14,7 @@ typedef struct GDF_AppCallbacks {
     // Called after the core renderer is initialized.
     // Initialization of resources for custom rendering should happen here.
     bool (*on_render_init)(
-        const GDF_RendererState* render_state,
+        const VkRenderContext* vulkan_ctx,
         const GDF_AppState* app_state,
         void* state
     );
@@ -24,7 +24,7 @@ typedef struct GDF_AppCallbacks {
     // Called before the core renderer is destroyed.
     // Destruction of resources for custom rendering should happen here.
     bool (*on_render_destroy)(
-        const GDF_RendererState* render_state,
+        const VkRenderContext* vulkan_ctx,
         const GDF_AppState* app_state,
         void* state
     );
@@ -34,7 +34,7 @@ typedef struct GDF_AppCallbacks {
     // Called right before postprocessing effects are rendered.
     // Custom rendering should happen here.
     bool (*on_render)(
-        const GDF_RendererState* render_state,
+        const VkRenderContext* vulkan_ctx,
         const GDF_AppState* app_state,
         void* state
     );
@@ -44,7 +44,7 @@ typedef struct GDF_AppCallbacks {
     // Called right after the frame is presented, and the frame number is incremented.
     // However, resource_idx remains the same.
     bool (*on_render_end)(
-        const GDF_RendererState* render_state,
+        const VkRenderContext* vulkan_ctx,
         const GDF_AppState* app_state,
         void* state
     );

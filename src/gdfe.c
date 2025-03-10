@@ -6,8 +6,9 @@
 #include <os/window.h>
 #include "os/window_internal.h"
 #include <input.h>
+#include "internal/irender/renderer.h"
 
-typedef struct AppState {
+typedef struct GdfApp {
     i16 width;
     i16 height;
     f64 last_time;
@@ -17,9 +18,9 @@ typedef struct AppState {
     GDF_AppCallbacks callbacks;
     GDF_Config conf;
     GDF_AppState public;
-} AppState;
+} GdfApp;
 
-static AppState APP_STATE;
+static GdfApp APP_STATE;
 
 bool default_events(u16 event_code, void *sender, void *listener_instance, GDF_EventContext ctx)
 {
@@ -152,7 +153,7 @@ bool GDF_Init(GDF_InitInfo init_info) {
         GDF_EventRegister(GDF_EVENT_INTERNAL_APP_QUIT, NULL, default_events);
     }
 
-    public->renderer = GDF_RendererInit(public->window);
+    public->renderer = gdfe_renderer_init(public->window, &APP_STATE.public, init_info.config.disable_default_renderer, &APP_STATE.callbacks);
     if (!public->renderer)
     {
         LOG_ERR("Couldn't initialize renderer unlucky.");
@@ -178,24 +179,26 @@ f64 GDF_Run() {
     public->alive = true;
 
     GDF_Stopwatch running_timer = GDF_StopwatchCreate();
-    u8 frame_count = 0;
-    u32 fps = 3000;
-    f64 secs_per_frame = 1.0/fps;
+    u32 fps = APP_STATE.conf.fps_cap;
+    f64 secs_per_frame = fps != 0 ? 1.0/fps : 0.0;
     GDF_Stopwatch frame_timer = GDF_StopwatchCreate();
+
+    // periodically print average fps
+    const u32 frame_times_sample_size = 10;
+    f64 frame_times[frame_times_sample_size] = {};
+    u64 frame_count = 0;
+    u64 last_whole_second = 0;
 
     while(public->alive)
     {
         pump_messages();
 
-        f64 current_time = GDF_StopwatchElasped(APP_STATE.stopwatch);
+        f64 current_time = GDF_StopwatchElapsed(APP_STATE.stopwatch);
         f64 dt = (current_time - APP_STATE.last_time);
+        APP_STATE.last_time = current_time;
         GDF_StopwatchReset(frame_timer);
 
-        // just testing input
-        if (GDF_IsButtonDown(GDF_MBUTTON_LEFT))
-        {
-            LOG_INFO("heehaw");
-        }
+        GDF_INPUT_Update(public->window, dt);
 
         if (APP_STATE.callbacks.on_frame) {
             if (
@@ -208,30 +211,48 @@ f64 GDF_Run() {
             }
         }
 
-        // GDF_RendererDrawFrame(public->renderer, dt);
+        GDF_RendererDrawFrame(public->renderer, dt);
 
-        f64 frame_time = GDF_StopwatchElasped(frame_timer);
+        f64 frame_time = GDF_StopwatchElapsed(frame_timer);
 
         // wait a certain amount of time after each frame to cap fps
-        // TODO! add uncap fps option probably "bool uncap_fps" or some shit
         f64 wait_secs = secs_per_frame - frame_time;
         if (wait_secs > 0)
         {
             GDF_ThreadSleep((u64)(wait_secs * 1000));
+            frame_times[frame_count % frame_times_sample_size]
+            = secs_per_frame;
+        }
+        else
+        {
+            frame_times[frame_count % frame_times_sample_size]
+            = frame_time;
         }
 
-        GDF_INPUT_Update(public->window, dt);
+        // temporary fps diagnostics, remove later.
+        if (last_whole_second != (u32)current_time)
+        {
+            f64 avg_frametime = 0;
+            for (u32 i = 0; i < frame_times_sample_size; i++)
+            {
+                avg_frametime += frame_times[i];
+            }
+            avg_frametime /= frame_times_sample_size;
+            LOG_INFO("FPS: %lf", 1.0/avg_frametime);
+            last_whole_second = (u32)current_time;
+        }
 
         // only thing that should produce innacuracies is if pumpmessages takes a bit of time
+        frame_count++;
     }
 
     // CLEAN UP STUFF
-    f64 time_ran_for = GDF_StopwatchElasped(running_timer);
-    // destroy resources
+    f64 time_ran_for = GDF_StopwatchElapsed(running_timer);
     GDF_StopwatchDestroy(APP_STATE.stopwatch);
     GDF_StopwatchDestroy(running_timer);
+    GDF_StopwatchDestroy(frame_timer);
 
-    GDF_RendererDestroy(APP_STATE.public.renderer);
+    gdfe_renderer_destroy(APP_STATE.public.renderer);
 
     return time_ran_for;
 }
