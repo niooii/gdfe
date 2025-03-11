@@ -2,7 +2,7 @@
 #include "render/vk_types.h"
 #include "../../internal/irender/gpu_types.h"
 
-bool create_grid_pipeline(GDF_VkRenderContext* vk_ctx, CoreRendererContext* ctx)
+bool create_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
     // Vertex input configuration
     VkVertexInputBindingDescription bindings = {
@@ -91,6 +91,7 @@ bool create_grid_pipeline(GDF_VkRenderContext* vk_ctx, CoreRendererContext* ctx)
         .blendConstants = {0.0f, 0.0f, 0.0f, 0.0f}
     };
 
+    // for player position
     VkPushConstantRange push_constant_range = {
         .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
         .offset = 0,
@@ -100,7 +101,7 @@ bool create_grid_pipeline(GDF_VkRenderContext* vk_ctx, CoreRendererContext* ctx)
     // Pipeline layout
     VkPipelineLayoutCreateInfo layout_info = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-        .pSetLayouts = &vk_ctx->global_vp_ubo_layouts[0],
+        .pSetLayouts = &ctx->vp_ubo_layout,
         .setLayoutCount = 1,
         .pPushConstantRanges = &push_constant_range,
         .pushConstantRangeCount = 1
@@ -176,9 +177,9 @@ bool create_grid_pipeline(GDF_VkRenderContext* vk_ctx, CoreRendererContext* ctx)
     return true;
 }
 
-bool create_ui_pipeline(GDF_VkRenderContext* vk_ctx, CoreRendererContext* ctx)
+bool create_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
-    ui_pipeline* pipeline = &ctx->ui_pipeline;
+    gdfe_ui_pipeline* pipeline = &ctx->ui_pipeline;
 
      // Vertex input configuration
     VkVertexInputBindingDescription bindings = {
@@ -277,7 +278,7 @@ bool create_ui_pipeline(GDF_VkRenderContext* vk_ctx, CoreRendererContext* ctx)
     // TODO! dont need uniform matrices
     VkPipelineLayoutCreateInfo layout_info = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-        .pSetLayouts = &vk_ctx->global_vp_ubo_layouts[0],
+        .pSetLayouts = &ctx->vp_ubo_layout,
         .setLayoutCount = 1,
         .pPushConstantRanges = &push_constant_range,
         .pushConstantRangeCount = 1
@@ -297,7 +298,7 @@ bool create_ui_pipeline(GDF_VkRenderContext* vk_ctx, CoreRendererContext* ctx)
     // into pipelines
     VkDynamicState d_states[2] = {
         VK_DYNAMIC_STATE_VIEWPORT,
-        VK_DYNAMIC_STATE_SCISSOR
+        VK_DYNAMIC_STATE_SCISSOR,
     };
     VkPipelineDynamicStateCreateInfo dynamic_states = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,

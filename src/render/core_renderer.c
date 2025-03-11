@@ -2,16 +2,30 @@
 
 #include "gdfe.h"
 #include "../../include/render/vk_utils.h"
+#include "irender/gpu_types.h"
 
-bool create_shaders(GDF_VkRenderContext* vk_ctx, CoreRendererContext* ctx);
+bool create_shaders(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
 
-bool create_grid_pipeline(GDF_VkRenderContext* vk_ctx, CoreRendererContext* ctx);
-bool create_ui_pipeline(GDF_VkRenderContext* vk_ctx, CoreRendererContext* ctx);
-void destroy_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, CoreRendererContext* ctx);
-bool create_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, CoreRendererContext* ctx);
-bool create_geometry_pass(GDF_VkRenderContext* vk_ctx, CoreRendererContext* ctx);
+bool create_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+bool create_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+void destroy_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+bool create_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+bool create_geometry_pass(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+bool create_global_buffers(GDF_VkRenderContext* vk_ctx, const GDF_CoreRendererContext* ctx);
 
-bool core_renderer_init(GDF_VkRenderContext* vk_ctx, CoreRendererContext* ctx) {
+// Up facing plane vertices
+static const Vertex3d plane_vertices[] = {
+    {{-0.5f, 0.5f, -0.5f}},
+    {{0.5f, 0.5f, -0.5f}},
+    {{0.5f, 0.5f, 0.5f}},
+    {{-0.5f, 0.5f, 0.5f}},
+};
+
+static const u16 plane_indices[] = {
+    0, 1, 2, 2, 3, 0
+};
+
+bool core_renderer_init(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx) {
     ctx->per_frame = GDF_LIST_Reserve(CoreRendererPerFrame, vk_ctx->max_concurrent_frames);
     GDF_LIST_SetLength(ctx->per_frame, vk_ctx->max_concurrent_frames);
     if (!create_shaders(vk_ctx, ctx))
@@ -29,17 +43,36 @@ bool core_renderer_init(GDF_VkRenderContext* vk_ctx, CoreRendererContext* ctx) {
         LOG_ERR("Failed to create renderpasses.");
         return false;
     }
+    if (!create_global_buffers(vk_ctx, ctx))
+    {
+        LOG_ERR("Failed to create global buffers.");
+        return false;
+    }
     if (!create_grid_pipeline(vk_ctx, ctx) || !create_ui_pipeline(vk_ctx, ctx))
     {
         LOG_ERR("Failed to create builtin pipelines.");
         return false;
     }
 
+    GDF_VkBufferCreateVertex(
+        vk_ctx,
+        plane_vertices,
+        sizeof(plane_vertices) / sizeof(*plane_vertices),
+        sizeof(*plane_vertices),
+        &ctx->up_facing_plane_vbo
+    );
+    GDF_VkBufferCreateIndex(
+        vk_ctx,
+        plane_indices,
+        sizeof(plane_indices) / sizeof(*plane_indices),
+        &ctx->up_facing_plane_index_buffer
+    );
+
     return true;
 }
 
 // TODO! config to disable specific passes
-bool core_renderer_draw(GDF_VkRenderContext* vk_ctx, GDF_AppCallbacks* callbacks, CoreRendererContext* ctx)
+bool core_renderer_draw(GDF_VkRenderContext* vk_ctx, GDF_AppCallbacks* callbacks, GDF_CoreRendererContext* ctx)
 {
     u32 resource_idx = vk_ctx->resource_idx;
     PerFrameResources* vk_per_frame = &vk_ctx->per_frame[resource_idx];
@@ -58,7 +91,7 @@ bool core_renderer_draw(GDF_VkRenderContext* vk_ctx, GDF_AppCallbacks* callbacks
     return true;
 }
 
-bool core_renderer_resize(GDF_VkRenderContext* vk_ctx, GDF_AppCallbacks* callbacks, CoreRendererContext* ctx)
+bool core_renderer_resize(GDF_VkRenderContext* vk_ctx, GDF_AppCallbacks* callbacks, GDF_CoreRendererContext* ctx)
 {
     destroy_framebufs_and_imgs(vk_ctx, ctx);
     if (!create_framebufs_and_imgs(vk_ctx, ctx))
@@ -68,12 +101,12 @@ bool core_renderer_resize(GDF_VkRenderContext* vk_ctx, GDF_AppCallbacks* callbac
     }
 }
 
-bool core_renderer_destroy(GDF_VkRenderContext* vk_ctx, CoreRendererContext* ctx)
+bool core_renderer_destroy(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
     return true;
 }
 
-bool create_shaders(GDF_VkRenderContext* vk_ctx, CoreRendererContext* ctx)
+bool create_shaders(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
     ctx->ui_pipeline.vert =
         GDF_VkUtilsLoadShader(vk_ctx, "resources/shaders/ui.vert.spv");

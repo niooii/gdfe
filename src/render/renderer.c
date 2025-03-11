@@ -9,27 +9,32 @@
 #include "gdfe.h"
 #include "../../include/render/vk_utils.h"
 #include "../../include/render/vk_utils.h"
+#include "irender/vk_utils.h"
 
 void GDF_RendererResize(GDF_Renderer renderer, u16 width, u16 height)
 {
     renderer->vk_ctx.pending_resize_event = true;
+    renderer->framebuffer_width = width;
+    renderer->framebuffer_height = height;
 }
 
 bool GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
 {
     GDF_VkRenderContext* vk_ctx = &renderer->vk_ctx;
-    vk_device* device = &vk_ctx->device;
+    GDF_VkDevice* device = &vk_ctx->device;
     // because there are separate resources for each frame in flight.
     vk_ctx->resource_idx = vk_ctx->current_frame % vk_ctx->max_concurrent_frames;
     u32 resource_idx = vk_ctx->resource_idx;
+    // for debugging we test
+    u32 prev_resource_idx = (MIN(vk_ctx->current_frame - 1, 0)) % vk_ctx->max_concurrent_frames;
     PerFrameResources* per_frame = &vk_ctx->per_frame[resource_idx];
 
-    if (!vk_ctx->ready_for_use) {
+    if (!vk_ctx->ready_for_use && !vk_ctx->pending_resize_event) {
         if (!GDF_VkUtilsIsSuccess(vkDeviceWaitIdle(device->handle))) {
             LOG_ERR("begin frame vkDeviceWaitIdle (1) failed");
             return false;
         }
-        LOG_DEBUG("Something is happening w the renderer");
+        LOG_ERR("Something happened with renderer");
         return false;
     }
 
@@ -44,22 +49,29 @@ bool GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
 
         vk_ctx->ready_for_use = false;
         // TODO! HANDLE MINIMIZES BETTER...
-        if (renderer->framebuffer_height == 0 && renderer->framebuffer_width == 0)
+        if (renderer->framebuffer_height == 0 || renderer->framebuffer_width == 0)
         {
             return false;
         }
 
         vk_ctx->recreating_swapchain = true;
 
-        // TODO! dont forget about this buddy
-        TODO("yea ur not getting away with this one");
-        // if (!__recreate_sized_resources(renderer)) {
-        //     return false;
-        // }
+        gdfe_get_surface_capabilities(
+            vk_ctx->device.physical_info->handle,
+            vk_ctx->surface,
+            &vk_ctx->device.physical_info->sc_support_info
+        );
+        gdfe_swapchain_destroy(vk_ctx);
+        if (!gdfe_swapchain_init(vk_ctx, renderer->framebuffer_width, renderer->framebuffer_height))
+        {
+            LOG_FATAL("failed to recreate swapchain");
+            return false;
+        }
 
         LOG_INFO("Resized successfully.");
         vk_ctx->pending_resize_event = false;
         vk_ctx->recreating_swapchain = false;
+
         vk_ctx->ready_for_use = true;
         return false;
     }
@@ -68,7 +80,7 @@ bool GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
     vkWaitForFences(
         device->handle,
         1,
-        &per_frame->in_flight_fence,
+        &vk_ctx->per_frame[resource_idx].in_flight_fence,
         VK_TRUE,
         UINT64_MAX
     );
@@ -86,30 +98,17 @@ bool GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
     );
     // TODO! handle VK_ERROR_OUT_OF_DATE_KHR and resizing stuff etc etc
 
-    // shorthand i guess i aint typing all that
-    u32 current_img_idx = vk_ctx->swapchain.current_img_idx;
-
-    // GDF_Camera* active_camera = renderer->camera;
-    // if (active_camera)
-    // {
-    //
-    // }
-    //
-    // // TODO! remove and extract updating ubo into another function
-    // ViewProjUB ubo = {
-    //     .view_projection = active_camera->view_perspective
-    // };
-    // memcpy(vk_ctx->uniform_buffers[current_img_idx].mapped_data, &ubo, sizeof(ubo));
+    u32 img_idx = vk_ctx->swapchain.current_img_idx;
 
     // Check if a previous frame is using this image (if there is its fence to wait on)
-    if (vk_ctx->images_in_flight[current_img_idx] != VK_NULL_HANDLE)
+    if (vk_ctx->images_in_flight[img_idx] != VK_NULL_HANDLE)
     {
-        vkWaitForFences(device->handle, 1, &vk_ctx->images_in_flight[current_img_idx], VK_TRUE, UINT64_MAX);
+        vkWaitForFences(device->handle, 1, &vk_ctx->images_in_flight[img_idx], VK_TRUE, UINT64_MAX);
         // basically mark image as free
-        vk_ctx->images_in_flight[current_img_idx] = VK_NULL_HANDLE;
+        vk_ctx->images_in_flight[img_idx] = VK_NULL_HANDLE;
     }
     vkResetFences(device->handle, 1, &per_frame->in_flight_fence);
-    vk_ctx->images_in_flight[current_img_idx] = per_frame->in_flight_fence;
+    vk_ctx->images_in_flight[img_idx] = per_frame->in_flight_fence;
 
     VkCommandBuffer cmd_buffer = per_frame->cmd_buffer;
     vkResetCommandBuffer(cmd_buffer, 0);
@@ -173,7 +172,7 @@ bool GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
         }
     }
     // draw debug grid
-    // vkCmdBindPipeline(cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, context->grid_pipeline.handle);
+    // vkCmdBindPipeline(cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, context->gdfe_grid_pipeline.handle);
     //
     // vkCmdBindVertexBuffers(cmd_buffer, 0, 1, &context->up_facing_plane_vbo.handle, offsets);
     // vkCmdBindIndexBuffer(cmd_buffer, vk_ctx->up_facing_plane_index_buffer.handle, 0, VK_INDEX_TYPE_UINT16);
@@ -181,7 +180,7 @@ bool GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
     // vkCmdBindDescriptorSets(
     //     cmd_buffer,
     //     VK_PIPELINE_BIND_POINT_GRAPHICS,
-    //     vk_ctx->grid_pipeline.layout,
+    //     vk_ctx->gdfe_grid_pipeline.layout,
     //     0,
     //     1,
     //     &context->global_vp_ubo_sets[resource_idx],
@@ -191,7 +190,7 @@ bool GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
     //
     // vkCmdPushConstants(
     //     cmd_buffer,
-    //     context->grid_pipeline.layout,
+    //     context->gdfe_grid_pipeline.layout,
     //     VK_SHADER_STAGE_VERTEX_BIT,
     //     0,
     //     sizeof(vec3),
@@ -229,7 +228,7 @@ bool GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
 
     VkPresentInfoKHR present_info = {
         .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-        .pImageIndices = &current_img_idx,
+        .pImageIndices = &img_idx,
         .waitSemaphoreCount = 1,
         .pWaitSemaphores = &per_frame->render_finished_semaphore,
         .swapchainCount = 1,

@@ -1,6 +1,8 @@
-#include <../../include/render/vk_utils.h>
-
+#include <render/vk_utils.h>
+#include "irender/vk_utils.h"
 #include <os/io.h>
+
+// Public utility implementations
 
 // Only supports SPIR-V for now. GLSL shaders must be compiled into SPIR-V first.
 VkShaderModule GDF_VkUtilsLoadShader(GDF_VkRenderContext* context, const char* src_rel_path)

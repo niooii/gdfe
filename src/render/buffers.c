@@ -9,7 +9,7 @@ bool GDF_VkBufferCreate(
     GDF_VkBuffer* out_buf
 )
 {
-    vk_device* device = &context->device;
+    GDF_VkDevice* device = &context->device;
     VkBufferCreateInfo buf_info = {
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
         .size = alloc_size,

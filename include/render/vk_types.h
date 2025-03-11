@@ -57,39 +57,46 @@ typedef enum GDF_VK_RENDERPASS_INDEX {
 /* ======================================= */
 /* ===== DEVICE TYPES ===== */
 /* ======================================= */
-typedef struct vk_pdevice_swapchain_support {
+typedef struct GDF_VkPhysicalDeviceSwapchainSupport {
     VkSurfaceCapabilitiesKHR capabilities;
     u32 format_count;
     VkSurfaceFormatKHR* formats;
     u32 present_mode_count;
     VkPresentModeKHR* present_modes;
-} vk_pdevice_swapchain_support;
+} GDF_VkPhysicalDeviceSwapchainSupport;
 
-typedef struct vk_pdevice_queues {
+typedef struct GDF_VkPhysicalDeviceQueues {
     i32 graphics_family_index;
     i32 present_family_index;
     i32 compute_family_index;
     i32 transfer_family_index;
-} vk_pdevice_queues;
+} GDF_VkPhysicalDeviceQueues;
 
-typedef struct vk_physical_device {
+typedef struct GDF_VkPhysicalDevice {
     VkPhysicalDevice handle;
-    vk_pdevice_swapchain_support sc_support_info;
-    vk_pdevice_queues queues;
+    GDF_VkPhysicalDeviceSwapchainSupport sc_support_info;
+    GDF_VkPhysicalDeviceQueues queues;
     VkPhysicalDeviceProperties properties;
     VkPhysicalDeviceFeatures features;
     VkPhysicalDeviceMemoryProperties memory;
-    bool usable;
-} vk_physical_device;
 
-typedef struct vk_device {
-    vk_physical_device* physical_info;
+    struct {
+        VkFormat image_format;
+        VkColorSpaceKHR image_color_space;
+        VkFormat depth_format;
+    } formats;
+
+    bool usable;
+} GDF_VkPhysicalDeviceInfo;
+
+typedef struct GDF_VkDevice {
+    GDF_VkPhysicalDeviceInfo* physical_info;
     VkDevice handle;
     VkQueue graphics_queue;
     VkQueue present_queue;
     VkQueue transfer_queue;
     VkAllocationCallbacks* allocator;
-} vk_device;
+} GDF_VkDevice;
 
 /* ======================================= */
 /* ===== BUFFER TYPES ===== */
@@ -144,31 +151,14 @@ typedef struct GDF_VkRenderContext {
     VkSurfaceKHR surface;
     vk_swapchain swapchain;
 
-    // All default pipelines used in application
-    // TODO! disable these if the user requests fully custom rendering.
-    
-    struct {
-        VkFormat image_format;
-        VkColorSpaceKHR image_color_space;
-        VkFormat depth_format;
-    } formats;
-
-    // All vertex shaders will get input from these uniform buffers.
-    GDF_LIST(GDF_VkUniformBuffer) uniform_buffers;
-    // This field is modified then copied over to vk_uniform_buffer[n].mapped_Data
-    ViewProjUB uniform_buffer_data;
-    VkDescriptorPool descriptor_pool;
-    GDF_LIST(VkDescriptorSet) global_vp_ubo_sets;
-    GDF_LIST(VkDescriptorSetLayout) global_vp_ubo_layouts;
-
     // TODO! multiple command pools (per thread or something)?
     VkCommandPool persistent_command_pool;
     VkCommandPool transient_command_pool;
 
-    GDF_LIST(vk_physical_device) physical_device_info_list;
-    vk_device device;
+    GDF_LIST(GDF_VkPhysicalDeviceInfo) pdevices;
+    GDF_VkDevice device;
 
-    u32 current_frame;
+    u64 current_frame;
     u32 max_concurrent_frames;
 
     GDF_LIST(PerFrameResources) per_frame;

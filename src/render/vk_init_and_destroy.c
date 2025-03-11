@@ -10,6 +10,7 @@
 #include "irender/vk_os.h"
 #include "../../include/render/vk_utils.h"
 #include "../../include/render/vk_utils.h"
+#include "irender/vk_utils.h"
 
 VKAPI_ATTR VkBool32 VKAPI_CALL __vk_dbg_callback(
     VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
@@ -32,92 +33,6 @@ VKAPI_ATTR VkBool32 VKAPI_CALL __vk_dbg_callback(
             break;
     }
     return VK_FALSE;
-}
-
-VkFormat __find_depth_format(VkPhysicalDevice physical_device)
-{
-    VkFormat depth_formats[] =
-    {
-        VK_FORMAT_D32_SFLOAT,
-        VK_FORMAT_D32_SFLOAT_S8_UINT,
-        VK_FORMAT_D24_UNORM_S8_UINT
-    };
-    u32 format_count = sizeof(depth_formats) / sizeof(depth_formats[0]);
-
-    for (u32 i = 0; i < format_count; i++)
-    {
-        VkFormatProperties format_properties;
-        vkGetPhysicalDeviceFormatProperties(physical_device, depth_formats[i], &format_properties);
-
-        if (format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
-        {
-            return depth_formats[i];
-        }
-    }
-
-    return VK_FORMAT_UNDEFINED;
-}
-
-void __query_swapchain_support(VkPhysicalDevice physical_device, VkSurfaceKHR surface, vk_pdevice_swapchain_support* out_support_info)
-{
-    VK_ASSERT(
-        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
-            physical_device,
-            surface,
-            &out_support_info->capabilities
-        )
-    );
-
-    VK_ASSERT(
-        vkGetPhysicalDeviceSurfaceFormatsKHR(
-            physical_device,
-            surface,
-            &out_support_info->format_count,
-            NULL
-        )
-    );
-
-    // Surface formats
-    if (out_support_info->format_count != 0)
-    {
-        if (!out_support_info->formats)
-        {
-            out_support_info->formats = GDF_Malloc(sizeof(VkSurfaceFormatKHR) * out_support_info->format_count, GDF_MEMTAG_RENDERER);
-        }
-        VK_ASSERT(
-            vkGetPhysicalDeviceSurfaceFormatsKHR(
-                physical_device,
-                surface,
-                &out_support_info->format_count,
-                out_support_info->formats
-            )
-        );
-    }
-
-    // Present modes
-    VK_ASSERT(
-        vkGetPhysicalDeviceSurfacePresentModesKHR(
-            physical_device,
-            surface,
-            &out_support_info->present_mode_count,
-            0
-        )
-    );
-    if (out_support_info->present_mode_count != 0)
-    {
-        if (!out_support_info->present_modes)
-        {
-            out_support_info->present_modes = GDF_Malloc(sizeof(VkPresentModeKHR) * out_support_info->present_mode_count, GDF_MEMTAG_RENDERER);
-        }
-        VK_ASSERT(
-            vkGetPhysicalDeviceSurfacePresentModesKHR(
-                physical_device,
-                surface,
-                &out_support_info->present_mode_count,
-                out_support_info->present_modes
-            )
-        );
-    }
 }
 
 // TODO! initialize lighting and postprocessing pipelines
@@ -228,12 +143,12 @@ void __query_swapchain_support(VkPhysicalDevice physical_device, VkSurfaceKHR su
 // }
 
 // filters the vk_ctx->physical_device_info list
-void __filter_available_devices(GDF_VkRenderContext* vk_ctx, vk_physical_device* phys_list)
+void __filter_available_devices(GDF_VkRenderContext* vk_ctx, GDF_VkPhysicalDeviceInfo* phys_list)
 {
     u32 list_len = GDF_LIST_GetLength(phys_list);
     for (u32 i = list_len; i > 0; i--)
     {
-        vk_physical_device* device = &vk_ctx->physical_device_info_list[i - 1];
+        GDF_VkPhysicalDeviceInfo* device = &phys_list[i - 1];
         LOG_TRACE("Checking device %s", device->properties.deviceName);
 
         bool device_suitable = true;
@@ -242,6 +157,7 @@ void __filter_available_devices(GDF_VkRenderContext* vk_ctx, vk_physical_device*
         if (device->sc_support_info.format_count < 1 || device->sc_support_info.present_mode_count < 1)
         {
             device_suitable = false;
+            LOG_WARN("pluh");
             goto filter_device_skip;
         }
         // check queues support
@@ -273,151 +189,6 @@ void __filter_available_devices(GDF_VkRenderContext* vk_ctx, vk_physical_device*
     }
 }
 
-bool __create_swapchain(GDF_Renderer state)
-{
-    GDF_VkRenderContext* vk_ctx = &state->vk_ctx;
-
-    // TODO! add a lot more checks during swapchain creation
-    VkSwapchainCreateInfoKHR sc_create_info = {
-        .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-        .preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
-        .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-        .surface = vk_ctx->surface,
-        .imageArrayLayers = 1,
-        .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
-                        | VK_IMAGE_USAGE_TRANSFER_DST_BIT
-    };
-    sc_create_info.clipped = VK_TRUE;
-
-    // TODO! actually run checks against this
-    __query_swapchain_support(
-        vk_ctx->device.physical_info->handle,
-        vk_ctx->surface,
-        &vk_ctx->device.physical_info->sc_support_info
-    );
-
-    // Set extent
-    vk_ctx->swapchain.extent.width = state->framebuffer_width;
-    vk_ctx->swapchain.extent.height = state->framebuffer_height;
-    sc_create_info.imageExtent = vk_ctx->swapchain.extent;
-    // for now if these arent supported FUCK YOU
-    // ! also initiliaze formats here
-    vk_ctx->formats.depth_format = __find_depth_format(vk_ctx->device.physical_info->handle);
-    if (vk_ctx->formats.depth_format == VK_FORMAT_UNDEFINED) {
-        LOG_ERR("Could not find a supported depth format. Cannot continue program.");
-        return false;
-    }
-    vk_ctx->formats.image_format = VK_FORMAT_B8G8R8A8_SRGB;
-    vk_ctx->formats.image_color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-    sc_create_info.presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
-    sc_create_info.imageFormat = vk_ctx->formats.image_format;
-    sc_create_info.imageColorSpace = vk_ctx->formats.image_color_space;
-    sc_create_info.minImageCount = 3;
-
-    VK_ASSERT(
-        vkCreateSwapchainKHR(
-            vk_ctx->device.handle,
-            &sc_create_info,
-            vk_ctx->device.allocator,
-            &vk_ctx->swapchain.handle
-        )
-    );
-
-    // Allow triple buffering
-    vk_ctx->max_concurrent_frames = MAX_FRAMES_IN_FLIGHT;
-    VK_ASSERT(
-        vkGetSwapchainImagesKHR(
-            vk_ctx->device.handle,
-            vk_ctx->swapchain.handle,
-            &vk_ctx->swapchain.image_count,
-            NULL
-        )
-    )
-
-    u32 image_count = vk_ctx->swapchain.image_count;
-    // grab images into an intermediate buffer then transfer to my own structs
-    VkImage images[image_count];
-
-    VK_ASSERT(
-        vkGetSwapchainImagesKHR(
-            vk_ctx->device.handle,
-            vk_ctx->swapchain.handle,
-            &image_count,
-            images
-        )
-    );
-
-    if (!vk_ctx->recreating_swapchain)
-    {
-        vk_ctx->swapchain.images = GDF_LIST_Reserve(VkImage, image_count);
-        vk_ctx->swapchain.image_views = GDF_LIST_Reserve(VkImageView, image_count);
-    }
-
-    // Create corresponding image views
-    for (u32 i = 0; i < image_count; i++)
-    {
-        vk_ctx->swapchain.images[i] = images[i];
-        VkImageViewCreateInfo image_view_info = {
-            .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-            .format = vk_ctx->formats.image_format,
-            .image = vk_ctx->swapchain.images[i],
-            .viewType = VK_IMAGE_VIEW_TYPE_2D,
-            // i dont have to initialize these but why not
-            .components.r = VK_COMPONENT_SWIZZLE_IDENTITY,
-            .components.g = VK_COMPONENT_SWIZZLE_IDENTITY,
-            .components.b = VK_COMPONENT_SWIZZLE_IDENTITY,
-            .components.a = VK_COMPONENT_SWIZZLE_IDENTITY,
-            .subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-            .subresourceRange.baseMipLevel = 0,
-            .subresourceRange.levelCount = vk_ctx->mip_levels,
-            // some swapchains can have multiple layers, for example
-            // in 3d (the blue red glasses stuff)
-            // i will NOT be having 3d chat
-            .subresourceRange.baseArrayLayer = 0,
-            .subresourceRange.layerCount = 1,
-        };
-
-        VK_ASSERT(
-            vkCreateImageView(
-                vk_ctx->device.handle,
-                &image_view_info,
-                vk_ctx->device.allocator,
-                &vk_ctx->swapchain.image_views[i]
-            )
-        );
-    }
-
-    GDF_LIST_SetLength(vk_ctx->swapchain.images, image_count);
-
-    LOG_TRACE("Fetched %d images from swapchain...", GDF_LIST_GetLength(vk_ctx->swapchain.images));
-
-    return true;
-}
-
-void __destroy_swapchain(GDF_VkRenderContext* vk_ctx)
-{
-    VkDevice device = vk_ctx->device.handle;
-    VkAllocationCallbacks* allocator = vk_ctx->device.allocator;
-    for (u32 i = 0; i < vk_ctx->swapchain.image_count; i++)
-    {
-        vkDestroyImageView(
-            device,
-            vk_ctx->swapchain.image_views[i],
-            allocator
-        );
-    }
-
-    vkDestroySwapchainKHR(
-        device,
-        vk_ctx->swapchain.handle,
-        allocator
-    );
-
-    if (!vk_ctx->recreating_swapchain)
-    {
-        GDF_LIST_Destroy(vk_ctx->swapchain.images);
-    }
-}
 //
 // bool __create_framebuffers(VkRenderContext* vk_ctx)
 // {
@@ -483,77 +254,6 @@ void __destroy_swapchain(GDF_VkRenderContext* vk_ctx)
 //         && __create_framebuffers(vk_ctx);
 // }
 
-void __get_queue_indices(GDF_VkRenderContext* vk_ctx, VkPhysicalDevice physical_device, vk_pdevice_queues* queues)
-{
-    queues->graphics_family_index = -1;
-    queues->present_family_index = -1;
-    queues->compute_family_index = -1;
-    queues->transfer_family_index = -1;
-
-    u32 queue_family_count = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, 0);
-    VkQueueFamilyProperties queue_families[queue_family_count];
-    vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, queue_families);
-
-    for (u32 i = 0; i < queue_family_count; i++) {
-
-        if (queue_families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
-        {
-            queues->graphics_family_index = i;
-        }
-
-        if (queue_families[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
-        {
-            queues->compute_family_index = i;
-        }
-
-        if (queue_families[i].queueFlags & VK_QUEUE_TRANSFER_BIT)
-        {
-            queues->transfer_family_index = i;
-        }
-
-        VkBool32 supports_present = VK_FALSE;
-        VK_ASSERT(vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, i, vk_ctx->surface, &supports_present));
-        if (supports_present) {
-            queues->present_family_index = i;
-        }
-    }
-
-    LOG_TRACE("%d", queues->graphics_family_index);
-    LOG_TRACE("%d", queues->compute_family_index);
-    LOG_TRACE("%d", queues->present_family_index);
-    LOG_TRACE("%d", queues->transfer_family_index);
-}
-
-// Up facing plane vertices
-static const Vertex3d plane_vertices[] = {
-    {{-0.5f, 0.5f, -0.5f}},
-    {{0.5f, 0.5f, -0.5f}},
-    {{0.5f, 0.5f, 0.5f}},
-    {{-0.5f, 0.5f, 0.5f}},
-};
-
-static const u16 plane_indices[] = {
-    0, 1, 2, 2, 3, 0
-};
-
-static void __create_global_vbos(GDF_VkRenderContext* vk_ctx)
-{
-    // GDF_VkBufferCreateVertex(
-    //     vk_ctx,
-    //     plane_vertices,
-    //     sizeof(plane_vertices) / sizeof(*plane_vertices),
-    //     sizeof(*plane_vertices),
-    //     &vk_ctx->up_facing_plane_vbo
-    // );
-    // GDF_VkBufferCreateIndex(
-    //     vk_ctx,
-    //     plane_indices,
-    //     sizeof(plane_indices) / sizeof(*plane_indices),
-    //     &vk_ctx->up_facing_plane_index_buffer
-    // );
-}
-
 // ===== FORWARD DECLARATIONS END =====
 GDF_Renderer gdfe_renderer_init(
     GDF_Window window,
@@ -567,9 +267,9 @@ GDF_Renderer gdfe_renderer_init(
     GDF_GetWindowSize(window, &w, &h);
     renderer->framebuffer_width = w;
     renderer->framebuffer_height = h;
+    renderer->disable_core = disable_default;
     renderer->callbacks = callbacks;
     renderer->app_state = app_state;
-    renderer->disable_core = disable_default;
 
     GDF_VkRenderContext* vk_ctx = &renderer->vk_ctx;
 
@@ -641,44 +341,29 @@ GDF_Renderer gdfe_renderer_init(
     VkPhysicalDevice physical_devices[physical_device_count];
     VK_ASSERT(vkEnumeratePhysicalDevices(vk_ctx->instance, &physical_device_count, physical_devices));
 
-    /* ======================================== */
-    /* ----- CREATE WINDOW SURFACE ----- */
-    /* ======================================== */
     GDF_VK_CreateSurface(window, vk_ctx);
 
-    vk_ctx->physical_device_info_list = GDF_LIST_Create(vk_physical_device);
+    vk_ctx->pdevices = GDF_LIST_Reserve(GDF_VkPhysicalDeviceInfo, physical_device_count);
     for (u32 i = 0; i < physical_device_count; i++)
     {
-        vk_physical_device info = {
-            .handle = physical_devices[i],
-            .usable = true
-        };
-        // fill properties, features, and memoryinfo field
-        vkGetPhysicalDeviceProperties(physical_devices[i], &info.properties);
-        vkGetPhysicalDeviceFeatures(physical_devices[i], &info.features);
-        vkGetPhysicalDeviceMemoryProperties(physical_devices[i], &info.memory);
-        // fill the swapchain support info field
-        // TODO!
-        __query_swapchain_support(info.handle, vk_ctx->surface, &info.sc_support_info);
-        // fill the queue info field
-        __get_queue_indices(vk_ctx, info.handle, &info.queues);
-        // TODO! may be a memory bug here check it out later
-        GDF_LIST_Push(vk_ctx->physical_device_info_list, info);
+        gdfe_physical_device_init(vk_ctx, physical_devices[i], &vk_ctx->pdevices[i]);
     }
 
-    __filter_available_devices(vk_ctx, vk_ctx->physical_device_info_list);
+    GDF_LIST_SetLength(vk_ctx->pdevices, physical_device_count);
+
+    __filter_available_devices(vk_ctx, vk_ctx->pdevices);
 
     /* ======================================== */
     /* ----- DEVICE SELECTION ----- */
     /* ======================================== */
 
-    vk_physical_device* selected_physical_device = NULL;
-    u32 device_num = GDF_LIST_GetLength(vk_ctx->physical_device_info_list);
+    GDF_VkPhysicalDeviceInfo* selected_physical_device = NULL;
+    u32 device_num = GDF_LIST_GetLength(vk_ctx->pdevices);
     for (u32 i = 0; i < device_num; i++)
     {
-        if (vk_ctx->physical_device_info_list[i].usable)
+        if (vk_ctx->pdevices[i].usable)
         {
-            selected_physical_device = &vk_ctx->physical_device_info_list[i];
+            selected_physical_device = &vk_ctx->pdevices[i];
         }
     }
 
@@ -799,10 +484,10 @@ GDF_Renderer gdfe_renderer_init(
     /* ======================================== */
     // TODO! msaa support checks
     vk_ctx->msaa_samples = VK_SAMPLE_COUNT_4_BIT;
-    __create_swapchain(renderer);
+    gdfe_swapchain_init(vk_ctx, renderer->framebuffer_width, renderer->framebuffer_height);
     u32 image_count = vk_ctx->swapchain.image_count;
 
-    LOG_TRACE("Created swapchain and images.");
+    LOG_TRACE("Created swapchain.");
 
     /* ======================================== */
     /* ----- Allocate command pools & buffers ----- */
@@ -834,144 +519,6 @@ GDF_Renderer gdfe_renderer_init(
     LOG_TRACE("Transient command pool created.");
 
     const u32 max_concurrent_frames = vk_ctx->max_concurrent_frames;
-
-    /* ======================================== */
-    /* ----- Create and allocate ubos & descriptor things ----- */
-    /* ======================================== */
-    VkDeviceSize buffer_size = sizeof(ViewProjUB);
-    vk_ctx->uniform_buffers = GDF_LIST_Reserve(GDF_VkUniformBuffer, image_count);
-    // Create separate ubo for each swapchain image
-    for (u32 i = 0; i < image_count; i++)
-    {
-        if (!GDF_VkBufferCreateUniform(vk_ctx, buffer_size, &vk_ctx->uniform_buffers[i]))
-        {
-            LOG_ERR("Failed to create a uniform buffer.");
-            GDF_Free(renderer);
-            return NULL;
-        }
-    }
-
-    // Create descriptor pool and allocate sets
-    vk_ctx->global_vp_ubo_sets = GDF_LIST_Reserve(VkDescriptorSet, image_count);
-    vk_ctx->global_vp_ubo_layouts = GDF_LIST_Reserve(VkDescriptorSet, image_count);
-    VkDescriptorPoolSize pool_size = {
-        .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        .descriptorCount = image_count
-    };
-
-    VkDescriptorPoolCreateInfo pool_info = {
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-        .poolSizeCount = 1,
-        .pPoolSizes = &pool_size,
-        .maxSets = image_count
-    };
-
-    VK_ASSERT(
-        vkCreateDescriptorPool(
-            vk_ctx->device.handle,
-            &pool_info,
-            NULL,
-            &vk_ctx->descriptor_pool
-        )
-    );
-
-    VkDescriptorSetLayoutBinding layout_bindings[1] = {
-        {
-            .binding = 0,
-            .descriptorCount = 1,
-            .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-            .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
-        }
-    };
-
-    for (u32 i = 0; i < image_count; i++)
-    {
-        VkDescriptorSetLayoutCreateInfo layout_create_info = {
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-            .bindingCount = sizeof(layout_bindings) / sizeof(VkDescriptorSetLayoutBinding),
-            .pBindings = layout_bindings,
-        };
-
-        VK_ASSERT(
-            vkCreateDescriptorSetLayout(
-                vk_ctx->device.handle,
-                &layout_create_info,
-                vk_ctx->device.allocator,
-                &vk_ctx->global_vp_ubo_layouts[i]
-            )
-        );
-    }
-
-    VkDescriptorSetAllocateInfo descriptor_sets_alloc_info = {
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-        .descriptorPool = vk_ctx->descriptor_pool,
-        .descriptorSetCount = image_count,
-        .pSetLayouts = vk_ctx->global_vp_ubo_layouts
-    };
-
-    vkAllocateDescriptorSets(
-        vk_ctx->device.handle,
-        &descriptor_sets_alloc_info,
-        vk_ctx->global_vp_ubo_sets
-    );
-
-    // Update descriptor sets
-    for (u32 i = 0; i < image_count; i++)
-    {
-        // Vertex uniform buffer (geometry pass)
-        VkDescriptorBufferInfo buffer_info = {
-            .buffer = vk_ctx->uniform_buffers[i].buffer.handle,
-            .offset = 0,
-            .range = sizeof(ViewProjUB)
-        };
-
-        VkWriteDescriptorSet descriptor_writes[1] = {
-            {
-                .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                .dstSet = vk_ctx->global_vp_ubo_sets[i],
-                .dstBinding = 0,
-                .dstArrayElement = 0,
-                .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                .descriptorCount = 1,
-                .pBufferInfo = &buffer_info
-            }
-        };
-
-        vkUpdateDescriptorSets(
-            vk_ctx->device.handle,
-            1,
-            descriptor_writes,
-            0,
-            NULL
-        );
-    }
-    LOG_TRACE("Created descriptor pool and allocated descriptor sets.");
-
-    /* ======================================== */
-    /* ----- CREATE RENDERPASSES, SHADERS, PIPELINES, FRAMEBUFFERS ----- */
-    /* ======================================== */
-
-    // vkDestroyDevice(vk_ctx->device.handle, vk_ctx->device.allocator);
-
-    // if (!__create_renderpasses(vk_ctx))
-    // {
-    //     NULL;
-    // }
-    //
-    // if (!__create_shader_modules())
-    // {
-    //     LOG_ERR("Failed to create shaders gg");
-    //     NULL;
-    // }
-    //
-    // LOG_TRACE("Created graphics pipelines & renderpasses");
-    //
-    // if (!__create_framebuffers(vk_ctx))
-    // {
-    //     NULL;
-    // }
-    //
-    // LOG_TRACE("Created framebuffers");
 
     /* ======================================== */
     /* ----- Create per frame resources ----- */
@@ -1029,12 +576,14 @@ GDF_Renderer gdfe_renderer_init(
         );
     }
 
-    // TODO! remove later
-    __create_global_vbos(vk_ctx);
-
     if (!renderer->disable_core)
     {
-        core_renderer_init(vk_ctx, &renderer->core_renderer);
+        if (!core_renderer_init(vk_ctx, &renderer->core_renderer))
+        {
+            LOG_FATAL("Failed to init core renderer.");
+            GDF_Free(renderer);
+            return NULL;
+        }
         LOG_TRACE("Initialized core renderer");
     }
 
@@ -1093,11 +642,6 @@ void gdfe_renderer_destroy(GDF_Renderer renderer)
     u32 swapchain_image_count = vk_ctx->swapchain.image_count;
     for (u32 i = 0; i < swapchain_image_count; i++)
     {
-        vkDestroyDescriptorSetLayout(
-            device,
-            vk_ctx->global_vp_ubo_layouts[i],
-            allocator
-        );
         vkDestroyFence(
             device,
             vk_ctx->per_frame[i].in_flight_fence,
@@ -1119,22 +663,8 @@ void gdfe_renderer_destroy(GDF_Renderer renderer)
             1,
             &vk_ctx->per_frame[i].cmd_buffer
         );
-        GDF_VkBufferDestroyUniform(vk_ctx, &vk_ctx->uniform_buffers[i]);
     }
-    __destroy_swapchain(vk_ctx);
-    // done automatically i guess
-
-    // vkFreeDescriptorSets(
-    //     device,
-    //     vk_ctx->descriptor_pool,
-    //     swapchain_image_count,
-    //     vk_ctx->descriptor_sets
-    // );
-    vkDestroyDescriptorPool(
-        device,
-        vk_ctx->descriptor_pool,
-        allocator
-    );
+    gdfe_swapchain_destroy(vk_ctx);
     vkDestroyCommandPool(
         device,
         vk_ctx->persistent_command_pool,

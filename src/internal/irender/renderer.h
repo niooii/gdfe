@@ -21,7 +21,7 @@ typedef struct GDF_Renderer_T {
     GDF_VkRenderContext vk_ctx;
     GDF_AppCallbacks* callbacks;
     GDF_AppState* app_state;
-    CoreRendererContext core_renderer;
+    GDF_CoreRendererContext core_renderer;
     bool disable_core;
 } GDF_Renderer_T;
 

@@ -1,8 +1,9 @@
 #include "irender/core_renderer.h"
 #include "../../../include/render/vk_utils.h"
 
-bool create_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, CoreRendererContext* ctx)
+bool create_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
+    GDF_VkPhysicalDeviceInfo* pdevice = vk_ctx->device.physical_info;
     for (int i = 0; i < vk_ctx->max_concurrent_frames; i++)
     {
         VkImageCreateInfo color_img_info = {
@@ -15,7 +16,7 @@ bool create_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, CoreRendererContext*
             },
             .mipLevels = vk_ctx->mip_levels,
             .arrayLayers = 1,
-            .format = vk_ctx->formats.image_format,
+            .format = pdevice->formats.image_format,
             .tiling = VK_IMAGE_TILING_OPTIMAL,
             .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
             .usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
@@ -26,7 +27,7 @@ bool create_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, CoreRendererContext*
         VkImageViewCreateInfo color_view_info = {
             .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
             .viewType = VK_IMAGE_VIEW_TYPE_2D,
-            .format = vk_ctx->formats.image_format,
+            .format = pdevice->formats.image_format,
             .subresourceRange = {
                 .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
                 .baseMipLevel = 0,
@@ -54,7 +55,7 @@ bool create_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, CoreRendererContext*
             .extent.depth = 1,
             .mipLevels = vk_ctx->mip_levels,
             .arrayLayers = 1,
-            .format = vk_ctx->formats.depth_format,
+            .format = pdevice->formats.depth_format,
             .tiling = VK_IMAGE_TILING_OPTIMAL,
             .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
             .usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
@@ -66,7 +67,7 @@ bool create_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, CoreRendererContext*
             .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
             .image = ctx->per_frame[i].depth_image.handle,
             .viewType = VK_IMAGE_VIEW_TYPE_2D,
-            .format = vk_ctx->formats.depth_format,
+            .format = pdevice->formats.depth_format,
             .subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
             .subresourceRange.baseMipLevel = 0,
             .subresourceRange.levelCount = vk_ctx->mip_levels,
@@ -92,7 +93,7 @@ bool create_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, CoreRendererContext*
 }
 
 // TODO! destroy framebuffers
-void destroy_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, CoreRendererContext* ctx)
+void destroy_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
     for (int i = 0; i < vk_ctx->max_concurrent_frames; i++)
     {

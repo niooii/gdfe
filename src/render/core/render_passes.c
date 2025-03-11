@@ -1,11 +1,12 @@
 #include "irender/core_renderer.h"
 #include "render/vk_types.h"
 
-bool create_geometry_pass(GDF_VkRenderContext* vk_ctx, CoreRendererContext* ctx)
+bool create_geometry_pass(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
     // color
+    GDF_VkPhysicalDeviceInfo* pdevice = vk_ctx->device.physical_info;
     VkAttachmentDescription color_attachment = {
-        .format = vk_ctx->formats.image_format,
+        .format = pdevice->formats.image_format,
         .samples = vk_ctx->msaa_samples,
         .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
         .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
@@ -18,7 +19,7 @@ bool create_geometry_pass(GDF_VkRenderContext* vk_ctx, CoreRendererContext* ctx)
 
     // depth
     VkAttachmentDescription depth_attachment = {
-        .format = vk_ctx->formats.depth_format,
+        .format = pdevice->formats.depth_format,
         .samples = vk_ctx->msaa_samples,
         .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
         .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
@@ -31,7 +32,7 @@ bool create_geometry_pass(GDF_VkRenderContext* vk_ctx, CoreRendererContext* ctx)
 
     // resolve
     VkAttachmentDescription resolved_attachment = {
-        .format = vk_ctx->formats.image_format,
+        .format = pdevice->formats.image_format,
         .samples = VK_SAMPLE_COUNT_1_BIT,
         .loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
         .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
