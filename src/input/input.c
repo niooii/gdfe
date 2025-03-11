@@ -4,6 +4,7 @@
 #include <math/math.h>
 
 typedef struct keyboard_state {
+    // TODO! bitmap maybe
     bool key_states[256];
 } keyboard_state;
 
@@ -33,9 +34,11 @@ static void __update_mouse_confinement_rect(GDF_Window window)
 {
     // TODO! rename misc.h to misc.h and slap a (CROSS PLATFORM) GDF_ShowCursor & GDF_ClipCursor in there and call that instead.
     i16 screen_offset_x, screen_offset_y;
-    u16 w, h;
     GDF_GetWindowPos(window, &screen_offset_x, &screen_offset_y);
+    // LOG_INFO("%d, %d", screen_offset_x, screen_offset_y);
+    u16 w, h;
     GDF_GetWindowSize(window, &w, &h);
+    // LOG_WARN("Window size: %i, %i", w, h);
     mouse_confinement_rect.bottom = screen_offset_y + h/2;
     mouse_confinement_rect.top = screen_offset_y + h/2;
     mouse_confinement_rect.right = screen_offset_x + w/2;
@@ -59,10 +62,7 @@ static bool __input_system_on_event(u16 event_code, void* sender, void* listener
         }
         case GDF_EVENT_INTERNAL_WINDOW_MOVE:
         {
-            if (cursor_lock_state == GDF_CURSOR_LOCK_STATE_Locked)
-            {
-                __update_mouse_confinement_rect((GDF_Window)sender);
-            }
+            __update_mouse_confinement_rect((GDF_Window)sender);
             break;
         }
     }
@@ -197,6 +197,8 @@ void GDF_GetMouseDelta(ivec2* d)
     // state.mouse_delta_x = 0;
     // state.mouse_delta_y = 0;
 }
+
+// TODO! accumulate input until input update
 
 void __input_process_key(GDF_KEYCODE key, bool pressed) 
 {

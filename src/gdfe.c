@@ -18,6 +18,8 @@ typedef struct GdfApp {
     GDF_AppCallbacks callbacks;
     GDF_Config conf;
     GDF_AppState public;
+
+    bool mouse_lock_toggle;
 } GdfApp;
 
 static GdfApp APP_STATE;
@@ -39,9 +41,9 @@ bool default_events(u16 event_code, void *sender, void *listener_instance, GDF_E
             switch (key_code) {
                 case GDF_KEYCODE_GRAVE:
                 {
-                    // mouse_lock_toggle = !mouse_lock_toggle;
-                    // GDF_CURSOR_LOCK_STATE state = mouse_lock_toggle ? GDF_CURSOR_LOCK_STATE_Locked : GDF_CURSOR_LOCK_STATE_Free;
-                    // GDF_SetMouseLockState(state);
+                    APP_STATE.mouse_lock_toggle = !APP_STATE.mouse_lock_toggle;
+                    GDF_CURSOR_LOCK_STATE state = APP_STATE.mouse_lock_toggle ? GDF_CURSOR_LOCK_STATE_Locked : GDF_CURSOR_LOCK_STATE_Free;
+                    GDF_SetMouseLockState(state);
                     LOG_DEBUG("TOGGLE MOUSE LOCK");
                 }
             }

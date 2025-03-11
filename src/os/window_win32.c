@@ -32,9 +32,10 @@ typedef struct GDF_Window_T {
 
 LRESULT CALLBACK process_msg(HWND hwnd, u32 msg, WPARAM w_param, LPARAM l_param)
 {
-    GDF_Window window = GDF_HashmapGet(windows, &hwnd);
-    if (!window)
+    GDF_Window* window_p = GDF_HashmapGet(windows, &hwnd);
+    if (!window_p)
         return DefWindowProc(hwnd, msg, w_param, l_param);
+    GDF_Window window = *window_p;
     switch (msg)
     {
         case WM_ERASEBKGND:
@@ -311,6 +312,8 @@ GDF_Window GDF_CreateWindow(i16 x_, i16 y_, i16 w, i16 h, const char* title)
     // If initially maximized, use SW_SHOWMAXIMIZED : SW_MAXIMIZE
     ShowWindow(window->hwnd, show_window_command_flags);
 
+    LOG_WARN("%d, %d", window->client_w, window->client_h);
+
     GDF_ASSERT(GDF_HashmapInsert(windows, &handle, &window, NULL));
 
     return window;
@@ -340,6 +343,7 @@ void GDF_GetWindowSize(GDF_Window window, u16* w, u16* h)
 {
     *w = window->client_w;
     *h = window->client_h;
+    LOG_WARN("%d, %d", window->client_w, window->client_h);
 }
 
 bool pump_messages()
@@ -368,7 +372,7 @@ void GDF_VK_GetRequiredExtensionNames(const char*** names_list)
 }
 
 #include "../internal/irender/vk_os.h"
-bool GDF_VK_CreateSurface(GDF_Window window, VkRenderContext* context)
+bool GDF_VK_CreateSurface(GDF_Window window, GDF_VkRenderContext* context)
 {
     VkWin32SurfaceCreateInfoKHR create_info = {VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR};
     create_info.hinstance = class_h_instance;

@@ -1,5 +1,5 @@
 #include <render/vk_types.h>
-#include "gpu_types.h"
+#include "../internal/irender/gpu_types.h"
 #include <collections/list.h>
 #include "irender/vk_os.h"
 #include "irender/renderer.h"
@@ -7,8 +7,8 @@
 #include <vulkan/vk_enum_string_helper.h>
 
 #include "gdfe.h"
-#include "render/vk/buffers.h"
-#include "render/vk/utils.h"
+#include "../../include/render/vk_utils.h"
+#include "../../include/render/vk_utils.h"
 
 void GDF_RendererResize(GDF_Renderer renderer, u16 width, u16 height)
 {
@@ -17,11 +17,12 @@ void GDF_RendererResize(GDF_Renderer renderer, u16 width, u16 height)
 
 bool GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
 {
-    VkRenderContext* vk_ctx = &renderer->vk_ctx;
+    GDF_VkRenderContext* vk_ctx = &renderer->vk_ctx;
     vk_device* device = &vk_ctx->device;
     // because there are separate resources for each frame in flight.
     vk_ctx->resource_idx = vk_ctx->current_frame % vk_ctx->max_concurrent_frames;
     u32 resource_idx = vk_ctx->resource_idx;
+    PerFrameResources* per_frame = &vk_ctx->per_frame[resource_idx];
 
     if (!vk_ctx->ready_for_use) {
         if (!GDF_VkUtilsIsSuccess(vkDeviceWaitIdle(device->handle))) {
@@ -63,11 +64,11 @@ bool GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
         return false;
     }
 
-    // Wait for the previous frame to finish
+    // Wait if the previous use of this frame resource set is still in progress on the GPU
     vkWaitForFences(
         device->handle,
         1,
-        &vk_ctx->in_flight_fences[resource_idx],
+        &per_frame->in_flight_fence,
         VK_TRUE,
         UINT64_MAX
     );
@@ -78,7 +79,7 @@ bool GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
             vk_ctx->device.handle,
             vk_ctx->swapchain.handle,
             UINT64_MAX,
-            vk_ctx->image_available_semaphores[resource_idx],
+            per_frame->image_available_semaphore,
             VK_NULL_HANDLE,
             &vk_ctx->swapchain.current_img_idx
         )
@@ -107,10 +108,10 @@ bool GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
         // basically mark image as free
         vk_ctx->images_in_flight[current_img_idx] = VK_NULL_HANDLE;
     }
-    vkResetFences(device->handle, 1, &vk_ctx->in_flight_fences[resource_idx]);
-    vk_ctx->images_in_flight[current_img_idx] = vk_ctx->in_flight_fences[resource_idx];
+    vkResetFences(device->handle, 1, &per_frame->in_flight_fence);
+    vk_ctx->images_in_flight[current_img_idx] = per_frame->in_flight_fence;
 
-    VkCommandBuffer cmd_buffer = vk_ctx->command_buffers[resource_idx];
+    VkCommandBuffer cmd_buffer = per_frame->cmd_buffer;
     vkResetCommandBuffer(cmd_buffer, 0);
 
     VkCommandBufferBeginInfo begin_info = {
@@ -119,13 +120,7 @@ bool GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
     };
     vkBeginCommandBuffer(cmd_buffer, &begin_info);
 
-    // VkRenderPassBeginInfo render_pass_info = {
-    //     .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-    //     .renderPass = vk_ctx->renderpasses[GDF_VK_RENDERPASS_INDEX_MAIN],
-    //     .framebuffer = vk_ctx->swapchain.framebuffers[current_img_idx],
-    //     .renderArea.offset = {0, 0},
-    //     .renderArea.extent = vk_ctx->swapchain.extent
-    // };
+
 
     VkClearValue clear_values[2] = {
         {.color = {0, 0, 0, 1}},
@@ -154,23 +149,29 @@ bool GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
 
     // TODO! draw UI
 
-    if (renderer->callbacks->on_render)
+    if (renderer->disable_core)
     {
-        if (!renderer->callbacks->on_render(
-            vk_ctx,
-            renderer->app_state,
-            renderer->callbacks->on_render_state))
+        if (renderer->callbacks->on_render)
         {
+            if (!renderer->callbacks->on_render(
+                vk_ctx,
+                renderer->app_state,
+                renderer->callbacks->on_render_state))
+            {
+                LOG_ERR("Render callback call failed.");
+                return false;
+            }
+        }
+    }
+    else
+    {
+        if (!core_renderer_draw(vk_ctx, renderer->callbacks, &renderer->core_renderer))
+        {
+            // TODO! handle some weird sync stuff here
+            LOG_ERR("Core renderer call failed.");
             return false;
         }
     }
-    // if (!vk_game_renderer_draw(vk_ctx, state, resource_idx, delta_time))
-    // {
-    //     LOG_ERR("Failed to render the game.");
-    //     // TODO! handle some weird sync stuff here
-    //     return false;
-    // }
-
     // draw debug grid
     // vkCmdBindPipeline(cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, context->grid_pipeline.handle);
     //
@@ -212,25 +213,25 @@ bool GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
     VkSubmitInfo submit_info = {
         .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
         .waitSemaphoreCount = 1,
-        .pWaitSemaphores = &vk_ctx->image_available_semaphores[resource_idx],
+        .pWaitSemaphores = &per_frame->image_available_semaphore,
         .pWaitDstStageMask = (VkPipelineStageFlags[]) {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT},
         .commandBufferCount = 1,
         .pCommandBuffers = &cmd_buffer,
         .signalSemaphoreCount = 1,
-        .pSignalSemaphores = &vk_ctx->render_finished_semaphores[resource_idx]
+        .pSignalSemaphores = &per_frame->render_finished_semaphore,
     };
     vkQueueSubmit(
         device->graphics_queue,
         1,
         &submit_info,
-        vk_ctx->in_flight_fences[resource_idx]
+        per_frame->in_flight_fence
     );
 
     VkPresentInfoKHR present_info = {
         .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
         .pImageIndices = &current_img_idx,
         .waitSemaphoreCount = 1,
-        .pWaitSemaphores = &vk_ctx->render_finished_semaphores[resource_idx],
+        .pWaitSemaphores = &per_frame->render_finished_semaphore,
         .swapchainCount = 1,
         .pSwapchains = &vk_ctx->swapchain.handle,
         .pResults = NULL,

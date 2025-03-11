@@ -14,17 +14,31 @@ typedef struct GDF_AppCallbacks {
     // Called after the core renderer is initialized.
     // Initialization of resources for custom rendering should happen here.
     bool (*on_render_init)(
-        const VkRenderContext* vulkan_ctx,
+        const GDF_VkRenderContext* vulkan_ctx,
         const GDF_AppState* app_state,
         void* state
     );
     // State to be passed into the on_render_init callback.
     void* on_render_init_state;
 
+    // Called after the window is resized, and rendering components
+    // have been resized.
+    // If the core renderer is enabled, then the framebuffers and swapchain will
+    // be recreated before calling this function. Otherwise, only
+    // the swapchain will be recreated.
+    // Recreation of sized resources for custom rendering should happen here.
+    bool (*on_render_resize)(
+        const GDF_VkRenderContext* vulkan_ctx,
+        const GDF_AppState* app_state,
+        void* state
+    );
+    // State to be passed into the on_render_resize callback.
+    void* on_render_resize_state;
+
     // Called before the core renderer is destroyed.
     // Destruction of resources for custom rendering should happen here.
     bool (*on_render_destroy)(
-        const VkRenderContext* vulkan_ctx,
+        const GDF_VkRenderContext* vulkan_ctx,
         const GDF_AppState* app_state,
         void* state
     );
@@ -34,7 +48,7 @@ typedef struct GDF_AppCallbacks {
     // Called right before postprocessing effects are rendered.
     // Custom rendering should happen here.
     bool (*on_render)(
-        const VkRenderContext* vulkan_ctx,
+        const GDF_VkRenderContext* vulkan_ctx,
         const GDF_AppState* app_state,
         void* state
     );
@@ -44,14 +58,15 @@ typedef struct GDF_AppCallbacks {
     // Called right after the frame is presented, and the frame number is incremented.
     // However, resource_idx remains the same.
     bool (*on_render_end)(
-        const VkRenderContext* vulkan_ctx,
+        const GDF_VkRenderContext* vulkan_ctx,
         const GDF_AppState* app_state,
         void* state
     );
     // State to be passed into the on_render_end callback.
     void* on_render_end_state;
 
-    // Called on each frame, before any rendering.
+    // Called on each frame, before any rendering and after updating
+    // the input subsystem.
     bool (*on_frame)(
         const GDF_AppState* app_state,
         f64 delta_time,

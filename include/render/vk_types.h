@@ -24,6 +24,15 @@
     } \
 } \
 
+#define VK_RETURN_FALSE_IF_NULLHANDLE(expr) \
+{ \
+    if ((expr) == VK_NULL_HANDLE) \
+    { \
+        LOG_ERR("%s returned a VK_NULL_HANDLE, in file: %s, line: %d. Returning false..\n", #expr, __FILE__, __LINE__) \
+        return false; \
+    } \
+} \
+
 typedef enum GDF_VK_SHADER_MODULE_INDEX {
     GDF_VK_SHADER_MODULE_INDEX_BLOCKS_VERT,
     GDF_VK_SHADER_MODULE_INDEX_BLOCKS_FRAG,
@@ -86,7 +95,7 @@ typedef struct vk_device {
 /* ===== BUFFER TYPES ===== */
 /* ======================================= */
 
-typedef struct buffer {
+typedef struct GDF_VkBuffer {
     u32 mem_property_flags;
     VkBuffer handle;
     VkDeviceMemory memory;
@@ -95,25 +104,18 @@ typedef struct buffer {
     // should not be directly accessed bc i will be implementing different shit
     // later.  
     void* mapped_data;
-} buffer;
+} GDF_VkBuffer;
 
-typedef struct vk_uniform_buffer {
-    buffer buffer;
+typedef struct GDF_VkUniformBuffer {
+    GDF_VkBuffer buffer;
     void* mapped_data;
-} vk_uniform_buffer;
+} GDF_VkUniformBuffer;
 
-/* ======================================= */
-/* ===== IMAGE TYPES ===== */
-/* ======================================= */
-
-typedef struct vk_image {
+typedef struct GDF_VkImage {
     VkImage handle;
     VkImageView view;
-} vk_image;
-
-/* ======================================= */
-/* ===== OTHER TYPES ===== */
-/* ======================================= */
+    VkDeviceMemory memory;
+} GDF_VkImage;
 
 typedef struct ViewProjUB {
     mat4 view_projection;
@@ -122,33 +124,28 @@ typedef struct ViewProjUB {
 typedef struct vk_swapchain {
     VkSwapchainKHR handle;
 
-    GDF_LIST(vk_image) images; 
-    GDF_LIST(VkFramebuffer) framebuffers;
+    GDF_LIST(VkImage) images;
+    GDF_LIST(VkImageView) image_views;
+
     u32 current_img_idx;
     VkExtent2D extent;
     u32 image_count;
 } vk_swapchain;
 
-typedef struct VkRenderContext {
+typedef struct PerFrameResources {
+    VkFence in_flight_fence;
+    VkSemaphore image_available_semaphore;
+    VkSemaphore render_finished_semaphore;
+    VkCommandBuffer cmd_buffer;
+} PerFrameResources;
+
+typedef struct GDF_VkRenderContext {
     VkInstance instance;
     VkSurfaceKHR surface;
     vk_swapchain swapchain;
 
-    // Depth image resources
-    VkImage depth_image;
-    VkDeviceMemory depth_image_memory;
-    VkImageView depth_image_view;
-
-    // MSAA image resources
-    VkImage msaa_image;
-    VkDeviceMemory msaa_image_memory;
-    VkImageView msaa_image_view;
-
     // All default pipelines used in application
-    // TODO! disable these if the user requests fully custom rendering. 
-    VkPipeline post_process;
-    VkShaderModule builtin_shaders[GDF_VK_SHADER_MODULE_INDEX_MAX];
-    VkRenderPass renderpasses[GDF_VK_RENDERPASS_INDEX_MAX];
+    // TODO! disable these if the user requests fully custom rendering.
     
     struct {
         VkFormat image_format;
@@ -157,34 +154,30 @@ typedef struct VkRenderContext {
     } formats;
 
     // All vertex shaders will get input from these uniform buffers.
-    GDF_LIST(vk_uniform_buffer) uniform_buffers;
+    GDF_LIST(GDF_VkUniformBuffer) uniform_buffers;
     // This field is modified then copied over to vk_uniform_buffer[n].mapped_Data
     ViewProjUB uniform_buffer_data;
     VkDescriptorPool descriptor_pool;
     GDF_LIST(VkDescriptorSet) global_vp_ubo_sets;
     GDF_LIST(VkDescriptorSetLayout) global_vp_ubo_layouts;
 
+    // TODO! multiple command pools (per thread or something)?
     VkCommandPool persistent_command_pool;
     VkCommandPool transient_command_pool;
-    VkCommandBuffer* command_buffers;
 
     GDF_LIST(vk_physical_device) physical_device_info_list;
     vk_device device;
 
     u32 current_frame;
     u32 max_concurrent_frames;
+
+    GDF_LIST(PerFrameResources) per_frame;
     // Sync objects
-    GDF_LIST(VkSemaphore) image_available_semaphores;
-    GDF_LIST(VkSemaphore) render_finished_semaphores;
-    GDF_LIST(VkFence) in_flight_fences;
     GDF_LIST(VkFence) images_in_flight;
     
     bool pending_resize_event;
     bool recreating_swapchain;
     bool ready_for_use;
-
-    buffer up_facing_plane_vbo;
-    buffer up_facing_plane_index_buffer;
 
     enum VkSampleCountFlagBits msaa_samples;
     u32 mip_levels;
@@ -196,4 +189,4 @@ typedef struct VkRenderContext {
 #ifndef GDF_RELEASE
     VkDebugUtilsMessengerEXT debug_messenger;
 #endif
-} VkRenderContext;
+} GDF_VkRenderContext;

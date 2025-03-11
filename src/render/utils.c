@@ -1,8 +1,9 @@
-#include <render/vk/utils.h>
+#include <../../include/render/vk_utils.h>
 
 #include <os/io.h>
 
-VkShaderModule GDF_VkUtilsLoadShader(VkRenderContext* context, const char* src_rel_path)
+// Only supports SPIR-V for now. GLSL shaders must be compiled into SPIR-V first.
+VkShaderModule GDF_VkUtilsLoadShader(GDF_VkRenderContext* context, const char* src_rel_path)
 {
     u64 src_size = GDF_GetFileSize(src_rel_path);
     char code[src_size];
@@ -33,7 +34,7 @@ VkShaderModule GDF_VkUtilsLoadShader(VkRenderContext* context, const char* src_r
     return shader_module;
 }
 
-i32 GDF_VkUtilsFindMemTypeIdx(VkRenderContext* context, u32 type_filter, u32 property_flags)
+i32 GDF_VkUtilsFindMemTypeIdx(GDF_VkRenderContext* context, u32 type_filter, u32 property_flags)
 {
     VkPhysicalDeviceMemoryProperties memory_properties;
     vkGetPhysicalDeviceMemoryProperties(context->device.physical_info->handle, &memory_properties);

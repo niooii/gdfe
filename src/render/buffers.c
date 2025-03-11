@@ -1,12 +1,12 @@
-#include <render/vk/buffers.h>
-#include <render/vk/utils.h>
+#include <../../include/render/vk_utils.h>
+#include <../../include/render/vk_utils.h>
 
-bool buffers_create(
-    VkRenderContext* context,
+bool GDF_VkBufferCreate(
+    GDF_VkRenderContext* context,
     u64 alloc_size,
     u32 usage_flags,
     u32 mem_property_flags,
-    buffer* out_buf
+    GDF_VkBuffer* out_buf
 )
 {
     vk_device* device = &context->device;
@@ -41,17 +41,17 @@ bool buffers_create(
     return true;
 }
 
-bool buffers_create_storage(
-    VkRenderContext* context,
+bool GDF_VkBufferCreateStorage(
+    GDF_VkRenderContext* context,
     void* data,
     u64 data_size,
-    buffer* out_buf
+    GDF_VkBuffer* out_buf
 ) 
 {
     // TODO! this can be staging buffered since 
     // i copy once and forget about it
     if (
-        !buffers_create(
+        !GDF_VkBufferCreate(
             context,
             data_size,
             VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
@@ -73,16 +73,16 @@ bool buffers_create_storage(
     return true;
 }
 
-bool buffers_create_vertex(
-    VkRenderContext* context,
+bool GDF_VkBufferCreateVertex(
+    GDF_VkRenderContext* context,
     void* vertices,
     u32 vertex_count,
     u32 vertex_size,
-    buffer* out_buf
+    GDF_VkBuffer* out_buf
 )
 {
     if (
-        !buffers_create(
+        !GDF_VkBufferCreate(
             context,
             vertex_size * vertex_count,
             VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
@@ -103,15 +103,15 @@ bool buffers_create_vertex(
     return true;
 }
 
-bool buffers_create_index(
-    VkRenderContext* context,
+bool GDF_VkBufferCreateIndex(
+    GDF_VkRenderContext* context,
     u16* indices,
     u32 index_count,
-    buffer* out_buf
+    GDF_VkBuffer* out_buf
 )
 {
     if (
-        !buffers_create(
+        !GDF_VkBufferCreate(
             context,
             sizeof(u16) * index_count,
             VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
@@ -132,14 +132,14 @@ bool buffers_create_index(
     return true;
 }
 
-bool buffers_create_uniform(
-    VkRenderContext* context,
+bool GDF_VkBufferCreateUniform(
+    GDF_VkRenderContext* context,
     u32 size,
-    vk_uniform_buffer* out_uniform_buf
+    GDF_VkUniformBuffer* out_uniform_buf
 )
 {
     if (
-        !buffers_create(
+        !GDF_VkBufferCreate(
             context,
             size,
             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
@@ -157,9 +157,9 @@ bool buffers_create_uniform(
     return true;
 }
 
-bool buffers_update(
-    VkRenderContext* context,
-    buffer* buffer,
+bool GDF_VkBufferUpdate(
+    GDF_VkRenderContext* context,
+    GDF_VkBuffer* buffer,
     void* data,
     u64 data_size    
 )
@@ -172,9 +172,9 @@ bool buffers_update(
     return true;
 }
 
-void buffers_destroy(
-    VkRenderContext* context,
-    buffer* buf
+void GDF_VkBufferDestroy(
+    GDF_VkRenderContext* context,
+    GDF_VkBuffer* buf
 )
 {
     vkUnmapMemory(context->device.handle, buf->memory);
@@ -190,9 +190,9 @@ void buffers_destroy(
     );
 }
 
-void buffers_destroy_uniform(
-    VkRenderContext* context,
-    vk_uniform_buffer* uniform_buf
+void GDF_VkBufferDestroyUniform(
+    GDF_VkRenderContext* context,
+    GDF_VkUniformBuffer* uniform_buf
 )
 {
     // TODO! uncomment when implementation changes to staging
@@ -200,11 +200,11 @@ void buffers_destroy_uniform(
     //     context->device.handle,
     //     uniform_buf->buffer.memory
     // );
-    buffers_destroy(context, &uniform_buf->buffer);
+    GDF_VkBufferDestroy(context, &uniform_buf->buffer);
 }
 
-bool buffers_create_single_use_command(
-    VkRenderContext* context,
+bool GDF_VkBufferCreateSingleUseCmd(
+    GDF_VkRenderContext* context,
     VkCommandBuffer* out_command_buf
 )
 {
@@ -225,8 +225,8 @@ bool buffers_create_single_use_command(
     return true;
 }
 
-void buffers_destroy_single_use_command(
-    VkRenderContext* context,
+void GDF_VkBufferDestroySingleUseCmd(
+    GDF_VkRenderContext* context,
     VkCommandBuffer* command_buf
 )
 {
