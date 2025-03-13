@@ -1,7 +1,6 @@
-#include <../../include/render/vk_utils.h>
-#include <../../include/render/vk_utils.h>
+#include <gdfe/render/vk_utils.h>
 
-bool GDF_VkBufferCreate(
+GDF_BOOL GDF_VkBufferCreate(
     GDF_VkRenderContext* context,
     u64 alloc_size,
     u32 usage_flags,
@@ -38,10 +37,10 @@ bool GDF_VkBufferCreate(
 
     out_buf->size = mem_req.size;
 
-    return true;
+    return GDF_TRUE;
 }
 
-bool GDF_VkBufferCreateStorage(
+GDF_BOOL GDF_VkBufferCreateStorage(
     GDF_VkRenderContext* context,
     void* data,
     u64 data_size,
@@ -60,7 +59,7 @@ bool GDF_VkBufferCreateStorage(
         )
     )
     {
-        return false;
+        return GDF_FALSE;
     }
 
     VK_RETURN_FALSE_ASSERT(
@@ -70,10 +69,10 @@ bool GDF_VkBufferCreateStorage(
         GDF_MemCopy(out_buf->mapped_data, data, data_size);
     }
 
-    return true;
+    return GDF_TRUE;
 }
 
-bool GDF_VkBufferCreateVertex(
+GDF_BOOL GDF_VkBufferCreateVertex(
     GDF_VkRenderContext* context,
     void* vertices,
     u32 vertex_count,
@@ -91,7 +90,7 @@ bool GDF_VkBufferCreateVertex(
         )
     )
     {
-        return false;
+        return GDF_FALSE;
     }
 
     VK_RETURN_FALSE_ASSERT(
@@ -100,10 +99,10 @@ bool GDF_VkBufferCreateVertex(
     if (vertices) {
         GDF_MemCopy(out_buf->mapped_data, vertices, vertex_count * vertex_size);
     }
-    return true;
+    return GDF_TRUE;
 }
 
-bool GDF_VkBufferCreateIndex(
+GDF_BOOL GDF_VkBufferCreateIndex(
     GDF_VkRenderContext* context,
     u16* indices,
     u32 index_count,
@@ -120,7 +119,7 @@ bool GDF_VkBufferCreateIndex(
         )
     )
     {
-        return false;
+        return GDF_FALSE;
     }
 
     VK_RETURN_FALSE_ASSERT(
@@ -129,10 +128,10 @@ bool GDF_VkBufferCreateIndex(
     if (indices) {
         GDF_MemCopy(out_buf->mapped_data, indices, index_count * sizeof(*indices));
     }
-    return true;
+    return GDF_TRUE;
 }
 
-bool GDF_VkBufferCreateUniform(
+GDF_BOOL GDF_VkBufferCreateUniform(
     GDF_VkRenderContext* context,
     u32 size,
     GDF_VkUniformBuffer* out_uniform_buf
@@ -148,16 +147,16 @@ bool GDF_VkBufferCreateUniform(
         )
     )
     {
-        return false;
+        return GDF_FALSE;
     }
 
     VK_RETURN_FALSE_ASSERT(
         vkMapMemory(context->device.handle, out_uniform_buf->buffer.memory, 0, size, 0, &out_uniform_buf->mapped_data)
     );
-    return true;
+    return GDF_TRUE;
 }
 
-bool GDF_VkBufferUpdate(
+GDF_BOOL GDF_VkBufferUpdate(
     GDF_VkRenderContext* context,
     GDF_VkBuffer* buffer,
     void* data,
@@ -169,7 +168,7 @@ bool GDF_VkBufferUpdate(
     }
     GDF_MemCopy(buffer->mapped_data, data, data_size);
 
-    return true;
+    return GDF_TRUE;
 }
 
 void GDF_VkBufferDestroy(
@@ -203,7 +202,7 @@ void GDF_VkBufferDestroyUniform(
     GDF_VkBufferDestroy(context, &uniform_buf->buffer);
 }
 
-bool GDF_VkBufferCreateSingleUseCmd(
+GDF_BOOL GDF_VkBufferCreateSingleUseCmd(
     GDF_VkRenderContext* context,
     VkCommandBuffer* out_command_buf
 )
@@ -222,7 +221,7 @@ bool GDF_VkBufferCreateSingleUseCmd(
         )
     );
 
-    return true;
+    return GDF_TRUE;
 }
 
 void GDF_VkBufferDestroySingleUseCmd(

@@ -1,5 +1,5 @@
-#include <time/stopwatch.h>
-#include <os/sysinfo.h>
+#include <gdfe/time/stopwatch.h>
+#include <gdfe/os/sysinfo.h>
 
 typedef struct GDF_Stopwatch_T  {
     f64 start_time;

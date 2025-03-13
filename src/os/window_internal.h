@@ -1,8 +1,8 @@
 #pragma once
-#include <def.h>
-#include <os/window.h>
+#include <gdfe/../../include/gdfe/def.h>
+#include <gdfe/os/window.h>
 
 // should be client width and height
 // TODO! erm
-bool set_internal_size(GDF_Window window, i16 w, i16 h);
-bool pump_messages();
+GDF_BOOL set_internal_size(GDF_Window window, i16 w, i16 h);
+GDF_BOOL pump_messages();

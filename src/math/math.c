@@ -1,16 +1,17 @@
-#include <math.h>
-#include <math/math.h>
+#include <gdfe/math/math.h>
+#include <stdlib.h>
+#include <gdfe/def.h>
 
-#include <os/sysinfo.h>
+#include <gdfe/os/sysinfo.h>
 
-static bool RAND_SEEDED = FALSE;
+static GDF_BOOL RAND_SEEDED = GDF_FALSE;
 
 i32 GDF_Random()
 {
     if (!RAND_SEEDED) 
     {
         srand((u32)GDF_GetAbsoluteTime());
-        RAND_SEEDED = TRUE;
+        RAND_SEEDED = GDF_TRUE;
     }
     return rand();
 }
@@ -20,7 +21,7 @@ i32 GDF_RandomRange(i32 min, i32 max)
     if (!RAND_SEEDED)
     {
         srand((u32)GDF_GetAbsoluteTime());
-        RAND_SEEDED = TRUE;
+        RAND_SEEDED = GDF_TRUE;
     }
     return (rand() % (max - min + 1)) + min;
 }

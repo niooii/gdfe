@@ -1,14 +1,14 @@
-#include <logging.h>
-#include <os/io.h>
+#include <gdfe/logging.h>
+#include <gdfe/os/io.h>
 // TODO: temporary
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#include <collections/hashmap.h>
-#include <os/thread.h>
-#include <os/sysinfo.h>
-#include <../include/core.h>
+#include <gdfe/collections/hashmap.h>
+#include <gdfe/os/thread.h>
+#include <gdfe/os/sysinfo.h>
+#include <gdfe/core.h>
 
 #define MAX_MSG_LEN 16384
 #define ENTRIES_BUFFER_CAPACITY 1024
@@ -29,7 +29,7 @@ static char FORMAT_BUFFER[MAX_FORMATTED_ENTRY_LEN * ENTRIES_BUFFER_CAPACITY];
 static LogEntry entries[ENTRIES_BUFFER_CAPACITY];
 
 // holy globals
-static bool INITIALIZED = false;
+static GDF_BOOL INITIALIZED = GDF_FALSE;
 // index based, start from 0
 static u32 next_free_entry = 0;
 static GDF_HashMap ti_map = NULL;
@@ -146,12 +146,12 @@ unsigned long flushing_thread_fn(void* args)
     }
 }
 
-bool GDF_InitLogging()
+GDF_BOOL GDF_InitLogging()
 {
     entries_mutex = GDF_CreateMutex();
     flushing_mutex = GDF_CreateMutex();
     ti_mutex = GDF_CreateMutex();
-    ti_map = GDF_HashmapCreate(u32, ThreadLoggingInfo, false);
+    ti_map = GDF_HashmapCreate(u32, ThreadLoggingInfo, GDF_FALSE);
 
     int i = 0;
     for (int i = 0; i < ENTRIES_BUFFER_CAPACITY; i++)
@@ -163,12 +163,12 @@ bool GDF_InitLogging()
 
     flushing_thread = GDF_CreateThread(flushing_thread_fn, NULL);
 
-    INITIALIZED = true;
+    INITIALIZED = GDF_TRUE;
 
-    return true;
+    return GDF_TRUE;
 }
 
-bool GDF_InitThreadLogging(const char* thread_name) 
+GDF_BOOL GDF_InitThreadLogging(const char* thread_name)
 {
     ThreadLoggingInfo info = {
         .thread_name = thread_name
@@ -181,12 +181,12 @@ bool GDF_InitThreadLogging(const char* thread_name)
     GDF_ReleaseMutex(ti_mutex);
     
     // printf("init thread id: %d, name: %s\n", thread_id, thread_name);
-    return true;
+    return GDF_TRUE;
 }
 
 void GDF_ShutdownLogging() 
 {
-    INITIALIZED = false;
+    INITIALIZED = GDF_FALSE;
     // TODO! cleanup logging/write queued entries.
     logging_flush_buffer();
     GDF_WriteConsole("\033[0m");

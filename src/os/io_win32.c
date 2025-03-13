@@ -1,10 +1,10 @@
-#include <os/io.h>
+#include <gdfe/os/io.h>
 
 #ifdef OS_WINDOWS
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <tchar.h> 
+#include <tchar.h>
 #include <direct.h>
 #include <strsafe.h>
 
@@ -108,8 +108,8 @@ GDF_DirInfo* GDF_GetDirInfo(const char* rel_path)
     TCHAR dir[MAX_PATH_LEN];
     StringCchCopy(dir, MAX_PATH_LEN, tmp_dir);
     // Find the last occurrence of '\'
-    bool last_char_is_backslash = rel_path[strlen(rel_path) - 1] == '\\';
-    bool last_char_is_slash = rel_path[strlen(rel_path) - 1] == '/'; 
+    GDF_BOOL last_char_is_backslash = rel_path[strlen(rel_path) - 1] == '\\';
+    GDF_BOOL last_char_is_slash = rel_path[strlen(rel_path) - 1] == '/'; 
     if (!last_char_is_backslash && !last_char_is_slash) 
     {
         size_t strlength = strlen(dir);
@@ -184,11 +184,11 @@ GDF_DirInfo* GDF_GetDirInfo(const char* rel_path)
     return dir_info;
 }
 
-bool GDF_MakeFile(const char* rel_path) {
+GDF_BOOL GDF_MakeFile(const char* rel_path) {
     char path[MAX_PATH_LEN];
     GDF_GetAbsolutePath(rel_path, path);
     HANDLE h = CreateFile(path, 0, 0, 0, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, 0);
-    bool success = h != INVALID_HANDLE_VALUE;
+    GDF_BOOL success = h != INVALID_HANDLE_VALUE;
     if (!success)
     {
         if (GetLastError() == ERROR_FILE_EXISTS)
@@ -208,10 +208,10 @@ bool GDF_MakeFile(const char* rel_path) {
     return success;
 }
 
-bool GDF_MakeDir(const char* rel_path) {
+GDF_BOOL GDF_MakeDir(const char* rel_path) {
     char path[MAX_PATH_LEN];
     GDF_GetAbsolutePath(rel_path, path);
-    bool success = CreateDirectoryA(path, NULL);
+    GDF_BOOL success = CreateDirectoryA(path, NULL);
     // TODO! replace with custom allocator
     if (!success) 
     {
@@ -233,17 +233,17 @@ bool GDF_MakeDir(const char* rel_path) {
     return success != 0;
 }
 
-bool GDF_MakeDirAbs(const char* abs_path)
+GDF_BOOL GDF_MakeDirAbs(const char* abs_path)
 {
     return _mkdir(abs_path) == 0;
 }
 
 
-bool GDF_WriteFile(const char* rel_path, const char* data) {
+GDF_BOOL GDF_WriteFile(const char* rel_path, const char* data) {
     char path[MAX_PATH_LEN];
     GDF_GetAbsolutePath(rel_path, path);
     HANDLE h = CreateFile(path, GENERIC_WRITE, 0, 0, TRUNCATE_EXISTING, 0, 0);
-    bool success = h != INVALID_HANDLE_VALUE;
+    GDF_BOOL success = h != INVALID_HANDLE_VALUE;
     if (!success)
     {   
         if (GetLastError() == ERROR_FILE_NOT_FOUND)
@@ -254,9 +254,9 @@ bool GDF_WriteFile(const char* rel_path, const char* data) {
         {
             LOG_WARN("Unknown error opening write handle to file: %s", path);
         }
-        return false;
+        return GDF_FALSE;
     }
-    bool w_success = WriteFile(h, data, strlen(data), NULL, NULL);
+    GDF_BOOL w_success = WriteFile(h, data, strlen(data), NULL, NULL);
     if (w_success)
     {
         LOG_DEBUG("Wrote to file: %s", path);
@@ -269,11 +269,11 @@ bool GDF_WriteFile(const char* rel_path, const char* data) {
     return w_success;
 }
 
-bool GDF_ReadFile(const char* rel_path, char* out_buf, size_t bytes_to_read) {
+GDF_BOOL GDF_ReadFile(const char* rel_path, char* out_buf, size_t bytes_to_read) {
     const char path[MAX_PATH_LEN];
     GDF_GetAbsolutePath(rel_path, path);
     HANDLE h = CreateFile(path, GENERIC_READ, 0, 0, OPEN_EXISTING, 0, 0);
-    bool success = h != INVALID_HANDLE_VALUE;
+    GDF_BOOL success = h != INVALID_HANDLE_VALUE;
     if (!success)
     {   
         if (GetLastError() == ERROR_FILE_NOT_FOUND)
@@ -284,10 +284,10 @@ bool GDF_ReadFile(const char* rel_path, char* out_buf, size_t bytes_to_read) {
         {
             LOG_WARN("Unknown error opening read handle to file: %s", path);
         }
-        return false;
+        return GDF_FALSE;
     }
     DWORD bytes_read = 0;
-    bool w_success = ReadFile(h, (LPVOID)out_buf, bytes_to_read, &bytes_read, NULL);
+    GDF_BOOL w_success = ReadFile(h, (LPVOID)out_buf, bytes_to_read, &bytes_read, NULL);
     if (w_success)
     {
         // LOG_INFO("Read file: %s", path);
@@ -309,7 +309,7 @@ char* GDF_ReadFileExactLen(const char* rel_path)
     u64 size = GDF_GetFileSizeAbs(path) + 25;
     char* out_buf = GDF_Malloc(size, GDF_MEMTAG_STRING);
     HANDLE h = CreateFile(path, GENERIC_READ, 0, 0, OPEN_EXISTING, 0, 0);
-    bool success = h != INVALID_HANDLE_VALUE;
+    GDF_BOOL success = h != INVALID_HANDLE_VALUE;
     if (!success)
     {   
         if (GetLastError() == ERROR_FILE_NOT_FOUND)
@@ -323,7 +323,7 @@ char* GDF_ReadFileExactLen(const char* rel_path)
         return NULL;
     }
     DWORD bytes_read = 0;
-    bool w_success = ReadFile(h, (LPVOID)out_buf, size, &bytes_read, NULL);
+    GDF_BOOL w_success = ReadFile(h, (LPVOID)out_buf, size, &bytes_read, NULL);
     if (w_success)
     {
         // LOG_INFO("Read fil %s", path);
@@ -368,7 +368,7 @@ u8* GDF_ReadBytesExactLen(const char* rel_path, u64* bytes_read)
     return out_bytes;
 }
 
-bool GDF_CopyFile(const char* src_path, const char* dest_path, bool overwrite_existing)
+GDF_BOOL GDF_CopyFile(const char* src_path, const char* dest_path, GDF_BOOL overwrite_existing)
 {
     char src_path_abs[MAX_PATH_LEN];
     GDF_GetAbsolutePath(src_path, src_path_abs);

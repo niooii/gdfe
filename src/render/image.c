@@ -1,7 +1,7 @@
-#include <render/vk/image.h>
-#include <render/vk_utils.h>
+#include <gdfe/render/vk/image.h>
+#include <gdfe/render/vk_utils.h>
 
-bool GDF_VkImageCreate(GDF_VkRenderContext* vk_ctx, VkImageCreateInfo* image_info, VkImageViewCreateInfo* view_info, GDF_VkImage* out_image)
+GDF_BOOL GDF_VkImageCreate(GDF_VkRenderContext* vk_ctx, VkImageCreateInfo* image_info, VkImageViewCreateInfo* view_info, GDF_VkImage* out_image)
 {
     VK_RETURN_FALSE_ASSERT(
         vkCreateImage(
@@ -48,7 +48,7 @@ bool GDF_VkImageCreate(GDF_VkRenderContext* vk_ctx, VkImageCreateInfo* image_inf
         )
     );
 
-    return true;
+    return GDF_TRUE;
 }
 
 void GDF_VkImageDestroy(GDF_VkRenderContext* vk_ctx, GDF_VkImage* image)

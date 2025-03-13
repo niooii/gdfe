@@ -1,17 +1,17 @@
-#include <os/window.h>
+#include <gdfe/os/window.h>
 
 #ifdef OS_WINDOWS
-#include <logging.h>
-#include <mem.h>
+#include <gdfe/logging.h>
+#include <gdfe/mem.h>
 #include <windows.h>
 #include <windowsx.h>
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_win32.h>
-#include <event.h>
+#include <gdfe/event.h>
 #include "../input/internal.h"
 #include "window_internal.h"
 #include <hidusage.h>
-#include <collections/hashmap.h>
+#include <gdfe/collections/hashmap.h>
 
 const char win_class_name[] = "gdf_window";
 static u16 current_window_id = 0;
@@ -46,7 +46,7 @@ LRESULT CALLBACK process_msg(HWND hwnd, u32 msg, WPARAM w_param, LPARAM l_param)
         {
             GDF_EventContext ctx = {};
             GDF_EventFire(GDF_EVENT_INTERNAL_APP_QUIT, window, ctx);
-            return true;
+            return GDF_TRUE;
         }
         case WM_DESTROY:
         {
@@ -68,14 +68,14 @@ LRESULT CALLBACK process_msg(HWND hwnd, u32 msg, WPARAM w_param, LPARAM l_param)
         case WM_KILLFOCUS:
         {
             GDF_EventContext ctx;
-            ctx.data.b = false;
+            ctx.data.b = GDF_FALSE;
             GDF_EventFire(GDF_EVENT_INTERNAL_WINDOW_FOCUS_CHANGE, window, ctx);
             break;
         }
         case WM_SETFOCUS:
         {
             GDF_EventContext ctx;
-            ctx.data.b = true;
+            ctx.data.b = GDF_TRUE;
             GDF_EventFire(GDF_EVENT_INTERNAL_WINDOW_FOCUS_CHANGE, window, ctx);
             break;
         }
@@ -98,11 +98,11 @@ LRESULT CALLBACK process_msg(HWND hwnd, u32 msg, WPARAM w_param, LPARAM l_param)
         case WM_KEYUP:
         case WM_SYSKEYUP: 
         {
-            bool pressed = (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN);
+            GDF_BOOL pressed = (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN);
             GDF_KEYCODE key = (u16)w_param;
 
             // COPY AND PASTED HOW DOES THIS WORK WTF
-            bool is_extended = (HIWORD(l_param) & KF_EXTENDED) == KF_EXTENDED;
+            GDF_BOOL is_extended = (HIWORD(l_param) & KF_EXTENDED) == KF_EXTENDED;
 
             // Keypress only determines if _any_ alt/ctrl/shift key is pressed. Determine which one if so.
             if (w_param == VK_MENU) {
@@ -152,7 +152,7 @@ LRESULT CALLBACK process_msg(HWND hwnd, u32 msg, WPARAM w_param, LPARAM l_param)
         case WM_MBUTTONUP:
         case WM_RBUTTONUP: 
         {
-            bool pressed = msg == WM_LBUTTONDOWN || msg == WM_RBUTTONDOWN || msg == WM_MBUTTONDOWN;
+            GDF_BOOL pressed = msg == WM_LBUTTONDOWN || msg == WM_RBUTTONDOWN || msg == WM_MBUTTONDOWN;
             GDF_MBUTTON mouse_button = GDF_MBUTTON_MAX;
             switch (msg) 
             {
@@ -198,7 +198,7 @@ LRESULT CALLBACK process_msg(HWND hwnd, u32 msg, WPARAM w_param, LPARAM l_param)
     return DefWindowProc(hwnd, msg, w_param, l_param);
 }
 
-bool GDF_InitWindowing()
+GDF_BOOL GDF_InitWindowing()
 {
     // resgister window class
     // HICON icon = LoadIconA(internals->h_instance, IDI_APPLICATION);
@@ -226,11 +226,11 @@ bool GDF_InitWindowing()
     {
         LOG_FATAL("Could not register window class. Last error: %d", GetLastError());
         MessageBoxA(0,"Window registration failed", "Error", MB_ICONEXCLAMATION | MB_OK);
-        return false;
+        return GDF_FALSE;
     }
     class_h_instance = GetModuleHandleA(0);
-    windows = GDF_HashmapCreate(HWND, GDF_Window, false);
-    return true;
+    windows = GDF_HashmapCreate(HWND, GDF_Window, GDF_FALSE);
+    return GDF_TRUE;
 }
 
 void GDF_ShutdownWindowing()
@@ -306,7 +306,7 @@ GDF_Window GDF_CreateWindow(i16 x_, i16 y_, i16 w, i16 h, const char* title)
     RegisterRawInputDevices(rid, 1, sizeof(rid[0]));
 
     // Show the window
-    bool should_activate = true;  // TODO! if the window should not accept input, this should be false.
+    GDF_BOOL should_activate = GDF_TRUE;  // TODO! if the window should not accept input, this should be GDF_FALSE.
     i32 show_window_command_flags = should_activate ? SW_SHOW : SW_SHOWNOACTIVATE;
     // If initially minimized, use SW_MINIMIZE : SW_SHOWMINNOACTIVE;
     // If initially maximized, use SW_SHOWMAXIMIZED : SW_MAXIMIZE
@@ -320,9 +320,9 @@ GDF_Window GDF_CreateWindow(i16 x_, i16 y_, i16 w, i16 h, const char* title)
 }
 
 // TODO! this is DEFINITELY INCOMPLETE.
-bool GDF_SetWindowPos(GDF_Window window, i16 dest_x, i16 dest_y)
+GDF_BOOL GDF_SetWindowPos(GDF_Window window, i16 dest_x, i16 dest_y)
 {
-    return false;
+    return GDF_FALSE;
 }
 
 void GDF_GetWindowPos(GDF_Window window, i16* x, i16* y)
@@ -332,11 +332,11 @@ void GDF_GetWindowPos(GDF_Window window, i16* x, i16* y)
 }
 
 // TODO! this seems to be incomplete..
-bool set_internal_size(GDF_Window window, i16 w, i16 h)
+GDF_BOOL set_internal_size(GDF_Window window, i16 w, i16 h)
 {
     window->client_w = w;
     window->client_h = h;
-    return true;
+    return GDF_TRUE;
 }
 
 void GDF_GetWindowSize(GDF_Window window, u16* w, u16* h)
@@ -346,7 +346,7 @@ void GDF_GetWindowSize(GDF_Window window, u16* w, u16* h)
     LOG_WARN("%d, %d", window->client_w, window->client_h);
 }
 
-bool pump_messages()
+GDF_BOOL pump_messages()
 {
     MSG msg;
     while (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE)) 
@@ -355,15 +355,15 @@ bool pump_messages()
         DispatchMessageA(&msg);
     }
 
-    return true;
+    return GDF_TRUE;
 }
 
-bool GDF_DestroyWindow(GDF_Window window)
+GDF_BOOL GDF_DestroyWindow(GDF_Window window)
 {
     GDF_ASSERT(GDF_HashmapRemove(windows, &window->hwnd, NULL));
     DestroyWindow(window->hwnd);
     GDF_Free(window);
-    return true;
+    return GDF_TRUE;
 }
 
 void GDF_VK_GetRequiredExtensionNames(const char*** names_list)
@@ -372,7 +372,7 @@ void GDF_VK_GetRequiredExtensionNames(const char*** names_list)
 }
 
 #include "../internal/irender/vk_os.h"
-bool GDF_VK_CreateSurface(GDF_Window window, GDF_VkRenderContext* context)
+GDF_BOOL GDF_VK_CreateSurface(GDF_Window window, GDF_VkRenderContext* context)
 {
     VkWin32SurfaceCreateInfoKHR create_info = {VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR};
     create_info.hinstance = class_h_instance;
@@ -385,11 +385,11 @@ bool GDF_VK_CreateSurface(GDF_Window window, GDF_VkRenderContext* context)
     VkResult result = vkCreateWin32SurfaceKHR(context->instance, &create_info, context->device.allocator, &context->surface);
     if (result != VK_SUCCESS) {
         LOG_ERR("Vulkan surface creation failed.");
-        return false;
+        return GDF_FALSE;
     }
 
     LOG_DEBUG("Created Vulkan surface.");
-    return true;
+    return GDF_TRUE;
 }
 
 #endif

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <render/renderer.h>
+#include <gdfe/render/renderer.h>
 
-#include "gdfe.h"
+#include "../../../include/gdfe/gdfe.h"
 
 typedef struct gdfe_ui_pipeline {
     VkPipeline handle;
@@ -39,6 +39,8 @@ typedef struct GDF_CoreRendererContext {
     VkDescriptorSetLayout vp_ubo_layout;
     GDF_LIST(CoreRendererPerFrame) per_frame;
 
+    GDF_Camera active_camera;
+
     gdfe_grid_pipeline grid_pipeline;
     gdfe_ui_pipeline ui_pipeline;
 
@@ -56,7 +58,7 @@ typedef struct GDF_CoreRendererContext {
     } post_process_pipelines;
 } GDF_CoreRendererContext;
 
-bool core_renderer_init(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
-bool core_renderer_draw(GDF_VkRenderContext* vk_ctx, GDF_AppCallbacks* callbacks, GDF_CoreRendererContext* ctx);
-bool core_renderer_resize(GDF_VkRenderContext* vk_ctx, GDF_AppCallbacks* callbacks, GDF_CoreRendererContext* ctx);
-bool core_renderer_destroy(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+GDF_BOOL core_renderer_init(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+GDF_BOOL core_renderer_draw(GDF_VkRenderContext* vk_ctx, GDF_AppCallbacks* callbacks, GDF_CoreRendererContext* ctx);
+GDF_BOOL core_renderer_resize(GDF_VkRenderContext* vk_ctx, GDF_AppCallbacks* callbacks, GDF_CoreRendererContext* ctx);
+GDF_BOOL core_renderer_destroy(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);

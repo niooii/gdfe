@@ -1,11 +1,11 @@
-#include <input.h>
-#include <event.h>
-#include <os/window.h>
-#include <math/math.h>
+#include <gdfe/../../include/gdfe/input.h>
+#include <gdfe/../../include/gdfe/event.h>
+#include <gdfe/os/window.h>
+#include <gdfe/math/math.h>
 
 typedef struct keyboard_state {
     // TODO! bitmap maybe
-    bool key_states[256];
+    GDF_BOOL key_states[256];
 } keyboard_state;
 
 typedef struct mouse_pos {
@@ -23,7 +23,7 @@ typedef struct input_state {
     u8 mbutton_states_previous[GDF_MBUTTON_MAX];
 } input_state;
 
-static bool initialized = false;
+static GDF_BOOL initialized = GDF_FALSE;
 static input_state state;
 
 static GDF_CURSOR_LOCK_STATE cursor_lock_state = GDF_CURSOR_LOCK_STATE_Free;
@@ -45,12 +45,12 @@ static void __update_mouse_confinement_rect(GDF_Window window)
     mouse_confinement_rect.left = screen_offset_x + w/2;
 }
 
-static bool __input_system_on_event(u16 event_code, void* sender, void* listener_instance, GDF_EventContext ctx)
+static GDF_BOOL __input_system_on_event(u16 event_code, void* sender, void* listener_instance, GDF_EventContext ctx)
 {
     switch (event_code) {
         case GDF_EVENT_INTERNAL_WINDOW_FOCUS_CHANGE:
         {
-            bool focus_gained = ctx.data.b;
+            GDF_BOOL focus_gained = ctx.data.b;
             if (focus_gained)
             {
                 if (cursor_lock_state == GDF_CURSOR_LOCK_STATE_Locked)
@@ -67,14 +67,14 @@ static bool __input_system_on_event(u16 event_code, void* sender, void* listener
         }
     }
 
-    return false;
+    return GDF_FALSE;
 }
 
 // Relies on the event system being initialized first.
 void GDF_InitInput() 
 {
     GDF_MemZero(&state, sizeof(input_state));
-    initialized = true;
+    initialized = GDF_TRUE;
     LOG_INFO("Input subsystem initialized.");
 
     // register to some important events for the input system
@@ -85,7 +85,7 @@ void GDF_InitInput()
 void GDF_ShutdownInput() 
 {
     // TODO: shutdown routine later
-    initialized = false;
+    initialized = GDF_FALSE;
 }
 
 void GDF_INPUT_Update(GDF_Window active, f64 delta_time)
@@ -115,46 +115,46 @@ void GDF_INPUT_Update(GDF_Window active, f64 delta_time)
     GDF_MemCopy(&state.mpos_previous, &state.mpos_current, sizeof(state.mpos_current));
 }
 
-bool GDF_IsKeyDown(GDF_KEYCODE key)
+GDF_BOOL GDF_IsKeyDown(GDF_KEYCODE key)
 {
     if (!initialized) 
-        return false;
-    return state.keyboard_current.key_states[key] == true;
+        return GDF_FALSE;
+    return state.keyboard_current.key_states[key] == GDF_TRUE;
 }
 
-bool GDF_IsKeyPressed(GDF_KEYCODE key)
+GDF_BOOL GDF_IsKeyPressed(GDF_KEYCODE key)
 {
     if (!initialized) 
-        return false;
+        return GDF_FALSE;
     return state.keyboard_current.key_states[key] && !state.keyboard_previous.key_states[key];
 }
 
-bool GDF_WasKeyDown(GDF_KEYCODE key)
+GDF_BOOL GDF_WasKeyDown(GDF_KEYCODE key)
 {
     if (!initialized) 
-        return false;
+        return GDF_FALSE;
     return state.keyboard_previous.key_states[key];
 }
 
 // mouse input
-bool GDF_IsButtonDown(GDF_MBUTTON button)
+GDF_BOOL GDF_IsButtonDown(GDF_MBUTTON button)
 {
     if (!initialized) 
-        return false;
+        return GDF_FALSE;
     return state.mbutton_states_current[button];
 }
 
-bool GDF_IsButtonPressed(GDF_MBUTTON button)
+GDF_BOOL GDF_IsButtonPressed(GDF_MBUTTON button)
 {
     if (!initialized) 
-        return false;
+        return GDF_FALSE;
     return state.mbutton_states_current[button] && !state.mbutton_states_previous[button];
 }
 
-bool GDF_WasButtonDown(GDF_MBUTTON button)
+GDF_BOOL GDF_WasButtonDown(GDF_MBUTTON button)
 {
     if (!initialized) 
-        return false;
+        return GDF_FALSE;
     return state.mbutton_states_previous[button];
 }
 
@@ -200,7 +200,7 @@ void GDF_GetMouseDelta(ivec2* d)
 
 // TODO! accumulate input until input update
 
-void __input_process_key(GDF_KEYCODE key, bool pressed) 
+void __input_process_key(GDF_KEYCODE key, GDF_BOOL pressed) 
 {
     // check if state changed
     if (state.keyboard_current.key_states[key] != pressed) 
@@ -213,7 +213,7 @@ void __input_process_key(GDF_KEYCODE key, bool pressed)
     }
 }
 
-void __input_process_button(GDF_MBUTTON button, bool pressed) 
+void __input_process_button(GDF_MBUTTON button, GDF_BOOL pressed) 
 {
     // check if state changed
     if (state.mbutton_states_current[button] != pressed) 

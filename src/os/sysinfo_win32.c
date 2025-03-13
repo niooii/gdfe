@@ -1,4 +1,4 @@
-#include <os/sysinfo.h>
+#include <gdfe/os/sysinfo.h>
 
 #ifdef OS_WINDOWS
 #include <Windows.h>
@@ -6,13 +6,13 @@
 static f64 clock_freq;
 static LARGE_INTEGER start_time;
 
-bool GDF_InitSysinfo()
+GDF_BOOL GDF_InitSysinfo()
 {
     LARGE_INTEGER freq;
     QueryPerformanceFrequency(&freq);
     clock_freq = 1.0 / (f64)freq.QuadPart;
     QueryPerformanceCounter(&start_time);
-    return true;
+    return GDF_TRUE;
 }
 
 f64 GDF_GetAbsoluteTime()

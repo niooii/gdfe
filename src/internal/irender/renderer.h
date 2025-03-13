@@ -1,9 +1,9 @@
-#include <camera.h>
+#include <gdfe/../../../include/gdfe/camera.h>
 
-#include <math/math.h>
-#include <os/window.h>
-#include <render/renderer.h>
-#include <gdfe.h>
+#include <gdfe/math/math.h>
+#include <gdfe/os/window.h>
+#include <gdfe/render/renderer.h>
+#include <gdfe/../../../include/gdfe/gdfe.h>
 
 #include "core_renderer.h"
 
@@ -22,13 +22,13 @@ typedef struct GDF_Renderer_T {
     GDF_AppCallbacks* callbacks;
     GDF_AppState* app_state;
     GDF_CoreRendererContext core_renderer;
-    bool disable_core;
+    GDF_BOOL disable_core;
 } GDF_Renderer_T;
 
 GDF_Renderer gdfe_renderer_init(
     GDF_Window window,
     GDF_AppState* app_state,
-    bool disable_default,
+    GDF_BOOL disable_default,
     GDF_AppCallbacks* callbacks
 );
 

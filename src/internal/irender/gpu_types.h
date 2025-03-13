@@ -1,5 +1,5 @@
 #pragma once
-#include "math/math.h"
+#include <gdfe/math/math.h>
 
 typedef struct Vertex3d {
     vec3 pos;

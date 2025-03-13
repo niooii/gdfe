@@ -1,5 +1,5 @@
 #pragma once
-#include <math/math.h>
+#include <gdfe/math/math.h>
 
 typedef struct GDF_Camera_T {
     vec3 pos;
@@ -20,14 +20,14 @@ typedef struct GDF_Camera_T {
     vec3 right;
     vec3 forward;
 
-    bool needs_view_recalc;
-    bool needs_persp_recalc;
-    bool needs_dir_vecs_recalc;
+    GDF_BOOL needs_view_recalc;
+    GDF_BOOL needs_persp_recalc;
+    GDF_BOOL needs_dir_vecs_recalc;
 } GDF_Camera_T;
 
 FORCEINLINE void gdfe_camera_update(GDF_Camera_T* camera)
 {
-    bool matrices_changed = false;
+    GDF_BOOL matrices_changed = GDF_FALSE;
 
     if (camera->needs_view_recalc) {
         camera->view_matrix = mat4_view(
@@ -35,8 +35,8 @@ FORCEINLINE void gdfe_camera_update(GDF_Camera_T* camera)
             camera->pyr.y,
             camera->pyr.x,
             camera->pyr.z);
-        camera->needs_view_recalc = false;
-        matrices_changed = true;
+        camera->needs_view_recalc = GDF_FALSE;
+        matrices_changed = GDF_TRUE;
     }
 
     if (camera->needs_persp_recalc) {
@@ -46,11 +46,11 @@ FORCEINLINE void gdfe_camera_update(GDF_Camera_T* camera)
             camera->near_clip,
             camera->far_clip
         );
-        camera->needs_persp_recalc = false;
-        matrices_changed = true;
+        camera->needs_persp_recalc = GDF_FALSE;
+        matrices_changed = GDF_TRUE;
     }
 
     if (matrices_changed) {
-        camera->view_perspective = mat4_mul(camera->perspective_matrix, camera->view_matrix);
+        camera->view_perspective = mat4_mul(camera->view_matrix, camera->perspective_matrix);
     }
 }

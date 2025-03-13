@@ -1,7 +1,7 @@
 #include "irender/core_renderer.h"
-#include "render/vk_types.h"
+#include <gdfe/render/vk_types.h>
 
-bool create_geometry_pass(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
+GDF_BOOL create_geometry_pass(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
     // color
     GDF_VkPhysicalDeviceInfo* pdevice = vk_ctx->device.physical_info;
@@ -100,5 +100,5 @@ bool create_geometry_pass(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* 
         )
     );
 
-    return true;
+    return GDF_TRUE;
 }

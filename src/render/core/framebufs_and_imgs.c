@@ -1,11 +1,12 @@
 #include "irender/core_renderer.h"
-#include "../../../include/render/vk_utils.h"
+#include <gdfe/render/vk_utils.h>
 
-bool create_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
+GDF_BOOL create_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
     GDF_VkPhysicalDeviceInfo* pdevice = vk_ctx->device.physical_info;
     for (int i = 0; i < vk_ctx->max_concurrent_frames; i++)
     {
+        CoreRendererPerFrame* per_frame = &ctx->per_frame[i];
         VkImageCreateInfo color_img_info = {
             .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
             .imageType = VK_IMAGE_TYPE_2D,
@@ -41,10 +42,10 @@ bool create_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererCont
             vk_ctx,
             &color_img_info,
             &color_view_info,
-            &ctx->per_frame[i].msaa_image
+            &per_frame->msaa_image
         ))
         {
-            return false;
+            return GDF_FALSE;
         }
 
         VkImageCreateInfo depth_image_info = {
@@ -79,17 +80,42 @@ bool create_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererCont
             vk_ctx,
             &depth_image_info,
             &depth_view_info,
-            &ctx->per_frame[i].depth_image
+            &per_frame->depth_image
         ))
         {
-            return false;
+            return GDF_FALSE;
         }
+
+        // framebuffers
+        VkImageView swapchain_img_view = vk_ctx->swapchain.image_views[i];
+
+        VkImageView image_views[3] = {
+            per_frame->msaa_image.view,
+            per_frame->depth_image.view,
+            swapchain_img_view
+        };
+
+        VkFramebufferCreateInfo framebuffer_info = {
+            .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+            .attachmentCount = 3,
+            .pAttachments = image_views,
+            .renderPass = ctx->geometry_pass,
+            .width = vk_ctx->swapchain.extent.width,
+            .height = vk_ctx->swapchain.extent.height,
+            .layers = 1
+        };
+
+        VK_RETURN_FALSE_ASSERT(
+            vkCreateFramebuffer(
+                vk_ctx->device.handle,
+                &framebuffer_info,
+                vk_ctx->device.allocator,
+                &per_frame->geometry_framebuffer
+            )
+        );
     }
 
-    // create framebuffers
-
-
-    return true;
+    return GDF_TRUE;
 }
 
 // TODO! destroy framebuffers
@@ -97,7 +123,9 @@ void destroy_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererCon
 {
     for (int i = 0; i < vk_ctx->max_concurrent_frames; i++)
     {
-        GDF_VkImageDestroy(vk_ctx, &ctx->per_frame[i].msaa_image);
-        GDF_VkImageDestroy(vk_ctx, &ctx->per_frame[i].depth_image);
+        CoreRendererPerFrame* per_frame = &ctx->per_frame[i];
+        GDF_VkImageDestroy(vk_ctx, &per_frame->msaa_image);
+        GDF_VkImageDestroy(vk_ctx, &per_frame->depth_image);
+        vkDestroyFramebuffer(vk_ctx->device.handle, per_frame->geometry_framebuffer, vk_ctx->device.allocator);
     }
 }

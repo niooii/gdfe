@@ -1,6 +1,6 @@
 #include "irender/vk_utils.h"
 
-#include "render/renderer.h"
+#include <gdfe/render/renderer.h>
 
 // should be called on each resize
 void gdfe_get_surface_capabilities(VkPhysicalDevice physical_device, VkSurfaceKHR surface, GDF_VkPhysicalDeviceSwapchainSupport* out_support_info)
@@ -70,7 +70,7 @@ void gdfe_query_sc_info(VkPhysicalDevice physical_device, VkSurfaceKHR surface, 
     }
 }
 
-bool gdfe_swapchain_init(GDF_VkRenderContext* vk_ctx, u16 w, u16 h)
+GDF_BOOL gdfe_swapchain_init(GDF_VkRenderContext* vk_ctx, u16 w, u16 h)
 {
     vk_ctx->swapchain.extent.width = w;
     vk_ctx->swapchain.extent.height = h;
@@ -91,7 +91,7 @@ bool gdfe_swapchain_init(GDF_VkRenderContext* vk_ctx, u16 w, u16 h)
     sc_create_info.imageExtent = vk_ctx->swapchain.extent;
     if (pdevice->formats.depth_format == VK_FORMAT_UNDEFINED) {
         LOG_ERR("Could not find a supported depth format. Cannot continue program.");
-        return false;
+        return GDF_FALSE;
     }
 
     sc_create_info.presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
@@ -172,7 +172,7 @@ bool gdfe_swapchain_init(GDF_VkRenderContext* vk_ctx, u16 w, u16 h)
 
     LOG_TRACE("Fetched %d images from swapchain...", GDF_LIST_GetLength(vk_ctx->swapchain.images));
 
-    return true;
+    return GDF_TRUE;
 }
 
 void gdfe_swapchain_destroy(GDF_VkRenderContext* vk_ctx)

@@ -1,4 +1,4 @@
-#include <serde/map.h>
+#include <gdfe/serde/map.h>
 
 GDF_Map* GDF_CreateMap()
 {
@@ -10,17 +10,17 @@ GDF_Map* GDF_CreateMap()
     return map;
 }
 
-bool GDF_AddMapEntry(GDF_Map* map, GDF_MKEY key, void* value, GDF_MAP_DTYPE dtype)
+GDF_BOOL GDF_AddMapEntry(GDF_Map* map, GDF_MKEY key, void* value, GDF_MAP_DTYPE dtype)
 {
     if (key == GDF_MKEY_ERROR_KEY)
     {
         LOG_ERR("Tried to add ERROR_KEY to map, something went wrong...");
-        return false;
+        return GDF_FALSE;
     }
     if (map->entries[key] != NULL)
     {
         LOG_WARN("already key here");
-        return false;
+        return GDF_FALSE;
     }
     GDF_MapEntry* entry = GDF_Malloc(sizeof(GDF_MapEntry), GDF_MEMTAG_TEMP_RESOURCE);
     entry->dtype = dtype;
@@ -40,7 +40,7 @@ bool GDF_AddMapEntry(GDF_Map* map, GDF_MKEY key, void* value, GDF_MAP_DTYPE dtyp
         }
         case GDF_MAP_DTYPE_BOOL:
         {
-            value_size = sizeof(bool);
+            value_size = sizeof(GDF_BOOL);
             break;
         }
         case GDF_MAP_DTYPE_STRING:
@@ -66,7 +66,7 @@ bool GDF_AddMapEntry(GDF_Map* map, GDF_MKEY key, void* value, GDF_MAP_DTYPE dtyp
     }
     entry->value = value_clone;
     map->entries[key] = entry;   
-    return true;
+    return GDF_TRUE;
 }
 
 GDF_MapEntry* GDF_GetMapEntry(GDF_Map* map, GDF_MKEY key)
@@ -95,11 +95,11 @@ static void* get_value_checked(GDF_Map* map, GDF_MKEY key, GDF_MAP_DTYPE dtype)
     return entry->value;
 } 
 
-bool* GDF_MAP_GetValueBool(GDF_Map* map, GDF_MKEY key)
+GDF_BOOL* GDF_MAP_GetValueBool(GDF_Map* map, GDF_MKEY key)
 {
     void* val = get_value_checked(map, key, GDF_MAP_DTYPE_BOOL);
     if (val != NULL)
-        return (bool*)val;
+        return (GDF_BOOL*)val;
     return NULL;
 }
 f64* GDF_MAP_GetValuef64(GDF_Map* map, GDF_MKEY key)

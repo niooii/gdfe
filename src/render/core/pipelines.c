@@ -1,8 +1,8 @@
 #include "irender/core_renderer.h"
-#include "render/vk_types.h"
+#include "gdfe/render/vk_types.h"
 #include "../../internal/irender/gpu_types.h"
 
-bool create_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
+GDF_BOOL create_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
     // Vertex input configuration
     VkVertexInputBindingDescription bindings = {
@@ -174,10 +174,10 @@ bool create_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* 
         )
     );
 
-    return true;
+    return GDF_TRUE;
 }
 
-bool create_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
+GDF_BOOL create_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
     gdfe_ui_pipeline* pipeline = &ctx->ui_pipeline;
 
@@ -321,5 +321,5 @@ bool create_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ct
         }
     };
 
-    return true;
+    return GDF_TRUE;
 }

@@ -1,6 +1,6 @@
-#include <mem.h>
+#include <gdfe/mem.h>
 
-#include <../include/core.h>
+#include <gdfe/core.h>
 
 // TODO: Custom string lib
 #include <string.h>
@@ -36,11 +36,11 @@ static const char* GDF_MEMTAG_strings[GDF_MEMTAG_MAX_TAGS] = {
 
 static struct memory_stats stats;
 
-bool GDF_InitMemory() 
+GDF_BOOL GDF_InitMemory()
 {
     GDF_MemZero(&stats, sizeof(stats));
 
-    return true;
+    return GDF_TRUE;
 }
 
 void GDF_ShutdownMemory() 

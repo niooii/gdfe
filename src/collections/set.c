@@ -1,11 +1,11 @@
-#include <collections/set.h>
+#include <gdfe/collections/set.h>
 #include <superfasthash.h>
 // TODO! move away from memcmp for comparison, use custom comparison function
 
 typedef struct GDF_Set_T {
     u32 stride;
     // TODO! string keys should have a different hash function i think
-    bool string_keys;
+    GDF_BOOL string_keys;
     u32 num_entries;
     u32 capacity;
     void** bucket;
@@ -42,7 +42,7 @@ static FORCEINLINE void** __insert(
     u32 stride,
     u32 capacity,
     void** bucket,
-    bool* existed
+    GDF_BOOL* existed
 )
 {
     u32 idx;
@@ -55,7 +55,7 @@ static FORCEINLINE void** __insert(
         {
             // already exists
             if (existed)
-                *existed = true;
+                *existed = GDF_TRUE;
             return bucket + idx; 
         }
 
@@ -64,7 +64,7 @@ static FORCEINLINE void** __insert(
             bucket[idx] = GDF_Malloc(stride, GDF_MEMTAG_APPLICATION);
             GDF_MemCopy(bucket[idx], val, stride);
             if (existed)
-                *existed = false;
+                *existed = GDF_FALSE;
             return bucket + idx;  
         }
     }
@@ -79,7 +79,7 @@ static FORCEINLINE void __free_setentry(void** set_entry)
     *set_entry = NULL;
 }
 
-GDF_Set __set_create(u32 stride, u32 (*hash_func)(const u8* data, u32 len), bool string_keys, u32 initial_capacity)
+GDF_Set GDF_SetCreateFull(u32 stride, u32 (*hash_func)(const u8* data, u32 len), GDF_BOOL string_keys, u32 initial_capacity)
 {
     GDF_Set set = GDF_Malloc(sizeof(GDF_Set_T), GDF_MEMTAG_APPLICATION);
     set->stride = stride;
@@ -99,7 +99,7 @@ GDF_Set __set_create(u32 stride, u32 (*hash_func)(const u8* data, u32 len), bool
     return set;
 }
 
-bool GDF_SetDestroy(GDF_Set set)
+GDF_BOOL GDF_SetDestroy(GDF_Set set)
 {
     void** bucket = set->bucket;
     for (u32 i = 0; i < set->capacity; i++) 
@@ -113,10 +113,10 @@ bool GDF_SetDestroy(GDF_Set set)
     GDF_Free(bucket);
     GDF_Free(set);
     
-    return true;    
+    return GDF_TRUE;
 }
 
-void* GDF_SetInsert(GDF_Set set, void* value, bool* already_existed)
+void* GDF_SetInsert(GDF_Set set, void* value, GDF_BOOL* already_existed)
 {
     if (value == NULL)
         return NULL;
@@ -162,7 +162,7 @@ void* GDF_SetInsert(GDF_Set set, void* value, bool* already_existed)
 
     // Find next free index to insert in
     u32 start_idx = __get_idx(value, set);
-    bool __existed;
+    GDF_BOOL __existed;
     void** entry = __insert(
         start_idx,
         value,
@@ -185,12 +185,12 @@ void* GDF_SetInsert(GDF_Set set, void* value, bool* already_existed)
     return *entry;
 }
 
-bool GDF_SetRemove(GDF_Set set, void* value, void* out_val_p)
+GDF_BOOL GDF_SetRemove(GDF_Set set, void* value, void* out_val_p)
 {
     if (value == NULL)
     {
         out_val_p = NULL;
-        return false;
+        return GDF_FALSE;
     }
 
     void** bucket = set->bucket;
@@ -208,11 +208,11 @@ bool GDF_SetRemove(GDF_Set set, void* value, void* out_val_p)
             }
             __free_setentry(&bucket[idx]);
             set->num_entries--;
-            return true;
+            return GDF_TRUE;
         } 
     }
     
-    return false;
+    return GDF_FALSE;
 }
 
 u32 GDF_SetLen(GDF_Set set)

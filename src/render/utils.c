@@ -1,6 +1,6 @@
-#include <render/vk_utils.h>
+#include <gdfe/render/vk_utils.h>
 #include "irender/vk_utils.h"
-#include <os/io.h>
+#include <gdfe/os/io.h>
 
 // Public utility implementations
 
@@ -13,7 +13,7 @@ VkShaderModule GDF_VkUtilsLoadShader(GDF_VkRenderContext* context, const char* s
     if (!GDF_ReadFile(src_rel_path, code, src_size)) 
     {
         LOG_ERR("Failed to read file: %s", src_rel_path);
-        return false;
+        return GDF_FALSE;
     }
 
     VkShaderModuleCreateInfo create_info = {

@@ -1,4 +1,4 @@
-#include <os/sysinfo.h>
+#include <gdfe/os/sysinfo.h>
 
 #ifdef OS_LINUX
 

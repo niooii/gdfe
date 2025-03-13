@@ -1,4 +1,4 @@
-#include <serde/serde.h>
+#include <gdfe/serde/serde.h>
 
 // Function to replace %ENV_VAR% with the value of the environment variable
 // MAY CAUSE MEMORY LEAK
@@ -63,7 +63,7 @@ static void replace_env_vars(const char* input, char* out_buf) {
 // has loaded an environment variable 
 // should output the environment variable
 // in proper form: key=%env_name% when serialized
-bool GDF_SerializeMap(GDF_Map* map, char* out_buf)
+GDF_BOOL GDF_SerializeMap(GDF_Map* map, char* out_buf)
 {
     char line_buf[650];
     char key_buf[150];
@@ -92,7 +92,7 @@ bool GDF_SerializeMap(GDF_Map* map, char* out_buf)
             }
             case GDF_MAP_DTYPE_BOOL:
             {
-                sprintf(val_buf, *(bool*)(map->entries[i]->value) ? "true" : "false");
+                sprintf(val_buf, *(GDF_BOOL*)(map->entries[i]->value) ? "GDF_TRUE" : "GDF_FALSE");
                 break;
             }
             case GDF_MAP_DTYPE_STRING:
@@ -113,10 +113,10 @@ bool GDF_SerializeMap(GDF_Map* map, char* out_buf)
     }
 
     LOG_DEBUG("Serialized map: \n%s", out_buf);
-    return true;
+    return GDF_TRUE;
 }
 
-bool GDF_DeserializeToMap(char* data, GDF_Map* out_map)
+GDF_BOOL GDF_DeserializeToMap(char* data, GDF_Map* out_map)
 {
     // iterate through lines
     const char* line = strtok(data, "\n");
@@ -147,7 +147,7 @@ bool GDF_DeserializeToMap(char* data, GDF_Map* out_map)
         // void* and memcpy soemthing something
         GDF_MAP_DTYPE dtype;
         void* value = NULL;
-        bool string_reads_true;
+        GDF_BOOL string_reads_trube;
         if (value == NULL && strncmp(val_buf, "\"", 1) == 0 && strncmp(val_buf + strlen(val_buf) - 1, "\"", 1) == 0)
         {
             // if (GDF_AppSettings_Get()->verbose_output)
@@ -167,14 +167,14 @@ bool GDF_DeserializeToMap(char* data, GDF_Map* out_map)
             ((char*)value)[len - 2] = '\0';
         }
         if (value == NULL && 
-        ((string_reads_true = strcmp(val_buf, "true") == 0) || strcmp(val_buf, "false") == 0))
+        ((string_reads_trube = strcmp(val_buf, "GDF_TRUE") == 0) || strcmp(val_buf, "GDF_FALSE") == 0))
         {
             // if (GDF_AppSettings_Get()->verbose_output)
-            //     LOG_DEBUG("dtype: bool");
-            // then is bool value
+            //     LOG_DEBUG("dtype: GDF_BOOL");
+            // then is GDF_BOOL value
             dtype = GDF_MAP_DTYPE_BOOL;
-            value = GDF_Malloc(sizeof(bool), GDF_MEMTAG_TEMP_RESOURCE);
-            *((bool*)value) = string_reads_true ? true : false;
+            value = GDF_Malloc(sizeof(GDF_BOOL), GDF_MEMTAG_TEMP_RESOURCE);
+            *((GDF_BOOL*)value) = string_reads_trube ? GDF_TRUE : GDF_FALSE;
         }
         if (value == NULL && strncmp(val_buf, "{", 1) == 0)
         {
@@ -204,7 +204,7 @@ bool GDF_DeserializeToMap(char* data, GDF_Map* out_map)
                 GDF_Free(line_buf);
                 GDF_Free(key_buf);
                 GDF_Free(val_buf);
-                return false;
+                return GDF_FALSE;
             }
             // if (GDF_AppSettings_Get()->verbose_output)
             //     LOG_DEBUG("dtype: int");
@@ -219,33 +219,33 @@ bool GDF_DeserializeToMap(char* data, GDF_Map* out_map)
     GDF_Free(line_buf);
     GDF_Free(key_buf);
     GDF_Free(val_buf);
-    return true;
+    return GDF_TRUE;
 }
 // max write capacity of 1mb
-bool GDF_WriteMapToFile(GDF_Map* map, const char* rel_path)
+GDF_BOOL GDF_WriteMapToFile(GDF_Map* map, const char* rel_path)
 {
     char* buf = GDF_Malloc(sizeof(char) * MB_BYTES, GDF_MEMTAG_TEMP_RESOURCE);
     if (!GDF_SerializeMap(map, buf))
     {
         LOG_ERR("Failed to serialize map.");
-        return false;
+        return GDF_FALSE;
     }
     if (!GDF_WriteFile(rel_path, buf))
     {
         LOG_ERR("Failed to write map to file.");
-        return false;
+        return GDF_FALSE;
     }
     GDF_Free(buf);
-    return true;
+    return GDF_TRUE;
 }
 // max read capacity of 1mb
-bool GDF_ReadMapFromFile(const char* rel_path, GDF_Map* out_map)
+GDF_BOOL GDF_ReadMapFromFile(const char* rel_path, GDF_Map* out_map)
 {
     char* buf = GDF_ReadFileExactLen(rel_path);
     if (!GDF_DeserializeToMap(buf, out_map))
     {
-        return false;
+        return GDF_FALSE;
     }
     GDF_Free(buf);
-    return true;
+    return GDF_TRUE;
 }

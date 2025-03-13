@@ -1,60 +1,61 @@
-#include <render/vk_types.h>
+#include <gdfe/render/vk_types.h>
 #include "../internal/irender/gpu_types.h"
-#include <collections/list.h>
+#include <gdfe/collections/list.h>
 #include "irender/vk_os.h"
 #include "irender/renderer.h"
-#include <render/renderer.h>
+
+#include <inttypes.h>
+#include <gdfe/render/renderer.h>
 #include <vulkan/vk_enum_string_helper.h>
 
-#include "gdfe.h"
-#include "../../include/render/vk_utils.h"
-#include "../../include/render/vk_utils.h"
+#include "../../include/gdfe/gdfe.h"
+#define GDFP_DISABLE
+
+#include "../../include/gdfe/profiler.h"
+#include "gdfe/render/vk_utils.h"
+#include "gdfe/render/vk_utils.h"
 #include "irender/vk_utils.h"
 
 void GDF_RendererResize(GDF_Renderer renderer, u16 width, u16 height)
 {
-    renderer->vk_ctx.pending_resize_event = true;
+    renderer->vk_ctx.pending_resize_event = GDF_TRUE;
     renderer->framebuffer_width = width;
     renderer->framebuffer_height = height;
 }
 
-bool GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
+GDF_BOOL GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
 {
     GDF_VkRenderContext* vk_ctx = &renderer->vk_ctx;
     GDF_VkDevice* device = &vk_ctx->device;
     // because there are separate resources for each frame in flight.
     vk_ctx->resource_idx = vk_ctx->current_frame % vk_ctx->max_concurrent_frames;
-    u32 resource_idx = vk_ctx->resource_idx;
-    // for debugging we test
-    u32 prev_resource_idx = (MIN(vk_ctx->current_frame - 1, 0)) % vk_ctx->max_concurrent_frames;
-    PerFrameResources* per_frame = &vk_ctx->per_frame[resource_idx];
+    PerFrameResources* per_frame = &vk_ctx->per_frame[vk_ctx->resource_idx];
 
     if (!vk_ctx->ready_for_use && !vk_ctx->pending_resize_event) {
         if (!GDF_VkUtilsIsSuccess(vkDeviceWaitIdle(device->handle))) {
-            LOG_ERR("begin frame vkDeviceWaitIdle (1) failed");
-            return false;
+            LOG_ERR("failed vkDeviceWaitIdle (1) failed");
+            return GDF_FALSE;
         }
         LOG_ERR("Something happened with renderer");
-        return false;
+        return GDF_FALSE;
     }
 
     // Check if the framebuffer has been resized. If so, a new swapchain must be created.
+    // LOG_INFO("pending resize event: %d", vk_ctx->pending_resize_event);
     if (vk_ctx->pending_resize_event)
     {
         if (!GDF_VkUtilsIsSuccess(vkDeviceWaitIdle(device->handle)))
         {
-            LOG_ERR("begin frame vkDeviceWaitIdle (2) failed");
-            return false;
+            LOG_ERR("failed vkDeviceWaitIdle (2) failed");
+            return GDF_FALSE;
         }
 
-        vk_ctx->ready_for_use = false;
+        vk_ctx->ready_for_use = GDF_FALSE;
         // TODO! HANDLE MINIMIZES BETTER...
         if (renderer->framebuffer_height == 0 || renderer->framebuffer_width == 0)
-        {
-            return false;
-        }
+            return GDF_FALSE;
 
-        vk_ctx->recreating_swapchain = true;
+        vk_ctx->recreating_swapchain = GDF_TRUE;
 
         gdfe_get_surface_capabilities(
             vk_ctx->device.physical_info->handle,
@@ -65,22 +66,44 @@ bool GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
         if (!gdfe_swapchain_init(vk_ctx, renderer->framebuffer_width, renderer->framebuffer_height))
         {
             LOG_FATAL("failed to recreate swapchain");
-            return false;
+            return GDF_FALSE;
+        }
+
+        if (!renderer->disable_core)
+        {
+            if (!core_renderer_resize(vk_ctx, renderer->callbacks, &renderer->core_renderer))
+                return GDF_FALSE;
+        }
+
+        if (renderer->callbacks->on_render_resize)
+        {
+            if (!renderer->callbacks->on_render_resize(
+                vk_ctx,
+                renderer->app_state,
+                &renderer->callbacks->on_render_resize_state
+            ))
+            {
+                LOG_ERR("Render resize callback failed.");
+                return GDF_FALSE;
+            }
         }
 
         LOG_INFO("Resized successfully.");
-        vk_ctx->pending_resize_event = false;
-        vk_ctx->recreating_swapchain = false;
+        vk_ctx->pending_resize_event = GDF_FALSE;
+        vk_ctx->recreating_swapchain = GDF_FALSE;
 
-        vk_ctx->ready_for_use = true;
-        return false;
+        // LOG_INFO("pending resize event: %d", vk_ctx->pending_resize_event);
+        // LOG_INFO("recreating swapchain: %d", vk_ctx->recreating_swapchain);
+
+        vk_ctx->ready_for_use = GDF_TRUE;
+        return GDF_FALSE;
     }
 
     // Wait if the previous use of this frame resource set is still in progress on the GPU
     vkWaitForFences(
         device->handle,
         1,
-        &vk_ctx->per_frame[resource_idx].in_flight_fence,
+        &per_frame->in_flight_fence,
         VK_TRUE,
         UINT64_MAX
     );
@@ -113,22 +136,13 @@ bool GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
     VkCommandBuffer cmd_buffer = per_frame->cmd_buffer;
     vkResetCommandBuffer(cmd_buffer, 0);
 
+    GDFP_START();
+
     VkCommandBufferBeginInfo begin_info = {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
         .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
     };
     vkBeginCommandBuffer(cmd_buffer, &begin_info);
-
-
-
-    VkClearValue clear_values[2] = {
-        {.color = {0, 0, 0, 1}},
-        {.depthStencil = {1, 0}}
-    };
-    // render_pass_info.clearValueCount = 2;
-    // render_pass_info.pClearValues = clear_values;
-
-    // vkCmdBeginRenderPass(cmd_buffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
 
     // make as similar to opengls as possible
     VkViewport viewport;
@@ -146,8 +160,6 @@ bool GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
     };
     vkCmdSetScissor(cmd_buffer, 0, 1, &scissor);
 
-    // TODO! draw UI
-
     if (renderer->disable_core)
     {
         if (renderer->callbacks->on_render)
@@ -158,7 +170,7 @@ bool GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
                 renderer->callbacks->on_render_state))
             {
                 LOG_ERR("Render callback call failed.");
-                return false;
+                return GDF_FALSE;
             }
         }
     }
@@ -168,45 +180,14 @@ bool GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
         {
             // TODO! handle some weird sync stuff here
             LOG_ERR("Core renderer call failed.");
-            return false;
+            return GDF_FALSE;
         }
     }
-    // draw debug grid
-    // vkCmdBindPipeline(cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, context->gdfe_grid_pipeline.handle);
-    //
-    // vkCmdBindVertexBuffers(cmd_buffer, 0, 1, &context->up_facing_plane_vbo.handle, offsets);
-    // vkCmdBindIndexBuffer(cmd_buffer, vk_ctx->up_facing_plane_index_buffer.handle, 0, VK_INDEX_TYPE_UINT16);
-    //
-    // vkCmdBindDescriptorSets(
-    //     cmd_buffer,
-    //     VK_PIPELINE_BIND_POINT_GRAPHICS,
-    //     vk_ctx->gdfe_grid_pipeline.layout,
-    //     0,
-    //     1,
-    //     &context->global_vp_ubo_sets[resource_idx],
-    //     0,
-    //     NULL
-    // );
-    //
-    // vkCmdPushConstants(
-    //     cmd_buffer,
-    //     context->gdfe_grid_pipeline.layout,
-    //     VK_SHADER_STAGE_VERTEX_BIT,
-    //     0,
-    //     sizeof(vec3),
-    //     &active_camera->pos
-    // );
-    //
-    // vkCmdDrawIndexed(cmd_buffer, 6, 1, 0, 0, 0);
 
-    // TODO! post processing here
+    if (vkEndCommandBuffer(cmd_buffer) != VK_SUCCESS)
+        return GDF_FALSE;
 
-    // vkCmdEndRenderPass(cmd_buffer);
-
-    if (vkEndCommandBuffer(cmd_buffer) != VK_SUCCESS) {
-
-        return false;
-    }
+    GDFP_LOG_MSG_RESET("Finished recording commands.");
 
     // Submit the command buffer
     VkSubmitInfo submit_info = {
@@ -226,6 +207,8 @@ bool GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
         per_frame->in_flight_fence
     );
 
+    GDFP_LOG_MSG_RESET("Finished graphics queue submission.");
+
     VkPresentInfoKHR present_info = {
         .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
         .pImageIndices = &img_idx,
@@ -241,6 +224,8 @@ bool GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
         &present_info
     );
 
+    GDFP_LOG_MSG_RESET("Finished present queue submission.");
+
     vk_ctx->current_frame++;
 
     if (renderer->callbacks->on_render_end)
@@ -250,11 +235,24 @@ bool GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
             renderer->app_state,
             renderer->callbacks->on_render_end_state))
         {
-            return false;
+            return GDF_FALSE;
         }
     }
 
-    return true;
+    GDFP_LOG_MSG_RESET("Finished render function.");
+
+    GDFP_END();
+
+    return GDF_TRUE;
+}
+
+// Has no effect if the core renderer is disabled.
+void GDF_RendererSetActiveCamera(GDF_Renderer renderer, GDF_Camera camera)
+{
+    if (!renderer->disable_core)
+    {
+        renderer->core_renderer.active_camera = camera;
+    }
 }
 
 void GDF_RendererSetRenderMode(GDF_Renderer renderer, GDF_RENDER_MODE mode)

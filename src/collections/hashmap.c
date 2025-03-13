@@ -1,4 +1,4 @@
-#include <collections/hashmap.h>
+#include <gdfe/collections/hashmap.h>
 #include <superfasthash.h>
 
 // TODO! move away from memcmp for comparison, use custom comparison function
@@ -7,7 +7,7 @@ typedef struct GDF_HashMap_T {
     u32 k_stride;
     u32 v_stride;
     // TODO! string keys should have a different hash function i think
-    bool string_keys;
+    GDF_BOOL string_keys;
     u32 num_entries;
     u32 capacity;
     HashmapEntry* bucket;
@@ -46,7 +46,7 @@ static FORCEINLINE HashmapEntry* __insert(
     u32 val_size,
     u32 capacity,
     HashmapEntry* bucket,
-    bool* existed
+    GDF_BOOL* existed
 )
 {
     u32 idx;
@@ -60,7 +60,7 @@ static FORCEINLINE HashmapEntry* __insert(
             // update entry
             GDF_MemCopy(bucket[idx].val, val, val_size);
             if (existed)
-                *existed = true;
+                *existed = GDF_TRUE;
             return bucket + idx;  
         }
 
@@ -71,7 +71,7 @@ static FORCEINLINE HashmapEntry* __insert(
             bucket[idx].val = GDF_Malloc(val_size, GDF_MEMTAG_APPLICATION);
             GDF_MemCopy(bucket[idx].val, val, val_size);
             if (existed)
-                *existed = false;
+                *existed = GDF_FALSE;
             return bucket + idx;  
         }
     }
@@ -88,7 +88,7 @@ static FORCEINLINE void __free_mapentry(HashmapEntry* map_entry)
     map_entry->val = NULL;
 }
 
-GDF_HashMap __hashmap_create(u32 k_stride, u32 v_stride, u32 (*hash_func)(const u8* data, u32 len), bool string_keys, u32 initial_capacity)
+GDF_HashMap GDF_HashmapCreateFull(u32 k_stride, u32 v_stride, u32 (*hash_func)(const u8* data, u32 len), GDF_BOOL string_keys, u32 initial_capacity)
 {
     GDF_HashMap map = GDF_Malloc(sizeof(GDF_HashMap_T), GDF_MEMTAG_APPLICATION);
     map->k_stride = k_stride;
@@ -109,7 +109,7 @@ GDF_HashMap __hashmap_create(u32 k_stride, u32 v_stride, u32 (*hash_func)(const 
     return map;
 }
 
-bool GDF_HashmapDestroy(GDF_HashMap hashmap)
+GDF_BOOL GDF_HashmapDestroy(GDF_HashMap hashmap)
 {
     HashmapEntry* bucket = hashmap->bucket;
     for (u32 i = 0; i < hashmap->capacity; i++) 
@@ -123,10 +123,10 @@ bool GDF_HashmapDestroy(GDF_HashMap hashmap)
     GDF_Free(bucket);
     GDF_Free(hashmap);
     
-    return true;    
+    return GDF_TRUE;
 }
 
-void* GDF_HashmapInsert(GDF_HashMap hashmap, void* key, void* value, bool* already_existed)
+void* GDF_HashmapInsert(GDF_HashMap hashmap, void* key, void* value, GDF_BOOL* already_existed)
 {
     if (key == NULL)
         return NULL;
@@ -176,7 +176,7 @@ void* GDF_HashmapInsert(GDF_HashMap hashmap, void* key, void* value, bool* alrea
 
     // Find next free index to insert in
     u32 start_idx = __get_idx(key, hashmap);
-    bool __existed;
+    GDF_BOOL __existed;
     HashmapEntry* entry = __insert(
         start_idx,
         key,
@@ -224,12 +224,12 @@ void* GDF_HashmapGet(GDF_HashMap hashmap, void* key)
     return NULL;
 }
 
-bool GDF_HashmapRemove(GDF_HashMap hashmap, void* key, void* out_val_p)
+GDF_BOOL GDF_HashmapRemove(GDF_HashMap hashmap, void* key, void* out_val_p)
 {
     if (key == NULL)
     {
         out_val_p = NULL;
-        return false;
+        return GDF_FALSE;
     }
 
     HashmapEntry* bucket = hashmap->bucket;
@@ -247,11 +247,11 @@ bool GDF_HashmapRemove(GDF_HashMap hashmap, void* key, void* out_val_p)
             }
             __free_mapentry(&bucket[idx]);
             hashmap->num_entries--;
-            return true;
+            return GDF_TRUE;
         } 
     }
     
-    return false;
+    return GDF_FALSE;
 }
 
 u32 GDF_HashmapLen(GDF_HashMap hashmap)

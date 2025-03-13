@@ -1,6 +1,6 @@
-#include <event.h>
-#include <collections/hashmap.h>
-#include <collections/list.h>
+#include <gdfe/event.h>
+#include <gdfe/collections/hashmap.h>
+#include <gdfe/collections/list.h>
 
 // represents a registered listener for an event
 typedef struct registered_event {
@@ -17,7 +17,7 @@ typedef struct event_state {
     GDF_HashMap(u32, event_code_entry) entries;
 } event_state;
 
-static bool INITIALIZED = false;
+static GDF_BOOL INITIALIZED = GDF_FALSE;
 static event_state state;
 
 u32 u32_hash(const u8* data, u32 len) {
@@ -31,19 +31,19 @@ u32 u32_hash(const u8* data, u32 len) {
     return x;
 }
 
-bool GDF_InitEvents()
+GDF_BOOL GDF_InitEvents()
 {
     if (INITIALIZED)
-        return false;
+        return GDF_FALSE;
     GDF_MemZero(&state, sizeof(state));
     state.entries = GDF_HashmapWithHasher(
         u32,
         event_code_entry,
         u32_hash,
-        false
+        GDF_FALSE
     );
-    INITIALIZED = true;
-    return true;
+    INITIALIZED = GDF_TRUE;
+    return GDF_TRUE;
 }
 
 void GDF_ShutdownEvents()
@@ -62,10 +62,10 @@ void GDF_ShutdownEvents()
     }
 }
 
-bool GDF_EventRegister(u32 e_code, void* listener, GDF_EventHandlerFP callback)
+GDF_BOOL GDF_EventRegister(u32 e_code, void* listener, GDF_EventHandlerFP callback)
 {
     if (!INITIALIZED)
-        return false;
+        return GDF_FALSE;
 
     event_code_entry* entry = GDF_HashmapGet(state.entries, &e_code);
 
@@ -86,7 +86,7 @@ bool GDF_EventRegister(u32 e_code, void* listener, GDF_EventHandlerFP callback)
         if (entry->registered_events_list[0].listener == listener)
         {
             LOG_WARN("Tried to add duplicate event listener. Event code: %u", e_code);
-            return false;
+            return GDF_FALSE;
         }
     }
 
@@ -94,20 +94,20 @@ bool GDF_EventRegister(u32 e_code, void* listener, GDF_EventHandlerFP callback)
     event.listener = listener;
     event.callback = callback;
     GDF_LIST_Push(entry->registered_events_list, event);
-    return true;
+    return GDF_TRUE;
 }
 
-bool GDF_EventUnregister(u32 e_code, void* listener, GDF_EventHandlerFP callback)
+GDF_BOOL GDF_EventUnregister(u32 e_code, void* listener, GDF_EventHandlerFP callback)
 {
     if (!INITIALIZED)
-        return false;
+        return GDF_FALSE;
     
     event_code_entry* entry = GDF_HashmapGet(state.entries, &e_code);
 
     if (!entry) 
     {
         LOG_WARN("Internal fail in event system.");
-        return false;
+        return GDF_FALSE;
     }
 
     u64 registered_count = GDF_LIST_GetLength(entry->registered_events_list);
@@ -118,25 +118,25 @@ bool GDF_EventUnregister(u32 e_code, void* listener, GDF_EventHandlerFP callback
         {
             registered_event removed_event;
             GDF_LIST_Remove(entry->registered_events_list, i, &removed_event);
-            return true;
+            return GDF_TRUE;
         }
     }
 
     LOG_WARN("Couldn't find event listener to unregister. Event code: %u", e_code);
-    return false;
+    return GDF_FALSE;
 }
 
-bool GDF_EventFire(u32 e_code, void* sender, GDF_EventContext ctx)
+GDF_BOOL GDF_EventFire(u32 e_code, void* sender, GDF_EventContext ctx)
 {
     if (!INITIALIZED)
-        return false;
+        return GDF_FALSE;
 
     event_code_entry* entry = GDF_HashmapGet(state.entries, &e_code);
 
     if (!entry) 
     {
         // LOG_WARN("No entry for a fired event. Is this intended?");
-        return true;
+        return GDF_TRUE;
     }
 
     u64 registered_count = GDF_LIST_GetLength(entry->registered_events_list);
@@ -146,10 +146,10 @@ bool GDF_EventFire(u32 e_code, void* sender, GDF_EventContext ctx)
         if (e.callback(e_code, sender, e.listener, ctx))
         {
             // just a way to make it so the event cancels if it
-            // returns true, useful for stuff potentially
+            // returns GDF_TRUE, useful for stuff potentially
             // but i dont like it so ill prob change it later
-            return true;
+            return GDF_TRUE;
         }
     }
-    return true;
+    return GDF_TRUE;
 }

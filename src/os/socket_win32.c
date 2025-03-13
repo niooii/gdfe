@@ -1,4 +1,4 @@
-#include <os/socket.h>
+#include <gdfe/os/socket.h>
 
 #ifdef OS_WINDOWS
 
@@ -9,18 +9,18 @@ typedef struct GDF_Socket_T {
     SOCKET sock;
 } GDF_Socket_T;
 
-static bool INITIALIZED = false;
+static GDF_BOOL INITIALIZED = GDF_FALSE;
 
-bool GDF_InitSockets()
+GDF_BOOL GDF_InitSockets()
 {
     WSADATA data;
     if (WSAStartup(MAKEWORD(2, 2), &data) != 0)
     {
-        return false;
+        return GDF_FALSE;
     }
 
-    INITIALIZED = true;
-    return true;
+    INITIALIZED = GDF_TRUE;
+    return GDF_TRUE;
 }
 
 void GDF_ShutdownSockets()
@@ -28,7 +28,7 @@ void GDF_ShutdownSockets()
     if (INITIALIZED)
     {
         WSACleanup();
-        INITIALIZED = false;
+        INITIALIZED = GDF_FALSE;
     }
 }
 
@@ -64,7 +64,7 @@ void GDF_DestroySocket(GDF_Socket socket)
     }
 }
 
-bool GDF_SocketListen(GDF_Socket socket, u16 port)
+GDF_BOOL GDF_SocketListen(GDF_Socket socket, u16 port)
 {
     struct sockaddr_in service;
 
@@ -74,15 +74,15 @@ bool GDF_SocketListen(GDF_Socket socket, u16 port)
 
     if (bind(socket->sock, (SOCKADDR*)&service, sizeof(service)) == SOCKET_ERROR)
     {
-        return false;
+        return GDF_FALSE;
     }
 
     if (listen(socket->sock, SOMAXCONN) == SOCKET_ERROR)
     {
-        return false;
+        return GDF_FALSE;
     }
 
-    return true;
+    return GDF_TRUE;
 }
 
 GDF_Socket GDF_SocketAccept(GDF_Socket socket)
@@ -111,7 +111,7 @@ GDF_Socket GDF_SocketAccept(GDF_Socket socket)
     return client_sock;
 }
 
-bool GDF_SocketConnect(GDF_Socket socket, const char* address, u16 port)
+GDF_BOOL GDF_SocketConnect(GDF_Socket socket, const char* address, u16 port)
 {
     struct sockaddr_in service;
 
@@ -121,19 +121,19 @@ bool GDF_SocketConnect(GDF_Socket socket, const char* address, u16 port)
 
     if (connect(socket->sock, (SOCKADDR*)&service, sizeof(service)) == SOCKET_ERROR)
     {
-        return false;
+        return GDF_FALSE;
     }
 
-    return true;
+    return GDF_TRUE;
 }
 
-bool GDF_SocketSend(GDF_Socket socket, const char* buffer, u32 buf_size)
+GDF_BOOL GDF_SocketSend(GDF_Socket socket, const char* buffer, u32 buf_size)
 {
     int r = send(socket->sock, buffer, buf_size, 0);
     return r != SOCKET_ERROR;
 }
 
-bool GDF_SocketRecv(GDF_Socket socket, char* buffer, u32 buf_size)
+GDF_BOOL GDF_SocketRecv(GDF_Socket socket, char* buffer, u32 buf_size)
 {
     int r = recv(socket->sock, buffer, buf_size, 0);
     return r != SOCKET_ERROR;

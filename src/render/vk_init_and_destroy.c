@@ -1,15 +1,15 @@
-#include <render/vk_types.h>
-#include "../internal/irender/gpu_types.h"
-#include <collections/list.h>
+#include <gdfe/render/vk_types.h>
+#include "irender/gpu_types.h"
+#include <gdfe/collections/list.h>
 #include "irender/renderer.h"
 #include "irender/core_renderer.h"
-#include <render/renderer.h>
+#include <gdfe/render/renderer.h>
 #include <vulkan/vk_enum_string_helper.h>
 
-#include "gdfe.h"
+#include <gdfe/gdfe.h>
 #include "irender/vk_os.h"
-#include "../../include/render/vk_utils.h"
-#include "../../include/render/vk_utils.h"
+#include <gdfe/render/vk_utils.h>
+#include <gdfe/render/vk_utils.h>
 #include "irender/vk_utils.h"
 
 VKAPI_ATTR VkBool32 VKAPI_CALL __vk_dbg_callback(
@@ -37,7 +37,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL __vk_dbg_callback(
 
 // TODO! initialize lighting and postprocessing pipelines
 // and separate pass for postprocessing
-// bool __create_renderpasses(VkRenderContext* vk_ctx)
+// GDF_BOOL __create_renderpasses(VkRenderContext* vk_ctx)
 // {
 //     /* ======================================== */
 //     /* ----- CREATE RENDERPASS AND SUBPASSES ----- */
@@ -139,25 +139,24 @@ VKAPI_ATTR VkBool32 VKAPI_CALL __vk_dbg_callback(
 //         )
 //     );
 //
-//     return true;
+//     return GDF_TRUE;
 // }
 
 // filters the vk_ctx->physical_device_info list
 void __filter_available_devices(GDF_VkRenderContext* vk_ctx, GDF_VkPhysicalDeviceInfo* phys_list)
 {
     u32 list_len = GDF_LIST_GetLength(phys_list);
-    for (u32 i = list_len; i > 0; i--)
+    for (i32 i = (i32)list_len - 1; i >= 0; i--)
     {
-        GDF_VkPhysicalDeviceInfo* device = &phys_list[i - 1];
+        GDF_VkPhysicalDeviceInfo* device = &phys_list[i];
         LOG_TRACE("Checking device %s", device->properties.deviceName);
 
-        bool device_suitable = true;
+        GDF_BOOL device_suitable = GDF_TRUE;
 
         // check swapchain support
         if (device->sc_support_info.format_count < 1 || device->sc_support_info.present_mode_count < 1)
         {
-            device_suitable = false;
-            LOG_WARN("pluh");
+            device_suitable = GDF_FALSE;
             goto filter_device_skip;
         }
         // check queues support
@@ -170,7 +169,7 @@ void __filter_available_devices(GDF_VkRenderContext* vk_ctx, GDF_VkPhysicalDevic
         {
             LOG_TRACE("Device does not have the required queues.");
             // LOG_TRACE("yes %d", );
-            device_suitable = false;
+            device_suitable = GDF_FALSE;
             goto filter_device_skip;
         }
         // TODO! Check if the device supports
@@ -180,85 +179,16 @@ void __filter_available_devices(GDF_VkRenderContext* vk_ctx, GDF_VkPhysicalDevic
         if (!device_suitable)
         {
             LOG_TRACE("Marked device \'%s\' as unusable.", device->properties.deviceName);
-            LOG_TRACE("%d", device->queues.graphics_family_index);
-            LOG_TRACE("%d", device->queues.compute_family_index);
-            LOG_TRACE("%d", device->queues.present_family_index);
-            LOG_TRACE("%d", device->queues.transfer_family_index);
-            device->usable = false;
+            device->usable = GDF_FALSE;
         }
     }
 }
-
-//
-// bool __create_framebuffers(VkRenderContext* vk_ctx)
-// {
-//     // Create framebuffers
-//     u32 image_count = vk_ctx->swapchain.image_count;
-//     if (!vk_ctx->recreating_swapchain)
-//         vk_ctx->swapchain.framebuffers = GDF_LIST_Reserve(VkFramebuffer, image_count);
-//     for (u32 i = 0; i < image_count; i++)
-//     {
-//         vk_image* img = &vk_ctx->swapchain.images[i];
-//
-//         VkImageView image_views[3] = {
-//             vk_ctx->msaa_image_view,
-//             vk_ctx->depth_image_view,
-//             img->view
-//         };
-//
-//         VkFramebufferCreateInfo framebuffer_info = {
-//             .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-//             .attachmentCount = 3,
-//             .pAttachments = image_views,
-//             .renderPass = vk_ctx->renderpasses[GDF_VK_RENDERPASS_INDEX_MAIN],
-//             .width = vk_ctx->swapchain.extent.width,
-//             .height = vk_ctx->swapchain.extent.height,
-//             .layers = 1
-//         };
-//
-//         VK_ASSERT(
-//             vkCreateFramebuffer(
-//                 vk_ctx->device.handle,
-//                 &framebuffer_info,
-//                 vk_ctx->device.allocator,
-//                 &vk_ctx->swapchain.framebuffers[i]
-//             )
-//         );
-//     }
-//     return true;
-// }
-
-// void __destroy_framebuffers(VkRenderContext* vk_ctx)
-// {
-//     for (u32 i = 0; i < vk_ctx->swapchain.image_count; i++)
-//     {
-//         vkDestroyFramebuffer(
-//             vk_ctx->device.handle,
-//             vk_ctx->swapchain.framebuffers[i],
-//             vk_ctx->device.allocator
-//         );
-//     }
-//
-//     if (!vk_ctx->recreating_swapchain)
-//         GDF_LIST_Destroy(vk_ctx->swapchain.framebuffers);
-// }
-//
-// bool __recreate_sized_resources(GDF_Renderer state)
-// {
-//     VkRenderContext* vk_ctx = &state->vk_ctx;
-//
-//     __destroy_framebuffers(vk_ctx);
-//     __destroy_swapchain(vk_ctx);
-//
-//     return __create_swapchain(state)
-//         && __create_framebuffers(vk_ctx);
-// }
 
 // ===== FORWARD DECLARATIONS END =====
 GDF_Renderer gdfe_renderer_init(
     GDF_Window window,
     GDF_AppState* app_state,
-    bool disable_default,
+    GDF_BOOL disable_default,
     GDF_AppCallbacks* callbacks
 )
 {
@@ -356,7 +286,9 @@ GDF_Renderer gdfe_renderer_init(
     /* ======================================== */
     /* ----- DEVICE SELECTION ----- */
     /* ======================================== */
-
+    // TODO! integrated gpus (specifically my laptops) just breaks down
+    // and dies. something about
+    // vkCreateDevice(): pCreateInfo->pQueueCreateInfos[0].queueCount (2) is not less than or equal to available queue count for this pCreateInfo->pQueueCreateInfos[0].queueFamilyIndex} (0) obtained previously
     GDF_VkPhysicalDeviceInfo* selected_physical_device = NULL;
     u32 device_num = GDF_LIST_GetLength(vk_ctx->pdevices);
     for (u32 i = 0; i < device_num; i++)
@@ -364,6 +296,8 @@ GDF_Renderer gdfe_renderer_init(
         if (vk_ctx->pdevices[i].usable)
         {
             selected_physical_device = &vk_ctx->pdevices[i];
+            LOG_TRACE("Selected device: %s", selected_physical_device->properties.deviceName);
+            break;
         }
     }
 
@@ -378,9 +312,9 @@ GDF_Renderer gdfe_renderer_init(
     /* ----- FIND QUEUE INDICES ----- */
     /* ======================================== */
 
-    bool present_equ_graphics = selected_physical_device->queues.graphics_family_index == selected_physical_device->queues.present_family_index;
-    bool transfer_equ_graphics = selected_physical_device->queues.graphics_family_index == selected_physical_device->queues.transfer_family_index;
-    bool transfer_equ_present = selected_physical_device->queues.present_family_index == selected_physical_device->queues.transfer_family_index;
+    GDF_BOOL present_equ_graphics = selected_physical_device->queues.graphics_family_index == selected_physical_device->queues.present_family_index;
+    GDF_BOOL transfer_equ_graphics = selected_physical_device->queues.graphics_family_index == selected_physical_device->queues.transfer_family_index;
+    GDF_BOOL transfer_equ_present = selected_physical_device->queues.present_family_index == selected_physical_device->queues.transfer_family_index;
 
     // see how many unique queue families we need
     u32 index_count = 1;
@@ -596,7 +530,7 @@ GDF_Renderer gdfe_renderer_init(
         }
     }
 
-    vk_ctx->ready_for_use = true;
+    vk_ctx->ready_for_use = GDF_TRUE;
 
     return renderer;
 }

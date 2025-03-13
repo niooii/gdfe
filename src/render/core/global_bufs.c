@@ -1,20 +1,20 @@
 #include "irender/core_renderer.h"
-#include "render/vk_utils.h"
+#include "gdfe/render/vk_utils.h"
 
-bool __init_vp_ubos(GDF_VkRenderContext* vk_ctx, const GDF_CoreRendererContext* ctx);
+GDF_BOOL __init_vp_ubos(GDF_VkRenderContext* vk_ctx, const GDF_CoreRendererContext* ctx);
 
-bool create_global_buffers(GDF_VkRenderContext* vk_ctx, const GDF_CoreRendererContext* ctx)
+GDF_BOOL create_global_buffers(GDF_VkRenderContext* vk_ctx, const GDF_CoreRendererContext* ctx)
 {
     // view-projection uniforms
     if (!__init_vp_ubos(vk_ctx, ctx))
     {
-        return false;
+        return GDF_FALSE;
     }
 
-    return true;
+    return GDF_TRUE;
 }
 
-bool __init_vp_ubos(GDF_VkRenderContext* vk_ctx, const GDF_CoreRendererContext* ctx)
+GDF_BOOL __init_vp_ubos(GDF_VkRenderContext* vk_ctx, const GDF_CoreRendererContext* ctx)
 {
     u32 image_count = vk_ctx->max_concurrent_frames;
     VkDescriptorPoolSize pool_size = {
@@ -33,7 +33,7 @@ bool __init_vp_ubos(GDF_VkRenderContext* vk_ctx, const GDF_CoreRendererContext* 
         vkCreateDescriptorPool(
             vk_ctx->device.handle,
             &pool_info,
-            NULL,
+            vk_ctx->device.allocator,
             &ctx->vp_ubo_pool
         )
     );
@@ -70,10 +70,10 @@ bool __init_vp_ubos(GDF_VkRenderContext* vk_ctx, const GDF_CoreRendererContext* 
         if (!GDF_VkBufferCreateUniform(vk_ctx, buffer_size, &per_frame->vp_ubo))
         {
             LOG_ERR("Failed to create a uniform buffer.");
-            return false;
+            return GDF_FALSE;
         }
 
-        VkDescriptorSetAllocateInfo descriptor_sets_alloc_info = {
+        VkDescriptorSetAllocateInfo descriptor_set_alloc_info = {
             .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
             .descriptorPool = ctx->vp_ubo_pool,
             .descriptorSetCount = 1,
@@ -82,8 +82,8 @@ bool __init_vp_ubos(GDF_VkRenderContext* vk_ctx, const GDF_CoreRendererContext* 
 
         vkAllocateDescriptorSets(
             vk_ctx->device.handle,
-            &descriptor_sets_alloc_info,
-            &per_frame[i].vp_ubo_set
+            &descriptor_set_alloc_info,
+            &per_frame->vp_ubo_set
         );
 
         VkDescriptorBufferInfo buffer_info = {
@@ -95,7 +95,7 @@ bool __init_vp_ubos(GDF_VkRenderContext* vk_ctx, const GDF_CoreRendererContext* 
         VkWriteDescriptorSet descriptor_writes[1] = {
             {
                 .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                .dstSet = per_frame[i].vp_ubo_set,
+                .dstSet = per_frame->vp_ubo_set,
                 .dstBinding = 0,
                 .dstArrayElement = 0,
                 .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -113,5 +113,5 @@ bool __init_vp_ubos(GDF_VkRenderContext* vk_ctx, const GDF_CoreRendererContext* 
         );
     };
 
-    return true;
+    return GDF_TRUE;
 }

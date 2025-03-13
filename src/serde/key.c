@@ -1,4 +1,4 @@
-#include <serde/key.h>
+#include <gdfe/serde/key.h>
 
 static const char* mkey_strings[] = {
     FOREACH_KEY(GEN_STRING)

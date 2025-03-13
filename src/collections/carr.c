@@ -1,4 +1,4 @@
-#include <collections/carr.h>
+#include <gdfe/collections/carr.h>
 
 typedef struct GDF_CArray_T {
     u32 next_read_idx;
@@ -6,7 +6,7 @@ typedef struct GDF_CArray_T {
     u32 capacity;
     u32 stride;
     void* data;
-    bool* ready;
+    GDF_BOOL* ready;
 } GDF_CArray_T;
 
 GDF_CArray __create_carray(u32 stride, u32 capacity)
@@ -16,7 +16,7 @@ GDF_CArray __create_carray(u32 stride, u32 capacity)
     buf->next_write_idx = 0;
     buf->capacity = capacity;
     buf->stride = stride;
-    buf->ready = GDF_Malloc(sizeof(bool) * capacity, GDF_MEMTAG_APPLICATION);
+    buf->ready = GDF_Malloc(sizeof(GDF_BOOL) * capacity, GDF_MEMTAG_APPLICATION);
     buf->data = GDF_Malloc(stride * capacity, GDF_MEMTAG_APPLICATION);
     
     return buf;
@@ -24,7 +24,7 @@ GDF_CArray __create_carray(u32 stride, u32 capacity)
 
 void* GDF_CArrayWriteNext(GDF_CArray arr)
 {
-    arr->ready[arr->next_write_idx] = true;
+    arr->ready[arr->next_write_idx] = GDF_TRUE;
     u8*  data = ((u8*)arr->data) + (arr->next_write_idx * arr->stride);
     // Wrap around index
     arr->next_write_idx = (arr->next_write_idx + 1) % arr->capacity;
@@ -33,10 +33,10 @@ void* GDF_CArrayWriteNext(GDF_CArray arr)
 
 const void* const GDF_CArrayReadNext(GDF_CArray arr)
 {
-    bool* ready = &arr->ready[arr->next_read_idx];
+    GDF_BOOL* ready = &arr->ready[arr->next_read_idx];
     if (!*ready)
         return NULL;
-    *ready = false;
+    *ready = GDF_FALSE;
     const u8* const data = ((u8*)arr->data) + (arr->next_read_idx * arr->stride);
     // Wrap around index
     arr->next_read_idx = (arr->next_read_idx + 1) % arr->capacity;

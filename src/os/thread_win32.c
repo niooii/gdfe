@@ -1,11 +1,11 @@
-#include <os/thread.h>
+#include <gdfe/os/thread.h>
 
 #ifdef OS_WINDOWS
 #include <windows.h>
 
 typedef struct GDF_Mutex_T {
     HANDLE mutex_handle;
-    bool locked;
+    GDF_BOOL locked;
 } GDF_Mutex_T;
 
 typedef struct GDF_Thread_T {
@@ -51,22 +51,22 @@ GDF_Mutex GDF_CreateMutex()
 {
     HANDLE handle = CreateMutex(NULL, FALSE, NULL);
     GDF_Mutex mutex = GDF_Malloc(sizeof(GDF_Mutex_T), GDF_MEMTAG_APPLICATION);
-    mutex->locked = false;
+    mutex->locked = GDF_FALSE;
     mutex->mutex_handle = handle;
 
     return mutex;
 }
 
-bool GDF_LockMutex(GDF_Mutex mutex)
+GDF_BOOL GDF_LockMutex(GDF_Mutex mutex)
 {
     WaitForSingleObject(mutex->mutex_handle, INFINITE);
-    return true;
+    return GDF_TRUE;
 }
 
-bool GDF_ReleaseMutex(GDF_Mutex mutex)
+GDF_BOOL GDF_ReleaseMutex(GDF_Mutex mutex)
 {
     ReleaseMutex(mutex->mutex_handle);
-    return true;
+    return GDF_TRUE;
 }
 
 GDF_Semaphore GDF_CreateSemaphore()
@@ -78,12 +78,12 @@ GDF_Semaphore GDF_CreateSemaphore()
     return sm;
 }
 
-bool GDF_WaitSemaphore(GDF_Semaphore semaphore)
+GDF_BOOL GDF_WaitSemaphore(GDF_Semaphore semaphore)
 {
     return WaitForSingleObject(semaphore->sm_handle, INFINITE) == WAIT_OBJECT_0;
 }
 
-bool GDF_SignalSemaphore(GDF_Semaphore semaphore)
+GDF_BOOL GDF_SignalSemaphore(GDF_Semaphore semaphore)
 {
     return ReleaseSemaphore(semaphore->sm_handle, 1, NULL) != FALSE;
 }
