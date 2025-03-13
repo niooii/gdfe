@@ -2,10 +2,12 @@
 #include "irender/vk_utils.h"
 #include <gdfe/os/io.h>
 
+#include "irender/renderer.h"
+
 // Public utility implementations
 
 // Only supports SPIR-V for now. GLSL shaders must be compiled into SPIR-V first.
-VkShaderModule GDF_VkUtilsLoadShader(GDF_VkRenderContext* context, const char* src_rel_path)
+VkShaderModule GDF_VkUtilsLoadShader(const char* src_rel_path)
 {
     u64 src_size = GDF_GetFileSize(src_rel_path);
     char code[src_size];
@@ -24,9 +26,9 @@ VkShaderModule GDF_VkUtilsLoadShader(GDF_VkRenderContext* context, const char* s
 
     VkShaderModule shader_module = VK_NULL_HANDLE;
     VkResult res = vkCreateShaderModule(
-        context->device.handle,
+        GDFE_INTERNAL_VK_CTX->device.handle,
         &create_info,
-        context->device.allocator,
+        GDFE_INTERNAL_VK_CTX->device.allocator,
         &shader_module
     );
 
@@ -36,10 +38,10 @@ VkShaderModule GDF_VkUtilsLoadShader(GDF_VkRenderContext* context, const char* s
     return shader_module;
 }
 
-i32 GDF_VkUtilsFindMemTypeIdx(GDF_VkRenderContext* context, u32 type_filter, u32 property_flags)
+i32 GDF_VkUtilsFindMemTypeIdx(u32 type_filter, u32 property_flags)
 {
     VkPhysicalDeviceMemoryProperties memory_properties;
-    vkGetPhysicalDeviceMemoryProperties(context->device.physical_info->handle, &memory_properties);
+    vkGetPhysicalDeviceMemoryProperties(GDFE_INTERNAL_VK_CTX->device.physical_info->handle, &memory_properties);
 
     for (u32 i = 0; i < memory_properties.memoryTypeCount; i++) 
     {

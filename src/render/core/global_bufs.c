@@ -67,7 +67,7 @@ GDF_BOOL __init_vp_ubos(GDF_VkRenderContext* vk_ctx, const GDF_CoreRendererConte
     for (u32 i = 0; i < image_count; i++)
     {
         CoreRendererPerFrame* per_frame = &ctx->per_frame[i];
-        if (!GDF_VkBufferCreateUniform(vk_ctx, buffer_size, &per_frame->vp_ubo))
+        if (!GDF_VkBufferCreateUniform(buffer_size, &per_frame->vp_ubo))
         {
             LOG_ERR("Failed to create a uniform buffer.");
             return GDF_FALSE;

@@ -1,9 +1,9 @@
-#include <gdfe/../../../include/gdfe/camera.h>
+#include <gdfe/camera.h>
 
 #include <gdfe/math/math.h>
 #include <gdfe/os/window.h>
 #include <gdfe/render/renderer.h>
-#include <gdfe/../../../include/gdfe/gdfe.h>
+#include <gdfe/gdfe.h>
 
 #include "core_renderer.h"
 
@@ -24,6 +24,8 @@ typedef struct GDF_Renderer_T {
     GDF_CoreRendererContext core_renderer;
     GDF_BOOL disable_core;
 } GDF_Renderer_T;
+
+extern GDF_VkRenderContext* GDFE_INTERNAL_VK_CTX;
 
 GDF_Renderer gdfe_renderer_init(
     GDF_Window window,

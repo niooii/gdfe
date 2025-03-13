@@ -58,18 +58,17 @@ FORCEINLINE GDF_BOOL GDF_VkUtilsIsSuccess(VkResult result)
 }
 
 // Will return VK_NULL_HANDLE if failed.
-VkShaderModule GDF_VkUtilsLoadShader(GDF_VkRenderContext* context, const char* src_rel_path);
+VkShaderModule GDF_VkUtilsLoadShader(const char* src_rel_path);
 
-i32 GDF_VkUtilsFindMemTypeIdx(GDF_VkRenderContext* context, u32 type_filter, u32 property_flags);
+i32 GDF_VkUtilsFindMemTypeIdx(u32 type_filter, u32 property_flags);
 
 // The .image field in the VkImageViewCreateInfo struct does not have to point
 // to a valid image. It will be modified to do so within this function.
-GDF_BOOL GDF_VkImageCreate(GDF_VkRenderContext* context, VkImageCreateInfo* image_info, VkImageViewCreateInfo* view_info, GDF_VkImage* out_image);
+GDF_BOOL GDF_VkImageCreate(VkImageCreateInfo* image_info, VkImageViewCreateInfo* view_info, GDF_VkImage* out_image);
 
 void GDF_VkImageDestroy(GDF_VkRenderContext* context, GDF_VkImage* image);
 
 GDF_BOOL GDF_VkBufferCreate(
-    GDF_VkRenderContext* context,
     u64 alloc_size,
     u32 usage_flags,
     u32 mem_property_flags,
@@ -78,7 +77,6 @@ GDF_BOOL GDF_VkBufferCreate(
 
 // TODO! make completely gpu local and transfer data with staging buffers
 GDF_BOOL GDF_VkBufferCreateStorage(
-    GDF_VkRenderContext* context,
     void* data,
     u64 data_size,
     GDF_VkBuffer* out_buf
@@ -86,7 +84,6 @@ GDF_BOOL GDF_VkBufferCreateStorage(
 
 // Right now support only fixed size creation YUCKY
 GDF_BOOL GDF_VkBufferCreateVertex(
-    GDF_VkRenderContext* context,
     void* vertices,
     u32 vertex_count,
     u32 vertex_size,
@@ -94,41 +91,34 @@ GDF_BOOL GDF_VkBufferCreateVertex(
 );
 
 GDF_BOOL GDF_VkBufferCreateIndex(
-    GDF_VkRenderContext* context,
     u16* indices,
     u32 index_count,
     GDF_VkBuffer* out_buf
 );
 
 GDF_BOOL GDF_VkBufferCreateUniform(
-    GDF_VkRenderContext* context,
     u32 size,
     GDF_VkUniformBuffer* out_uniform_buf
 );
 
 GDF_BOOL GDF_VkBufferUpdate(
-    GDF_VkRenderContext* context,
     GDF_VkBuffer* buffer,
     void* data,
     u64 data_size
 );
 
 void GDF_VkBufferDestroy(
-    GDF_VkRenderContext* context,
     GDF_VkBuffer* buf
 );
 
 void GDF_VkBufferDestroyUniform(
-    GDF_VkRenderContext* context,
     GDF_VkUniformBuffer* uniform_buf
 );
 
 GDF_BOOL GDF_VkBufferCreateSingleUseCmd(
-    GDF_VkRenderContext* context,
     VkCommandBuffer* out_command_buf
 );
 
 void GDF_VkBufferDestroySingleUseCmd(
-    GDF_VkRenderContext* context,
     VkCommandBuffer* command_buf
 );

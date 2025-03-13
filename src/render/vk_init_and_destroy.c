@@ -184,6 +184,9 @@ void __filter_available_devices(GDF_VkRenderContext* vk_ctx, GDF_VkPhysicalDevic
     }
 }
 
+// TODO! removeglobal context
+GDF_VkRenderContext* GDFE_INTERNAL_VK_CTX = NULL;
+
 // ===== FORWARD DECLARATIONS END =====
 GDF_Renderer gdfe_renderer_init(
     GDF_Window window,
@@ -192,6 +195,8 @@ GDF_Renderer gdfe_renderer_init(
     GDF_AppCallbacks* callbacks
 )
 {
+    if (GDFE_INTERNAL_VK_CTX)
+        return NULL;
     GDF_Renderer renderer = GDF_Malloc(sizeof(GDF_Renderer_T), GDF_MEMTAG_RENDERER);
     u16 w, h;
     GDF_GetWindowSize(window, &w, &h);
@@ -202,6 +207,7 @@ GDF_Renderer gdfe_renderer_init(
     renderer->app_state = app_state;
 
     GDF_VkRenderContext* vk_ctx = &renderer->vk_ctx;
+    GDFE_INTERNAL_VK_CTX = vk_ctx;
 
     // TODO! custom allocator.
     vk_ctx->device.allocator = NULL;

@@ -39,7 +39,6 @@ GDF_BOOL create_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRenderer
         };
 
         if (!GDF_VkImageCreate(
-            vk_ctx,
             &color_img_info,
             &color_view_info,
             &per_frame->msaa_image
@@ -77,7 +76,6 @@ GDF_BOOL create_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRenderer
         };
 
         if (!GDF_VkImageCreate(
-            vk_ctx,
             &depth_image_info,
             &depth_view_info,
             &per_frame->depth_image

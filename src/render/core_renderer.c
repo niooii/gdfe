@@ -55,14 +55,12 @@ GDF_BOOL core_renderer_init(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext
     }
 
     GDF_VkBufferCreateVertex(
-        vk_ctx,
         plane_vertices,
         sizeof(plane_vertices) / sizeof(*plane_vertices),
         sizeof(*plane_vertices),
         &ctx->up_facing_plane_vbo
     );
     GDF_VkBufferCreateIndex(
-        vk_ctx,
         plane_indices,
         sizeof(plane_indices) / sizeof(*plane_indices),
         &ctx->up_facing_plane_index_buffer
@@ -159,20 +157,20 @@ GDF_BOOL core_renderer_destroy(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererCont
 GDF_BOOL create_shaders(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
     ctx->ui_pipeline.vert =
-        GDF_VkUtilsLoadShader(vk_ctx, "resources/shaders/ui.vert.spv");
+        GDF_VkUtilsLoadShader("resources/shaders/ui.vert.spv");
     // TODO! should destroy all the other created resources.
     VK_RETURN_FALSE_IF_NULLHANDLE(ctx->ui_pipeline.vert);
 
     ctx->ui_pipeline.frag =
-        GDF_VkUtilsLoadShader(vk_ctx, "resources/shaders/ui.frag.spv");
+        GDF_VkUtilsLoadShader("resources/shaders/ui.frag.spv");
     VK_RETURN_FALSE_IF_NULLHANDLE(ctx->ui_pipeline.frag);
 
     ctx->grid_pipeline.vert =
-        GDF_VkUtilsLoadShader(vk_ctx, "resources/shaders/grid.vert.spv");
+        GDF_VkUtilsLoadShader("resources/shaders/grid.vert.spv");
     VK_RETURN_FALSE_IF_NULLHANDLE(ctx->grid_pipeline.vert);
 
     ctx->grid_pipeline.frag =
-        GDF_VkUtilsLoadShader(vk_ctx, "resources/shaders/grid.frag.spv");
+        GDF_VkUtilsLoadShader("resources/shaders/grid.frag.spv");
     VK_RETURN_FALSE_IF_NULLHANDLE(ctx->grid_pipeline.frag);
 
     return GDF_TRUE;

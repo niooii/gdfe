@@ -1,7 +1,7 @@
 #include <gdfe/render/vk/image.h>
 #include <gdfe/render/vk_utils.h>
 
-GDF_BOOL GDF_VkImageCreate(GDF_VkRenderContext* vk_ctx, VkImageCreateInfo* image_info, VkImageViewCreateInfo* view_info, GDF_VkImage* out_image)
+GDF_BOOL GDF_VkImageCreate(VkImageCreateInfo* image_info, VkImageViewCreateInfo* view_info, GDF_VkImage* out_image)
 {
     VK_RETURN_FALSE_ASSERT(
         vkCreateImage(
@@ -20,7 +20,7 @@ GDF_BOOL GDF_VkImageCreate(GDF_VkRenderContext* vk_ctx, VkImageCreateInfo* image
     VkMemoryAllocateInfo allocInfo = {
         .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
         .allocationSize = mem_reqs.size,
-        .memoryTypeIndex = GDF_VkUtilsFindMemTypeIdx(vk_ctx, mem_reqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+        .memoryTypeIndex = GDF_VkUtilsFindMemTypeIdx(mem_reqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
     };
 
     VK_RETURN_FALSE_ASSERT(
