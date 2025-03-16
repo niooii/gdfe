@@ -1,6 +1,6 @@
 #pragma once
 
-#include <gdfe/../gdfe/core.h>
+#include <gdfe/core.h>
 
 typedef struct GDF_Threadpool_T* GDF_Threadpool;
 

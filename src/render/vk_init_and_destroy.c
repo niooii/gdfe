@@ -527,9 +527,9 @@ GDF_Renderer gdfe_renderer_init(
         LOG_TRACE("Initialized core renderer");
     }
 
-    if (callbacks->on_render_init)
+    if (callbacks->render_callbacks.on_render_init)
     {
-        if (!callbacks->on_render_init(vk_ctx, app_state, callbacks->on_render_init))
+        if (!callbacks->render_callbacks.on_render_init(vk_ctx, app_state, callbacks->render_callbacks.on_render_init))
         {
             GDF_Free(renderer);
             return NULL;

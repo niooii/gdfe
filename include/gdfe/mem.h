@@ -37,6 +37,10 @@ typedef enum GDF_MEMTAG {
     GDF_MEMTAG_MAX_TAGS
 } GDF_MEMTAG;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 GDF_BOOL GDF_InitMemory();
 void GDF_ShutdownMemory();
 
@@ -56,3 +60,7 @@ void GDF_MemCopy(void* dest, const void* src, u64 size);
 void GDF_MemSet(void* block, i32 val, u64 size);
 
 void GDF_GetMemUsageStr(char* out_str);
+
+#ifdef __cplusplus
+}
+#endif

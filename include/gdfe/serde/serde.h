@@ -18,6 +18,10 @@ b is of type GDF_MapEntry
 
 */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* TODO! this is the hard part :sob: */
 // serializes into format .gdf
 GDF_BOOL GDF_SerializeMap(GDF_Map* map, char* out_buf);
@@ -26,3 +30,7 @@ GDF_BOOL GDF_DeserializeToMap(char* data, GDF_Map* out_map);
 
 GDF_BOOL GDF_WriteMapToFile(GDF_Map* map, const char* rel_path);
 GDF_BOOL GDF_ReadMapFromFile(const char* rel_path, GDF_Map* out_map);
+
+#ifdef __cplusplus
+}
+#endif

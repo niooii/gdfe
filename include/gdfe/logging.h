@@ -68,12 +68,20 @@ typedef enum TEXT_BG_COLOR {
     BG_BRIGHT_WHITE = 107
 } TEXT_BG_COLOR;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 GDF_BOOL GDF_InitLogging();
 GDF_BOOL GDF_InitThreadLogging(const char* thread_name);
 void GDF_ShutdownLogging();
 
 void logging_flush_buffer();
 void log_output(LOG_LEVEL level, const char* message, ...);
+
+#ifdef __cplusplus
+}
+#endif
 
 // should be available wherever lol unlucky
 #define LOG_FATAL(message, ...) log_output(LOG_LEVEL_FATAL, message, ##__VA_ARGS__);

@@ -16,7 +16,7 @@ typedef struct GDF_AppState {
     GDF_BOOL alive;
 } GDF_AppState;
 
-typedef struct GDF_AppCallbacks {
+typedef struct GDF_RenderCallbacks {
     // Called after the core renderer is initialized.
     // Initialization of resources for custom rendering should happen here.
     GDF_BOOL (*on_render_init)(
@@ -51,7 +51,7 @@ typedef struct GDF_AppCallbacks {
     // State to be passed into the on_render_destroy callback.
     void* on_render_destroy_state;
 
-    // Called right before postprocessing effects are rendered.
+    // Called on the geometry pass, before lighting and postprocessing effects.
     // Custom rendering should happen here.
     GDF_BOOL (*on_render)(
         const GDF_VkRenderContext* vulkan_ctx,
@@ -70,7 +70,10 @@ typedef struct GDF_AppCallbacks {
     );
     // State to be passed into the on_render_end callback.
     void* on_render_end_state;
+} GDF_RenderCallbacks;
 
+typedef struct GDF_AppCallbacks {
+    GDF_RenderCallbacks render_callbacks;
     // Called on each frame, before any rendering and after updating
     // the input subsystem.
     GDF_BOOL (*on_frame)(
@@ -112,7 +115,15 @@ typedef struct GDF_InitInfo {
 
 } GDF_InitInfo;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 GDF_AppState* GDF_Init(GDF_InitInfo);
 
 // Returns the number of seconds ran for, or -1 if something failed.
 f64 GDF_Run();
+
+#ifdef __cplusplus
+}
+#endif

@@ -1,13 +1,15 @@
 #include <gdfe/render/vk/image.h>
 #include <gdfe/render/vk_utils.h>
 
+#include "irender/renderer.h"
+
 GDF_BOOL GDF_VkImageCreate(VkImageCreateInfo* image_info, VkImageViewCreateInfo* view_info, GDF_VkImage* out_image)
 {
     VK_RETURN_FALSE_ASSERT(
         vkCreateImage(
-            vk_ctx->device.handle,
+            GDFE_INTERNAL_VK_CTX->device.handle,
             image_info,
-            vk_ctx->device.allocator,
+            GDFE_INTERNAL_VK_CTX->device.allocator,
             &out_image->handle
         )
     );
@@ -15,7 +17,7 @@ GDF_BOOL GDF_VkImageCreate(VkImageCreateInfo* image_info, VkImageViewCreateInfo*
     view_info->image = out_image->handle;
 
     VkMemoryRequirements mem_reqs;
-    vkGetImageMemoryRequirements(vk_ctx->device.handle, out_image->handle, &mem_reqs);
+    vkGetImageMemoryRequirements(GDFE_INTERNAL_VK_CTX->device.handle, out_image->handle, &mem_reqs);
 
     VkMemoryAllocateInfo allocInfo = {
         .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
@@ -25,15 +27,15 @@ GDF_BOOL GDF_VkImageCreate(VkImageCreateInfo* image_info, VkImageViewCreateInfo*
 
     VK_RETURN_FALSE_ASSERT(
         vkAllocateMemory(
-            vk_ctx->device.handle,
+            GDFE_INTERNAL_VK_CTX->device.handle,
             &allocInfo,
-            vk_ctx->device.allocator,
+            GDFE_INTERNAL_VK_CTX->device.allocator,
             &out_image->memory
         )
     );
 
     vkBindImageMemory(
-        vk_ctx->device.handle,
+        GDFE_INTERNAL_VK_CTX->device.handle,
         out_image->handle,
         out_image->memory,
         0
@@ -41,9 +43,9 @@ GDF_BOOL GDF_VkImageCreate(VkImageCreateInfo* image_info, VkImageViewCreateInfo*
 
     VK_RETURN_FALSE_ASSERT(
         vkCreateImageView(
-            vk_ctx->device.handle,
+            GDFE_INTERNAL_VK_CTX->device.handle,
             view_info,
-            vk_ctx->device.allocator,
+            GDFE_INTERNAL_VK_CTX->device.allocator,
             &out_image->view
         )
     );
@@ -51,21 +53,21 @@ GDF_BOOL GDF_VkImageCreate(VkImageCreateInfo* image_info, VkImageViewCreateInfo*
     return GDF_TRUE;
 }
 
-void GDF_VkImageDestroy(GDF_VkRenderContext* vk_ctx, GDF_VkImage* image)
+void GDF_VkImageDestroy(GDF_VkRenderContext* GDFE_INTERNAL_VK_CTX, GDF_VkImage* image)
 {
     vkDestroyImageView(
-        vk_ctx->device.handle,
+        GDFE_INTERNAL_VK_CTX->device.handle,
         image->view,
-        vk_ctx->device.allocator
+        GDFE_INTERNAL_VK_CTX->device.allocator
     );
     vkDestroyImage(
-        vk_ctx->device.handle,
+        GDFE_INTERNAL_VK_CTX->device.handle,
         image->handle,
-        vk_ctx->device.allocator
+        GDFE_INTERNAL_VK_CTX->device.allocator
     );
     vkFreeMemory(
-        vk_ctx->device.handle,
+        GDFE_INTERNAL_VK_CTX->device.handle,
         image->memory,
-        vk_ctx->device.allocator
+        GDFE_INTERNAL_VK_CTX->device.allocator
     );
 }

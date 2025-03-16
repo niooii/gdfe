@@ -42,6 +42,10 @@ typedef struct GDF_DateTime {
     u16 milli;
 } GDF_DateTime;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // This should be constantly updated. Maybe.. who knows?
 GDF_BOOL GDF_InitSysinfo();
 // Absolute time since progarm has ran.
@@ -51,3 +55,7 @@ void GDF_GetSystemTime(GDF_DateTime* datetime);
 // Attempts to get the system time in UTC.
 void GDF_GetSystemTimeUTC(GDF_DateTime* datetime);
 void GDF_GetDisplayInfo(GDF_DisplayInfo* display_info);
+
+#ifdef __cplusplus
+}
+#endif

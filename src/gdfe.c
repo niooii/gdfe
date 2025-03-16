@@ -31,7 +31,6 @@ GDF_BOOL default_events(u16 event_code, void *sender, void *listener_instance, G
         case GDF_EVENT_INTERNAL_KEY_PRESSED:
         {
             u16 key_code = ctx.data.u16[0];
-            LOG_DEBUG("KEY PRESSED: %u", key_code);
             if (key_code == GDF_KEYCODE_ESCAPE)
             {
                 GDF_EventContext tmp_ctx = {.data = 0};

@@ -16,6 +16,10 @@ typedef struct GDF_DirInfo {
     size_t num_nodes;
 } GDF_DirInfo;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void GDF_InitIO();
 void GDF_ShowConsole();
 void GDF_HideConsole();
@@ -60,3 +64,7 @@ char* GDF_StrDup(const char* str);
 
 // free resources
 void GDF_FreeDirInfo(GDF_DirInfo* dir_info);
+
+#ifdef __cplusplus
+}
+#endif

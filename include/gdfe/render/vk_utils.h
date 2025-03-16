@@ -57,6 +57,10 @@ FORCEINLINE GDF_BOOL GDF_VkUtilsIsSuccess(VkResult result)
     }
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Will return VK_NULL_HANDLE if failed.
 VkShaderModule GDF_VkUtilsLoadShader(const char* src_rel_path);
 
@@ -122,3 +126,7 @@ GDF_BOOL GDF_VkBufferCreateSingleUseCmd(
 void GDF_VkBufferDestroySingleUseCmd(
     VkCommandBuffer* command_buf
 );
+
+#ifdef __cplusplus
+}
+#endif

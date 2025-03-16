@@ -6,6 +6,10 @@ typedef struct GDF_Mutex_T* GDF_Mutex;
 typedef struct GDF_Semaphore_T* GDF_Semaphore;
 // https://learn.microsoft.com/en-us/windows/win32/sync/semaphore-objects
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Run the thread_fn on a separate thread of execution. This does NOT make a copy of the arguments passed in. 
 GDF_Thread GDF_CreateThread(unsigned long thread_fn(void*), void* args);
 u32 GDF_GetCurrentThreadId();
@@ -27,3 +31,7 @@ GDF_BOOL GDF_WaitSemaphore(GDF_Semaphore semaphore);
 // execution. If no thread is waiting, the next thread that calls WaitSemaphore
 // will not be blocked, and the semaphore will be reset to the unsignaled state.
 GDF_BOOL GDF_SignalSemaphore(GDF_Semaphore semaphore);
+
+#ifdef __cplusplus
+}
+#endif

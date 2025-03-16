@@ -12,6 +12,10 @@ typedef struct Transform {
     mat4 model_matrix;
 } Transform;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 FORCEINLINE void transform_recalc_model_matrix(Transform* transform)
 {
     transform->model_matrix = mat4_mul(
@@ -28,3 +32,7 @@ FORCEINLINE void transform_init_default(Transform* out_transform)
     out_transform->scale = vec3_new(1,1,1);
     transform_recalc_model_matrix(out_transform);
 }
+
+#ifdef __cplusplus
+}
+#endif

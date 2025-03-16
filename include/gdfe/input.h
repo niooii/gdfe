@@ -148,6 +148,10 @@ typedef enum GDF_CURSOR_LOCK_STATE {
     GDF_CURSOR_LOCK_STATE_Locked,
 } GDF_CURSOR_LOCK_STATE;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void GDF_InitInput();
 void GDF_ShutdownInput();
 void GDF_INPUT_Update(GDF_Window active, f64 delta_time);
@@ -169,3 +173,7 @@ void GDF_GetMousePos(ivec2* pos);
 void GDF_GetPrevMousePos(ivec2* prev);
 void GDF_SetMouseLockState(GDF_CURSOR_LOCK_STATE lock_state);
 void GDF_GetMouseDelta(ivec2* delta);
+
+#ifdef __cplusplus
+}
+#endif

@@ -11,8 +11,7 @@
 #include "../../include/gdfe/gdfe.h"
 #define GDFP_DISABLE
 
-#include "../../include/gdfe/profiler.h"
-#include "gdfe/render/vk_utils.h"
+#include "gdfe/profiler.h"
 #include "gdfe/render/vk_utils.h"
 #include "irender/vk_utils.h"
 
@@ -71,7 +70,7 @@ GDF_BOOL GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
 
         if (!renderer->disable_core)
         {
-            if (!core_renderer_resize(vk_ctx, renderer->callbacks, &renderer->core_renderer))
+            if (!core_renderer_resize(vk_ctx, &renderer->core_renderer))
                 return GDF_FALSE;
         }
 
@@ -176,7 +175,7 @@ GDF_BOOL GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
     }
     else
     {
-        if (!core_renderer_draw(vk_ctx, renderer->callbacks, &renderer->core_renderer))
+        if (!core_renderer_draw(renderer, vk_ctx, &renderer->core_renderer))
         {
             // TODO! handle some weird sync stuff here
             LOG_ERR("Core renderer call failed.");
@@ -253,6 +252,23 @@ void GDF_RendererSetActiveCamera(GDF_Renderer renderer, GDF_Camera camera)
     {
         renderer->core_renderer.active_camera = camera;
     }
+}
+
+
+GDF_RenderHandle GDF_DebugDrawLine(GDF_Renderer renderer, GDF_Camera camera)
+{
+    if (renderer->disable_core)
+        return NULL;
+
+    TODO("debug draw line");
+}
+
+GDF_RenderHandle GDF_DebugDrawAABB(GDF_Renderer renderer, GDF_Camera camera)
+{
+    if (renderer->disable_core)
+        return NULL;
+
+    TODO("debug draw aabb");
 }
 
 void GDF_RendererSetRenderMode(GDF_Renderer renderer, GDF_RENDER_MODE mode)

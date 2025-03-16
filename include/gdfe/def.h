@@ -26,6 +26,15 @@ typedef double f64;
 typedef unsigned char byte;
 #define i32_MAX 2147483647
 
+// TODO! move some of these defines into a private defs.h
+
+#define IF_CPP_EXTERN_C_BEGIN #ifdef __cplusplus \
+extern "C" { \
+#endif
+#define IF_CPP_EXTERN_C_END #ifdef __cplusplus \
+} \
+#endif
+
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
 #define MIN(a,b) (((a) < (b)) ? (a) : (b))
 #define FLOOR(x) ((x) >= 0.0 ? (long long)(x) : (((long long)(x) == (x)) ? (x) : ((long long)(x) - 1)))

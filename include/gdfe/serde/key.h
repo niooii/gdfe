@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 // define map keys here
+// this is actually so sad
 #define FOREACH_KEY(F)\
 /* custom build tool */\
     F(GDF_MKEY_BUILD_SRC_DIR)\
@@ -32,7 +33,15 @@ typedef enum GDF_MKEY {
     FOREACH_KEY(GEN_ENUM)
 } GDF_MKEY;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // returns NULL on failure
 void GDF_MKEY_ToString(GDF_MKEY key, char* out_str);
 // returns GDF_MKEY_ERROR_KEY on failure
 GDF_MKEY GDF_MKEY_FromString(const char* str);
+
+#ifdef __cplusplus
+}
+#endif

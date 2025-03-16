@@ -19,11 +19,21 @@ typedef struct GDF_Renderer_T {
     GDF_Camera* camera;
 
     GDF_VkRenderContext vk_ctx;
-    GDF_AppCallbacks* callbacks;
+    GDF_RenderCallbacks* callbacks;
     GDF_AppState* app_state;
     GDF_CoreRendererContext core_renderer;
     GDF_BOOL disable_core;
 } GDF_Renderer_T;
+
+typedef enum RENDER_OBJ_TYPE {
+    RENDER_OBJ_TYPE_LINE,
+    RENDER_OBJ_TYPE_AABB,
+} RENDER_OBJ_TYPE;
+
+typedef struct GDF_RenderHandle_T {
+    RENDER_OBJ_TYPE type;
+    void* data;
+} GDF_RenderHandle_T;
 
 extern GDF_VkRenderContext* GDFE_INTERNAL_VK_CTX;
 

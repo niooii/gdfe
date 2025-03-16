@@ -49,9 +49,6 @@ typedef struct GDF_CoreRendererContext {
     GDF_VkBuffer up_facing_plane_vbo;
     GDF_VkBuffer up_facing_plane_index_buffer;
 
-    // All vertex shaders will get input from these uniform buffers.
-
-
     // TODO! add a configuration structure for these effects
     struct {
 
@@ -59,6 +56,6 @@ typedef struct GDF_CoreRendererContext {
 } GDF_CoreRendererContext;
 
 GDF_BOOL core_renderer_init(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
-GDF_BOOL core_renderer_draw(GDF_VkRenderContext* vk_ctx, GDF_AppCallbacks* callbacks, GDF_CoreRendererContext* ctx);
-GDF_BOOL core_renderer_resize(GDF_VkRenderContext* vk_ctx, GDF_AppCallbacks* callbacks, GDF_CoreRendererContext* ctx);
+GDF_BOOL core_renderer_draw(GDF_Renderer renderer, GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+GDF_BOOL core_renderer_resize(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
 GDF_BOOL core_renderer_destroy(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);

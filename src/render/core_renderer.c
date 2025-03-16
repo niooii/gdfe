@@ -3,6 +3,7 @@
 #include <gdfe/gdfe.h>
 #include <gdfe/render/vk_utils.h>
 #include "irender/gpu_types.h"
+#include "irender/renderer.h"
 
 GDF_BOOL create_shaders(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
 
@@ -70,8 +71,9 @@ GDF_BOOL core_renderer_init(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext
 }
 
 // TODO! config to disable specific passes
-GDF_BOOL core_renderer_draw(GDF_VkRenderContext* vk_ctx, GDF_AppCallbacks* callbacks, GDF_CoreRendererContext* ctx)
+GDF_BOOL core_renderer_draw(GDF_Renderer renderer, GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
+    GDF_RenderCallbacks* callbacks = renderer->callbacks;
     u32 resource_idx = vk_ctx->resource_idx;
     PerFrameResources* vk_per_frame = &vk_ctx->per_frame[resource_idx];
     CoreRendererPerFrame* core_per_frame = &ctx->per_frame[resource_idx];
@@ -132,12 +134,28 @@ GDF_BOOL core_renderer_draw(GDF_VkRenderContext* vk_ctx, GDF_AppCallbacks* callb
     );
 
     vkCmdDrawIndexed(cmd_buffer, 6, 1, 0, 0, 0);
+
+    if (callbacks->on_render)
+    {
+        if (!callbacks->on_render(
+            vk_ctx,
+            renderer->app_state,
+            callbacks->on_render_state
+        ))
+        {
+            LOG_ERR("User geometry pass callback failure.");
+            return false;
+        }
+    }
+
     vkCmdEndRenderPass(cmd_buffer);
+
+    // deferred lighting
 
     return GDF_TRUE;
 }
 
-GDF_BOOL core_renderer_resize(GDF_VkRenderContext* vk_ctx, GDF_AppCallbacks* callbacks, GDF_CoreRendererContext* ctx)
+GDF_BOOL core_renderer_resize(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
     destroy_framebufs_and_imgs(vk_ctx, ctx);
     if (!create_framebufs_and_imgs(vk_ctx, ctx))

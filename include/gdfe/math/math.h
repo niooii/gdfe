@@ -90,6 +90,11 @@ typedef union mat4_u {
 
 // TODO! own fast math implementation
 #include <math.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 FORCEINLINE f32 gsin(f32 x) 
 {
     return sinf(x);
@@ -1584,3 +1589,7 @@ FORCEINLINE Quaternion quaternion_slerp(Quaternion q_0, Quaternion q_1, f32 perc
         (v0.w * s0) + (v1.w * s1)
     };
 }
+
+#ifdef __cplusplus
+}
+#endif

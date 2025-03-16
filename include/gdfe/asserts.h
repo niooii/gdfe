@@ -12,8 +12,16 @@
 #define debugBreak() __builtin_trap()
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void report_assertion_failure(const char* expression, const char* message, const char* file, i32 line);
 void report_todo(const char* message, const char* file, i32 line);
+
+#ifdef __cplusplus
+}
+#endif
 
 #define TODO(message)                                                \
     {   \

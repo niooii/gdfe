@@ -18,6 +18,10 @@
 // update: I DID IT GUYS - 3/6/2025
 typedef struct GDF_Window_T *GDF_Window;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 GDF_BOOL GDF_InitWindowing();
 void GDF_ShutdownWindowing();
 GDF_Window GDF_CreateWindow(i16 x, i16 y, i16 w, i16 h, const char* title);
@@ -25,3 +29,7 @@ GDF_BOOL GDF_SetWindowPos(GDF_Window window, i16 dest_x, i16 dest_y);
 void GDF_GetWindowPos(GDF_Window window, i16* x, i16* y);
 void GDF_GetWindowSize(GDF_Window window, u16* w, u16* h);
 GDF_BOOL GDF_DestroyWindow(GDF_Window window);
+
+#ifdef __cplusplus
+}
+#endif

@@ -35,6 +35,10 @@ typedef struct GDF_Map {
     GDF_MapEntry* entries[GDF_MKEY_NUM_KEYS];
 } GDF_Map;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // allocates a map pointer
 GDF_Map* GDF_CreateMap();
 
@@ -51,3 +55,7 @@ const char* GDF_MAP_GetValueString(GDF_Map* map, GDF_MKEY key);
 GDF_Map* GDF_MAP_GetValueMap(GDF_Map* map, GDF_MKEY key);
 
 void GDF_FreeMap(GDF_Map* map);
+
+#ifdef __cplusplus
+}
+#endif
