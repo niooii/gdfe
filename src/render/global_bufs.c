@@ -1,12 +1,12 @@
-#include "irender/core_renderer.h"
-#include "gdfe/render/vk_utils.h"
+#include "../internal/irender/core_renderer.h"
+#include "../../include/gdfe/render/vk_utils.h"
 
 GDF_BOOL __init_vp_ubos(GDF_VkRenderContext* vk_ctx);
 
 GDF_BOOL create_global_buffers(GDF_VkRenderContext* vk_ctx)
 {
     // view-projection uniforms
-    if (!__init_vp_ubos(vk_ctx, ctx))
+    if (!__init_vp_ubos(vk_ctx))
     {
         return GDF_FALSE;
     }
@@ -14,7 +14,7 @@ GDF_BOOL create_global_buffers(GDF_VkRenderContext* vk_ctx)
     return GDF_TRUE;
 }
 
-GDF_BOOL __init_vp_ubos(GDF_VkRenderContext* vk_ctx, const GDF_CoreRendererContext* ctx)
+GDF_BOOL __init_vp_ubos(GDF_VkRenderContext* vk_ctx)
 {
     u32 image_count = vk_ctx->max_concurrent_frames;
     VkDescriptorPoolSize pool_size = {
@@ -34,7 +34,7 @@ GDF_BOOL __init_vp_ubos(GDF_VkRenderContext* vk_ctx, const GDF_CoreRendererConte
             vk_ctx->device.handle,
             &pool_info,
             vk_ctx->device.allocator,
-            &ctx->vp_ubo_pool
+            &vk_ctx->vp_ubo_pool
         )
     );
 
@@ -58,7 +58,7 @@ GDF_BOOL __init_vp_ubos(GDF_VkRenderContext* vk_ctx, const GDF_CoreRendererConte
             vk_ctx->device.handle,
             &layout_create_info,
             vk_ctx->device.allocator,
-            &ctx->vp_ubo_layout
+            &vk_ctx->vp_ubo_layout
         )
     );
 
@@ -66,7 +66,7 @@ GDF_BOOL __init_vp_ubos(GDF_VkRenderContext* vk_ctx, const GDF_CoreRendererConte
 
     for (u32 i = 0; i < image_count; i++)
     {
-        CoreRendererPerFrame* per_frame = &ctx->per_frame[i];
+        PerFrameResources* per_frame = &vk_ctx->per_frame[i];
         if (!GDF_VkBufferCreateUniform(buffer_size, &per_frame->vp_ubo))
         {
             LOG_ERR("Failed to create a uniform buffer.");
@@ -75,9 +75,9 @@ GDF_BOOL __init_vp_ubos(GDF_VkRenderContext* vk_ctx, const GDF_CoreRendererConte
 
         VkDescriptorSetAllocateInfo descriptor_set_alloc_info = {
             .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-            .descriptorPool = ctx->vp_ubo_pool,
+            .descriptorPool = vk_ctx->vp_ubo_pool,
             .descriptorSetCount = 1,
-            .pSetLayouts = &ctx->vp_ubo_layout
+            .pSetLayouts = &vk_ctx->vp_ubo_layout
         };
 
         vkAllocateDescriptorSets(

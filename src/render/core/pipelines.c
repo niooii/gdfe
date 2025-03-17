@@ -101,7 +101,7 @@ GDF_BOOL create_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererConte
     // Pipeline layout
     VkPipelineLayoutCreateInfo layout_info = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-        .pSetLayouts = &ctx->vp_ubo_layout,
+        .pSetLayouts = &vk_ctx->vp_ubo_layout,
         .setLayoutCount = 1,
         .pPushConstantRanges = &push_constant_range,
         .pushConstantRangeCount = 1
@@ -278,7 +278,7 @@ GDF_BOOL create_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext
     // TODO! dont need uniform matrices
     VkPipelineLayoutCreateInfo layout_info = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-        .pSetLayouts = &ctx->vp_ubo_layout,
+        .pSetLayouts = &vk_ctx->vp_ubo_layout,
         .setLayoutCount = 1,
         .pPushConstantRanges = &push_constant_range,
         .pushConstantRangeCount = 1

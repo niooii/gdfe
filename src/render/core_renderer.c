@@ -43,11 +43,6 @@ GDF_BOOL core_renderer_init(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext
         LOG_ERR("Failed to create framebuffers and images.");
         return GDF_FALSE;
     }
-    if (!create_global_buffers(vk_ctx, ctx))
-    {
-        LOG_ERR("Failed to create global buffers.");
-        return GDF_FALSE;
-    }
     if (!create_grid_pipeline(vk_ctx, ctx) || !create_ui_pipeline(vk_ctx, ctx))
     {
         LOG_ERR("Failed to create builtin pipelines.");
@@ -90,7 +85,7 @@ GDF_BOOL core_renderer_draw(GDF_Renderer renderer, GDF_VkRenderContext* vk_ctx, 
         .view_projection = GDF_CameraGetViewPerspectiveMatrix(camera),
     };
 
-    GDF_MemCopy(core_per_frame->vp_ubo.mapped_data, &vp_ubo_data, sizeof(ViewProjUB));
+    GDF_MemCopy(vk_per_frame->vp_ubo.mapped_data, &vp_ubo_data, sizeof(ViewProjUB));
 
     VkRenderPassBeginInfo geometry_pass = {
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
@@ -111,7 +106,7 @@ GDF_BOOL core_renderer_draw(GDF_Renderer renderer, GDF_VkRenderContext* vk_ctx, 
         ctx->grid_pipeline.layout,
         0,
         1,
-        &core_per_frame->vp_ubo_set,
+        &vk_per_frame->vp_ubo_set,
         0,
         NULL
     );

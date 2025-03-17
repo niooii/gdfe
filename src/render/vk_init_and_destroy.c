@@ -188,7 +188,7 @@ void __filter_available_devices(GDF_VkRenderContext* vk_ctx, GDF_VkPhysicalDevic
 GDF_VkRenderContext* GDFE_INTERNAL_VK_CTX = NULL;
 GDF_CoreRendererContext* GDFE_INTERNAL_CORE_CTX = NULL;
 
-GDF_BOOL create_global_buffers(GDF_VkRenderContext* vk_ctx, const GDF_CoreRendererContext* ctx);
+GDF_BOOL create_global_buffers(GDF_VkRenderContext* vk_ctx);
 
 // ===== FORWARD DECLARATIONS END =====
 GDF_Renderer gdfe_renderer_init(
@@ -518,6 +518,8 @@ GDF_Renderer gdfe_renderer_init(
             )
         );
     }
+
+    GDF_ASSERT(create_global_buffers(vk_ctx));
 
     if (!core_renderer_init(vk_ctx, &renderer->core_renderer))
     {
