@@ -155,7 +155,7 @@ GDF_AppState* GDF_Init(GDF_InitInfo init_info) {
         GDF_EventRegister(GDF_EVENT_INTERNAL_APP_QUIT, NULL, default_events);
     }
 
-    public->renderer = gdfe_renderer_init(public->window, &APP_STATE.public, init_info.config.disable_default_renderer, &APP_STATE.callbacks);
+    public->renderer = gdfe_renderer_init(public->window, &APP_STATE.public, &APP_STATE.callbacks);
     if (!public->renderer)
     {
         LOG_ERR("Couldn't initialize renderer unlucky.");

@@ -123,6 +123,13 @@ typedef struct PerFrameResources {
     VkSemaphore image_available_semaphore;
     VkSemaphore render_finished_semaphore;
     VkCommandBuffer cmd_buffer;
+
+    // This uniform buffer will be updated
+    // every frame with the camera's view projection matrix
+    GDF_VkUniformBuffer vp_ubo;
+    // the descriptor set for accessing the current camera's
+    // view projection matrix
+    VkDescriptorSet vp_ubo_set;
 } PerFrameResources;
 
 typedef struct GDF_VkRenderContext {
@@ -154,6 +161,13 @@ typedef struct GDF_VkRenderContext {
     // The index that should be used for accessing resources due to
     // multiple possible frames in flight.
     u32 resource_idx;
+
+    // global view projection camera stuff
+
+    // This field is modified then copied over to vk_uniform_buffer[n].mapped_Data
+    ViewProjUB view_proj_ub;
+    VkDescriptorPool vp_ubo_pool;
+    VkDescriptorSetLayout vp_ubo_layout;
 
 #ifndef GDF_RELEASE
     VkDebugUtilsMessengerEXT debug_messenger;

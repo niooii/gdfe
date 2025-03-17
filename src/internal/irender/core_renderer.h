@@ -2,7 +2,7 @@
 
 #include <gdfe/render/renderer.h>
 
-#include "../../../include/gdfe/gdfe.h"
+#include "gdfe/gdfe.h"
 
 typedef struct gdfe_ui_pipeline {
     VkPipeline handle;
@@ -25,18 +25,11 @@ typedef struct CoreRendererPerFrame {
     GDF_VkImage msaa_image;
 
     VkFramebuffer geometry_framebuffer;
-
-    GDF_VkUniformBuffer vp_ubo;
-    VkDescriptorSet vp_ubo_set;
 } CoreRendererPerFrame;
 
 typedef struct GDF_CoreRendererContext {
     VkRenderPass geometry_pass;
 
-    // This field is modified then copied over to vk_uniform_buffer[n].mapped_Data
-    ViewProjUB view_proj_ub;
-    VkDescriptorPool vp_ubo_pool;
-    VkDescriptorSetLayout vp_ubo_layout;
     GDF_LIST(CoreRendererPerFrame) per_frame;
 
     GDF_Camera active_camera;

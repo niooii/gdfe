@@ -68,11 +68,8 @@ GDF_BOOL GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
             return GDF_FALSE;
         }
 
-        if (!renderer->disable_core)
-        {
-            if (!core_renderer_resize(vk_ctx, &renderer->core_renderer))
-                return GDF_FALSE;
-        }
+        if (!core_renderer_resize(vk_ctx, &renderer->core_renderer))
+            return GDF_FALSE;
 
         if (renderer->callbacks->on_render_resize)
         {
@@ -159,28 +156,11 @@ GDF_BOOL GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
     };
     vkCmdSetScissor(cmd_buffer, 0, 1, &scissor);
 
-    if (renderer->disable_core)
+    if (!core_renderer_draw(renderer, vk_ctx, &renderer->core_renderer))
     {
-        if (renderer->callbacks->on_render)
-        {
-            if (!renderer->callbacks->on_render(
-                vk_ctx,
-                renderer->app_state,
-                renderer->callbacks->on_render_state))
-            {
-                LOG_ERR("Render callback call failed.");
-                return GDF_FALSE;
-            }
-        }
-    }
-    else
-    {
-        if (!core_renderer_draw(renderer, vk_ctx, &renderer->core_renderer))
-        {
-            // TODO! handle some weird sync stuff here
-            LOG_ERR("Core renderer call failed.");
-            return GDF_FALSE;
-        }
+        // TODO! handle some weird sync stuff here
+        LOG_ERR("Core renderer call failed.");
+        return GDF_FALSE;
     }
 
     if (vkEndCommandBuffer(cmd_buffer) != VK_SUCCESS)
@@ -248,26 +228,17 @@ GDF_BOOL GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
 // Has no effect if the core renderer is disabled.
 void GDF_RendererSetActiveCamera(GDF_Renderer renderer, GDF_Camera camera)
 {
-    if (!renderer->disable_core)
-    {
-        renderer->core_renderer.active_camera = camera;
-    }
+    renderer->core_renderer.active_camera = camera;
 }
 
 
 GDF_RenderHandle GDF_DebugDrawLine(GDF_Renderer renderer, GDF_Camera camera)
 {
-    if (renderer->disable_core)
-        return NULL;
-
     TODO("debug draw line");
 }
 
 GDF_RenderHandle GDF_DebugDrawAABB(GDF_Renderer renderer, GDF_Camera camera)
 {
-    if (renderer->disable_core)
-        return NULL;
-
     TODO("debug draw aabb");
 }
 

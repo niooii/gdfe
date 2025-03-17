@@ -55,3 +55,9 @@ i32 GDF_VkUtilsFindMemTypeIdx(u32 type_filter, u32 property_flags)
     LOG_WARN("Unable to find suitable memory type!");
     return -1;
 }
+
+void GDF_VkPipelineInfoFillGeometryPass(VkGraphicsPipelineCreateInfo* info)
+{
+    info->renderPass = GDFE_INTERNAL_CORE_CTX->geometry_pass;
+    info->subpass = 0;
+}

@@ -12,7 +12,6 @@ GDF_BOOL create_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext
 void destroy_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
 GDF_BOOL create_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
 GDF_BOOL create_geometry_pass(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
-GDF_BOOL create_global_buffers(GDF_VkRenderContext* vk_ctx, const GDF_CoreRendererContext* ctx);
 
 // Up facing plane vertices
 static const Vertex3d plane_vertices[] = {

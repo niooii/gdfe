@@ -22,7 +22,6 @@ typedef struct GDF_Renderer_T {
     GDF_RenderCallbacks* callbacks;
     GDF_AppState* app_state;
     GDF_CoreRendererContext core_renderer;
-    GDF_BOOL disable_core;
 } GDF_Renderer_T;
 
 typedef enum RENDER_OBJ_TYPE {
@@ -36,11 +35,11 @@ typedef struct GDF_RenderHandle_T {
 } GDF_RenderHandle_T;
 
 extern GDF_VkRenderContext* GDFE_INTERNAL_VK_CTX;
+extern GDF_CoreRendererContext* GDFE_INTERNAL_CORE_CTX;
 
 GDF_Renderer gdfe_renderer_init(
     GDF_Window window,
     GDF_AppState* app_state,
-    GDF_BOOL disable_default,
     GDF_AppCallbacks* callbacks
 );
 

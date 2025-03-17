@@ -1,9 +1,9 @@
 #include "irender/core_renderer.h"
 #include "gdfe/render/vk_utils.h"
 
-GDF_BOOL __init_vp_ubos(GDF_VkRenderContext* vk_ctx, const GDF_CoreRendererContext* ctx);
+GDF_BOOL __init_vp_ubos(GDF_VkRenderContext* vk_ctx);
 
-GDF_BOOL create_global_buffers(GDF_VkRenderContext* vk_ctx, const GDF_CoreRendererContext* ctx)
+GDF_BOOL create_global_buffers(GDF_VkRenderContext* vk_ctx)
 {
     // view-projection uniforms
     if (!__init_vp_ubos(vk_ctx, ctx))

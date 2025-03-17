@@ -92,10 +92,6 @@ typedef struct GDF_Config {
     // Disable the internal quit event when pressing 'Esc' or closing the window.
     // Additionally disables the grave keybind for locking/unlocking the cursor.
     GDF_BOOL disable_default_events;
-    // If set, the default renderer will not be initialized, including any
-    // vulkan stuff. The pointer to the render state passed in many callbacks
-    // will be NULL. 
-    GDF_BOOL disable_default_renderer;
 } GDF_Config;
 
 // Initialization info for the GDF engine.

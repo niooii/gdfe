@@ -186,28 +186,31 @@ void __filter_available_devices(GDF_VkRenderContext* vk_ctx, GDF_VkPhysicalDevic
 
 // TODO! removeglobal context
 GDF_VkRenderContext* GDFE_INTERNAL_VK_CTX = NULL;
+GDF_CoreRendererContext* GDFE_INTERNAL_CORE_CTX = NULL;
+
+GDF_BOOL create_global_buffers(GDF_VkRenderContext* vk_ctx, const GDF_CoreRendererContext* ctx);
 
 // ===== FORWARD DECLARATIONS END =====
 GDF_Renderer gdfe_renderer_init(
     GDF_Window window,
     GDF_AppState* app_state,
-    GDF_BOOL disable_default,
     GDF_AppCallbacks* callbacks
 )
 {
     if (GDFE_INTERNAL_VK_CTX)
         return NULL;
+
     GDF_Renderer renderer = GDF_Malloc(sizeof(GDF_Renderer_T), GDF_MEMTAG_RENDERER);
     u16 w, h;
     GDF_GetWindowSize(window, &w, &h);
     renderer->framebuffer_width = w;
     renderer->framebuffer_height = h;
-    renderer->disable_core = disable_default;
     renderer->callbacks = callbacks;
     renderer->app_state = app_state;
 
     GDF_VkRenderContext* vk_ctx = &renderer->vk_ctx;
     GDFE_INTERNAL_VK_CTX = vk_ctx;
+    GDFE_INTERNAL_CORE_CTX = &renderer->core_renderer;
 
     // TODO! custom allocator.
     vk_ctx->device.allocator = NULL;
@@ -516,20 +519,17 @@ GDF_Renderer gdfe_renderer_init(
         );
     }
 
-    if (!renderer->disable_core)
+    if (!core_renderer_init(vk_ctx, &renderer->core_renderer))
     {
-        if (!core_renderer_init(vk_ctx, &renderer->core_renderer))
-        {
-            LOG_FATAL("Failed to init core renderer.");
-            GDF_Free(renderer);
-            return NULL;
-        }
-        LOG_TRACE("Initialized core renderer");
+        LOG_FATAL("Failed to init core renderer.");
+        GDF_Free(renderer);
+        return NULL;
     }
+    LOG_TRACE("Initialized core renderer");
 
     if (callbacks->render_callbacks.on_render_init)
     {
-        if (!callbacks->render_callbacks.on_render_init(vk_ctx, app_state, callbacks->render_callbacks.on_render_init))
+        if (!callbacks->render_callbacks.on_render_init(vk_ctx, app_state, callbacks->render_callbacks.on_render_init_state))
         {
             GDF_Free(renderer);
             return NULL;
@@ -557,8 +557,7 @@ void gdfe_renderer_destroy(GDF_Renderer renderer)
     }
 
     // Destroy a bunch of pipelines
-    if (!renderer->disable_core)
-        core_renderer_destroy(&renderer->vk_ctx, &renderer->core_renderer);
+    core_renderer_destroy(&renderer->vk_ctx, &renderer->core_renderer);
 
     // for (u32 i = 0; i < GDF_VK_RENDERPASS_INDEX_MAX; i++)
     // {

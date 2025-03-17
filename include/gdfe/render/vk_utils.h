@@ -72,6 +72,12 @@ GDF_BOOL GDF_VkImageCreate(VkImageCreateInfo* image_info, VkImageViewCreateInfo*
 
 void GDF_VkImageDestroy(GDF_VkRenderContext* context, GDF_VkImage* image);
 
+// For applications with custom rendering, any graphics pipeline created
+// for rendering geometry during the deferred pass
+// must be passed to this function before being used.
+// Only the fields renderPass, subpass are modified
+void GDF_VkPipelineInfoFillGeometryPass(VkGraphicsPipelineCreateInfo* info);
+
 GDF_BOOL GDF_VkBufferCreate(
     u64 alloc_size,
     u32 usage_flags,
