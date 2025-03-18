@@ -1,5 +1,5 @@
-#include <gdfe/../../include/gdfe/camera.h>
-#include "../internal/irender/camera.h"
+#include <gdfe/camera.h>
+#include "irender/camera.h"
 
 GDF_Camera GDF_CameraCreate(GDF_CameraCreateInfo* camera_info)
 {
@@ -7,9 +7,7 @@ GDF_Camera GDF_CameraCreate(GDF_CameraCreateInfo* camera_info)
 
     camera->pos = camera_info->pos;
 
-    camera->pyr.x = camera_info->pitch;
-    camera->pyr.y = camera_info->yaw;
-    camera->pyr.z = camera_info->roll;
+    camera->rotation = quarternion_from_euler(vec3_new(camera_info->pitch, camera_info->yaw, camera_info->roll));
 
     camera->aspect_ratio = camera_info->aspect_ratio;
     camera->fov = camera_info->fov;
@@ -32,7 +30,7 @@ void GDF_CameraDestroy(GDF_Camera camera)
 
 void GDF_CameraSetPitch(GDF_Camera camera, f32 pitch)
 {
-    camera->pyr.x = pitch;
+    // camera->pyr.x = pitch;
 
     // TODO! i might be stupid for this idk
     camera->needs_view_recalc = GDF_TRUE;
@@ -41,7 +39,7 @@ void GDF_CameraSetPitch(GDF_Camera camera, f32 pitch)
 
 void GDF_CameraSetYaw(GDF_Camera camera, f32 yaw)
 {
-    camera->pyr.y = yaw;
+    // camera->pyr.y = yaw;
 
     camera->needs_view_recalc = GDF_TRUE;
     camera->needs_dir_vecs_recalc = GDF_TRUE;
@@ -49,7 +47,7 @@ void GDF_CameraSetYaw(GDF_Camera camera, f32 yaw)
 
 void GDF_CameraSetRoll(GDF_Camera camera, f32 roll)
 {
-    camera->pyr.z = roll;
+    // camera->pyr.z = roll;
 
     camera->needs_view_recalc = GDF_TRUE;
     camera->needs_dir_vecs_recalc = GDF_TRUE;
@@ -57,7 +55,7 @@ void GDF_CameraSetRoll(GDF_Camera camera, f32 roll)
 
 void GDF_CameraSetRotation(GDF_Camera camera, vec3 pyr)
 {
-    camera->pyr = pyr;
+    // camera->pyr = pyr;
 
     camera->needs_view_recalc = GDF_TRUE;
     camera->needs_dir_vecs_recalc = GDF_TRUE;
@@ -65,7 +63,7 @@ void GDF_CameraSetRotation(GDF_Camera camera, vec3 pyr)
 
 void GDF_CameraAddPitch(GDF_Camera camera, f32 pitch)
 {
-    camera->pyr.x += pitch;
+    // camera->pyr.x += pitch;
 
     camera->needs_view_recalc = GDF_TRUE;
     camera->needs_dir_vecs_recalc = GDF_TRUE;
@@ -73,7 +71,7 @@ void GDF_CameraAddPitch(GDF_Camera camera, f32 pitch)
 
 void GDF_CameraAddYaw(GDF_Camera camera, f32 yaw)
 {
-    camera->pyr.y += yaw;
+    // camera->pyr.y += yaw;
 
     camera->needs_view_recalc = GDF_TRUE;
     camera->needs_dir_vecs_recalc = GDF_TRUE;
@@ -81,7 +79,7 @@ void GDF_CameraAddYaw(GDF_Camera camera, f32 yaw)
 
 void GDF_CameraAddRoll(GDF_Camera camera, f32 roll)
 {
-    camera->pyr.z += roll;
+    // camera->pyr.z += roll;
 
     camera->needs_view_recalc = GDF_TRUE;
     camera->needs_dir_vecs_recalc = GDF_TRUE;
@@ -89,7 +87,7 @@ void GDF_CameraAddRoll(GDF_Camera camera, f32 roll)
 
 void GDF_CameraAddRotation(GDF_Camera camera, vec3 pyr)
 {
-    vec3_add_to(&camera->pyr, pyr);
+    // vec3_add_to(&camera->pyr, pyr);
 
     camera->needs_view_recalc = GDF_TRUE;
     camera->needs_dir_vecs_recalc = GDF_TRUE;
@@ -132,22 +130,22 @@ void GDF_CameraSetFarClip(GDF_Camera camera, f32 far_clip)
 
 f32 GDF_CameraGetPitch(GDF_Camera camera)
 {
-    return camera->pyr.x;
+    // return camera->pyr.x;
 }
 
 f32 GDF_CameraGetYaw(GDF_Camera camera)
 {
-    return camera->pyr.y;
+    // return camera->pyr.y;
 }
 
 f32 GDF_CameraGetRoll(GDF_Camera camera)
 {
-    return camera->pyr.z;
+    // return camera->pyr.z;
 }
 
 vec3 GDF_CameraGetRotation(GDF_Camera camera)
 {
-    return camera->pyr;
+    // return camera->pyr;
 }
 
 vec3 GDF_CameraGetPosition(GDF_Camera camera)
@@ -203,10 +201,8 @@ void GDF_CameraOrientation(GDF_Camera camera, vec3* forward, vec3* right, vec3* 
 {
     if (camera->needs_dir_vecs_recalc)
     {
-        vec3_orientation(
-            camera->pyr.y,
-            camera->pyr.x,
-            camera->pyr.z,
+        quarternion_orientation(
+            camera->rotation,
             &camera->forward,
             &camera->right,
             &camera->up

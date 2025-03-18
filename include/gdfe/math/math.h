@@ -1,4 +1,4 @@
-#pragma once
+ #pragma once
 
 #include <gdfe/def.h>
 #include <gdfe/mem.h>
@@ -57,7 +57,7 @@ typedef union ivec4_u {
     };
 } ivec4;
 
-typedef vec4 Quaternion;
+typedef vec4 quarternion;
 
 typedef union mat4_u {
     f32 data[16];
@@ -1390,15 +1390,15 @@ FORCEINLINE vec3 mat4_right(mat4 matrix)
 }
 
 // ------------------------------------------
-// Quaternion
+// quarternion
 // ------------------------------------------
 
-FORCEINLINE Quaternion quaternion_identity()
+FORCEINLINE quarternion quarternion_identity()
 {
-    return (Quaternion){0, 0, 0, 1.0f};
+    return (quarternion){0, 0, 0, 1.0f};
 }
 
-FORCEINLINE f32 quaternion_normal(Quaternion q)
+FORCEINLINE f32 quarternion_normal(quarternion q)
 {
     return gsqrt(
         q.x * q.x +
@@ -1408,10 +1408,10 @@ FORCEINLINE f32 quaternion_normal(Quaternion q)
     );
 }
 
-FORCEINLINE Quaternion quaternion_normalize(Quaternion q)
+FORCEINLINE quarternion quarternion_normalize(quarternion q)
 {
-    f32 normal = quaternion_normal(q);
-    return (Quaternion) {
+    f32 normal = quarternion_normal(q);
+    return (quarternion) {
         q.x / normal,
         q.y / normal,
         q.z / normal,
@@ -1419,48 +1419,48 @@ FORCEINLINE Quaternion quaternion_normalize(Quaternion q)
     };
 }
 
-FORCEINLINE Quaternion quaternion_conjugate(Quaternion q)
+FORCEINLINE quarternion quarternion_conjugate(quarternion q)
 {
-    return (Quaternion){
+    return (quarternion){
         -q.x,
         -q.y,
         -q.z,
         q.w};
 }
 
-FORCEINLINE Quaternion quaternion_inverse(Quaternion q)
+FORCEINLINE quarternion quarternion_inverse(quarternion q)
 {
-    return quaternion_normalize(quaternion_conjugate(q));
+    return quarternion_normalize(quarternion_conjugate(q));
 }
 
-FORCEINLINE Quaternion quaternion_mul(Quaternion q_0, Quaternion q_1)
+FORCEINLINE quarternion quarternion_mul(quarternion q_0, quarternion q_1)
 {
-    Quaternion out_quaternionernion;
+    quarternion out_quarternionernion;
 
-    out_quaternionernion.x = q_0.x * q_1.w +
+    out_quarternionernion.x = q_0.x * q_1.w +
                              q_0.y * q_1.z -
                              q_0.z * q_1.y +
                              q_0.w * q_1.x;
 
-    out_quaternionernion.y = -q_0.x * q_1.z +
+    out_quarternionernion.y = -q_0.x * q_1.z +
                              q_0.y * q_1.w +
                              q_0.z * q_1.x +
                              q_0.w * q_1.y;
 
-    out_quaternionernion.z = q_0.x * q_1.y -
+    out_quarternionernion.z = q_0.x * q_1.y -
                              q_0.y * q_1.x +
                              q_0.z * q_1.w +
                              q_0.w * q_1.z;
 
-    out_quaternionernion.w = -q_0.x * q_1.x -
+    out_quarternionernion.w = -q_0.x * q_1.x -
                              q_0.y * q_1.y -
                              q_0.z * q_1.z +
                              q_0.w * q_1.w;
 
-    return out_quaternionernion;
+    return out_quarternionernion;
 }
 
-FORCEINLINE f32 quaternion_dot(Quaternion q_0, Quaternion q_1)
+FORCEINLINE f32 quarternion_dot(quarternion q_0, quarternion q_1)
 {
     return q_0.x * q_1.x +
            q_0.y * q_1.y +
@@ -1468,89 +1468,105 @@ FORCEINLINE f32 quaternion_dot(Quaternion q_0, Quaternion q_1)
            q_0.w * q_1.w;
 }
 
-FORCEINLINE mat4 quaternion_to_mat4(Quaternion q)
+    FORCEINLINE mat4 quarternion_to_rot_mat4(quarternion q)
 {
     mat4 out_matrix = mat4_identity();
 
-    // https://stackoverflow.com/questions/1556260/convert-quaternionernion-rotation-to-rotation-matrix
+    quarternion n = quarternion_normalize(q);
 
-    Quaternion n = quaternion_normalize(q);
+    f32 xx = n.x * n.x;
+    f32 xy = n.x * n.y;
+    f32 xz = n.x * n.z;
+    f32 xw = n.x * n.w;
 
-    out_matrix.data[0] = 1.0f - 2.0f * n.y * n.y - 2.0f * n.z * n.z;
-    out_matrix.data[1] = 2.0f * n.x * n.y - 2.0f * n.z * n.w;
-    out_matrix.data[2] = 2.0f * n.x * n.z + 2.0f * n.y * n.w;
+    f32 yy = n.y * n.y;
+    f32 yz = n.y * n.z;
+    f32 yw = n.y * n.w;
 
-    out_matrix.data[4] = 2.0f * n.x * n.y + 2.0f * n.z * n.w;
-    out_matrix.data[5] = 1.0f - 2.0f * n.x * n.x - 2.0f * n.z * n.z;
-    out_matrix.data[6] = 2.0f * n.y * n.z - 2.0f * n.x * n.w;
+    f32 zz = n.z * n.z;
+    f32 zw = n.z * n.w;
 
-    out_matrix.data[8] = 2.0f * n.x * n.z - 2.0f * n.y * n.w;
-    out_matrix.data[9] = 2.0f * n.y * n.z + 2.0f * n.x * n.w;
-    out_matrix.data[10] = 1.0f - 2.0f * n.x * n.x - 2.0f * n.y * n.y;
+    out_matrix.data[0] = 1.0f - 2.0f * (yy + zz);
+    out_matrix.data[1] = 2.0f * (xy - zw);
+    out_matrix.data[2] = 2.0f * (xz + yw);
+
+    out_matrix.data[4] = 2.0f * (xy + zw);
+    out_matrix.data[5] = 1.0f - 2.0f * (xx + zz);
+    out_matrix.data[6] = 2.0f * (yz - xw);
+
+    out_matrix.data[8] = 2.0f * (xz - yw);
+    out_matrix.data[9] = 2.0f * (yz + xw);
+    out_matrix.data[10] = 1.0f - 2.0f * (xx + yy);
 
     return out_matrix;
 }
 
-// Calculates a rotation matrix based on the quaternionernion and the passed in center point.
-FORCEINLINE mat4 quaternion_to_rotation_matrix(Quaternion q, vec3 center)
+FORCEINLINE mat4 quarternion_to_rotation_matrix(quarternion q, vec3 center)
 {
-    mat4 out_matrix;
+    mat4 rot_matrix = quarternion_to_rot_mat4(q);
 
+    mat4 out_matrix = rot_matrix;
     f32* o = out_matrix.data;
-    o[0] = (q.x * q.x) - (q.y * q.y) - (q.z * q.z) + (q.w * q.w);
-    o[1] = 2.0f * ((q.x * q.y) + (q.z * q.w));
-    o[2] = 2.0f * ((q.x * q.z) - (q.y * q.w));
-    o[3] = center.x - center.x * o[0] - center.y * o[1] - center.z * o[2];
 
-    o[4] = 2.0f * ((q.x * q.y) - (q.z * q.w));
-    o[5] = -(q.x * q.x) + (q.y * q.y) - (q.z * q.z) + (q.w * q.w);
-    o[6] = 2.0f * ((q.y * q.z) + (q.x * q.w));
-    o[7] = center.y - center.x * o[4] - center.y * o[5] - center.z * o[6];
-
-    o[8] = 2.0f * ((q.x * q.z) + (q.y * q.w));
-    o[9] = 2.0f * ((q.y * q.z) - (q.x * q.w));
-    o[10] = -(q.x * q.x) - (q.y * q.y) + (q.z * q.z) + (q.w * q.w);
-    o[11] = center.z - center.x * o[8] - center.y * o[9] - center.z * o[10];
-
-    o[12] = 0.0f;
-    o[13] = 0.0f;
-    o[14] = 0.0f;
-    o[15] = 1.0f;
+    o[3] = center.x - center.x * o[0] - center.y * o[4] - center.z * o[8];
+    o[7] = center.y - center.x * o[1] - center.y * o[5] - center.z * o[9];
+    o[11] = center.z - center.x * o[2] - center.y * o[6] - center.z * o[10];
 
     return out_matrix;
 }
 
-FORCEINLINE Quaternion quaternion_from_axis_angle(vec3 axis, f32 angle, GDF_BOOL normalize)
+FORCEINLINE quarternion quarternion_from_euler(vec3 angles)
+{
+    f32 half_pitch = angles.x * 0.5f;  //  (X-axis rotation)
+    f32 half_yaw = angles.y * 0.5f;    //  (Y-axis rotation)
+    f32 half_roll = angles.z * 0.5f;   //  (Z-axis rotation)
+
+    f32 sin_pitch = gsin(half_pitch);
+    f32 cos_pitch = gcos(half_pitch);
+    f32 sin_yaw = gsin(half_yaw);
+    f32 cos_yaw = gcos(half_yaw);
+    f32 sin_roll = gsin(half_roll);
+    f32 cos_roll = gcos(half_roll);
+
+    quarternion q;
+    // YXZ rotation order holy cancer
+    q.w = cos_yaw * cos_pitch * cos_roll + sin_yaw * sin_pitch * sin_roll;
+    q.x = cos_yaw * sin_pitch * cos_roll + sin_yaw * cos_pitch * sin_roll;
+    q.y = sin_yaw * cos_pitch * cos_roll - cos_yaw * sin_pitch * sin_roll;
+    q.z = cos_yaw * cos_pitch * sin_roll - sin_yaw * sin_pitch * cos_roll;
+
+    return quarternion_normalize(q);
+}
+
+FORCEINLINE quarternion quarternion_from_axis_angle(vec3 axis, f32 angle, GDF_BOOL normalize)
 {
     const f32 half_angle = 0.5f * angle;
     f32 s = gsin(half_angle);
     f32 c = gcos(half_angle);
 
-    Quaternion q = (Quaternion){s * axis.x, s * axis.y, s * axis.z, c};
-    if (normalize) 
+    quarternion q = (quarternion){s * axis.x, s * axis.y, s * axis.z, c};
+    if (normalize)
     {
-        return quaternion_normalize(q);
+        return quarternion_normalize(q);
     }
     return q;
 }
 
-FORCEINLINE Quaternion quaternion_slerp(Quaternion q_0, Quaternion q_1, f32 percentage)
+FORCEINLINE quarternion quarternion_slerp(quarternion q_0, quarternion q_1, f32 percentage)
 {
-    Quaternion out_quaternionernion;
-    // Source: https://en.wikipedia.org/wiki/Slerp
-    // Only unit quaternionernions are valid rotations.
-    // Normalize to avoid undefined behavior.
-    Quaternion v0 = quaternion_normalize(q_0);
-    Quaternion v1 = quaternion_normalize(q_1);
+    quarternion out_quarternionernion;
 
-    // Compute the cosine of the angle between the two vectors.
-    f32 dot = quaternion_dot(v0, v1);
+    // Only unit quaternions are valid rotations
+    // Normalize to avoid undefined behavior
+    quarternion v0 = quarternion_normalize(q_0);
+    quarternion v1 = quarternion_normalize(q_1);
+
+    // Compute the cosine of the angle between the two vectors
+    f32 dot = quarternion_dot(v0, v1);
 
     // If the dot product is negative, slerp won't take
-    // the shorter path. Note that v1 and -v1 are equivalent when
-    // the negation is applied to all four components. Fix by
-    // reversing one quaternionernion.
-    if (dot < 0.0f) 
+    // the shorter path. Fix by reversing one quaternion.
+    if (dot < 0.0f)
     {
         v1.x = -v1.x;
         v1.y = -v1.y;
@@ -1560,17 +1576,17 @@ FORCEINLINE Quaternion quaternion_slerp(Quaternion q_0, Quaternion q_1, f32 perc
     }
 
     const f32 DOT_THRESHOLD = 0.9995f;
-    if (dot > DOT_THRESHOLD) 
+    if (dot > DOT_THRESHOLD)
     {
-        // If the inputs are too close for comfort, linearly interpolate
-        // and normalize the result.
-        out_quaternionernion = (Quaternion){
+        // If the inputs are too close, linearly interpolate
+        // and normalize the result
+        out_quarternionernion = (quarternion){
             v0.x + ((v1.x - v0.x) * percentage),
             v0.y + ((v1.y - v0.y) * percentage),
             v0.z + ((v1.z - v0.z) * percentage),
             v0.w + ((v1.w - v0.w) * percentage)};
 
-        return quaternion_normalize(out_quaternionernion);
+        return quarternion_normalize(out_quarternionernion);
     }
 
     // Since dot is in range [0, DOT_THRESHOLD], acos is safe
@@ -1582,12 +1598,59 @@ FORCEINLINE Quaternion quaternion_slerp(Quaternion q_0, Quaternion q_1, f32 perc
     f32 s0 = gcos(theta) - dot * sin_theta / sin_theta_0;  // == sin(theta_0 - theta) / sin(theta_0)
     f32 s1 = sin_theta / sin_theta_0;
 
-    return (Quaternion) {
+    return (quarternion) {
         (v0.x * s0) + (v1.x * s1),
         (v0.y * s0) + (v1.y * s1),
         (v0.z * s0) + (v1.z * s1),
         (v0.w * s0) + (v1.w * s1)
     };
+}
+
+FORCEINLINE vec3 quarternion_rotate_vector(quarternion q, vec3 v)
+{
+    quarternion p = (quarternion){v.x, v.y, v.z, 0.0f};
+    quarternion q_inv = quarternion_inverse(q);
+    quarternion result = quarternion_mul(q, quarternion_mul(p, q_inv));
+    return (vec3){result.x, result.y, result.z};
+}
+
+FORCEINLINE mat4 mat4_view_quaternion(vec3 camera_position, quarternion camera_orientation)
+{
+    quarternion inverse_orientation = camera_orientation;
+
+    mat4 view_matrix = quarternion_to_rot_mat4(inverse_orientation);
+
+    view_matrix.data[2] = -view_matrix.data[2];
+    view_matrix.data[6] = -view_matrix.data[6];
+    view_matrix.data[10] = -view_matrix.data[10];
+
+    view_matrix.data[0] = -view_matrix.data[0];
+    view_matrix.data[4] = -view_matrix.data[4];
+    view_matrix.data[8] = -view_matrix.data[8];
+
+    vec3 x_axis = {view_matrix.data[0], view_matrix.data[4], view_matrix.data[8]};
+    vec3 y_axis = {view_matrix.data[1], view_matrix.data[5], view_matrix.data[9]};
+    vec3 z_axis = {view_matrix.data[2], view_matrix.data[6], view_matrix.data[10]};
+
+    view_matrix.data[12] = -vec3_dot(x_axis, camera_position);
+    view_matrix.data[13] = -vec3_dot(y_axis, camera_position);
+    view_matrix.data[14] = -vec3_dot(z_axis, camera_position);
+
+    return view_matrix;
+}
+
+FORCEINLINE void quarternion_orientation(quarternion q,
+    vec3* forward, vec3* right, vec3* up)
+{
+    // Define the base vectors for X=right, Y=up, Z=forward
+    vec3 base_forward = {0, 0, 1}; // Z-forward
+    vec3 base_right = {1, 0, 0};   // X-right
+    vec3 base_up = {0, 1, 0};      // Y-up
+
+    // Apply quaternion rotation
+    *forward = quarternion_rotate_vector(q, base_forward);
+    *right = quarternion_rotate_vector(q, base_right);
+    *up = quarternion_rotate_vector(q, base_up);
 }
 
 #ifdef __cplusplus

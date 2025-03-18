@@ -3,8 +3,8 @@
 
 typedef struct GDF_Camera_T {
     vec3 pos;
-    // pitch yaw roll in radians
-    vec3 pyr;
+
+    quarternion rotation;
 
     mat4 view_matrix;
     mat4 perspective_matrix;
@@ -30,11 +30,10 @@ FORCEINLINE void gdfe_camera_update(GDF_Camera_T* camera)
     GDF_BOOL matrices_changed = GDF_FALSE;
 
     if (camera->needs_view_recalc) {
-        camera->view_matrix = mat4_view(
+        camera->view_matrix = mat4_view_quaternion(
             camera->pos,
-            camera->pyr.y,
-            camera->pyr.x,
-            camera->pyr.z);
+            camera->rotation
+        );
         camera->needs_view_recalc = GDF_FALSE;
         matrices_changed = GDF_TRUE;
     }
