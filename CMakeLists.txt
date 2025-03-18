@@ -35,18 +35,22 @@ SET_SOURCE_FILES_PROPERTIES(${GDFE_SRC} ${GDFE_EXTERN} PROPERTIES LANGUAGE C)
 add_library(${PROJECT_NAME} ${GDFE_SRC} ${GDFE_EXTERN})
 
 if(DEFINED ENV{VULKAN_SDK})
-    set(Vulkan_INCLUDE_DIRS "$ENV{VULKAN_SDK}/include")
-    set(Vulkan_LIBRARIES "$ENV{VULKAN_SDK}/lib")
+    if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+        set(Vulkan_INCLUDE_DIRS "$ENV{VULKAN_SDK}/Include")
+    else()
+        set(Vulkan_INCLUDE_DIRS "$ENV{VULKAN_SDK}/include")
+    endif()
     include_directories(${Vulkan_INCLUDE_DIRS})
-    link_directories(${Vulkan_LIBRARIES})
+    find_package(Vulkan REQUIRED)
 else()
     find_package(Vulkan REQUIRED)
     include_directories(${Vulkan_INCLUDE_DIRS})
-    target_link_libraries(${PROJECT_NAME}
-            PRIVATE
-            Vulkan::Vulkan
-    )
 endif()
+
+target_link_libraries(${PROJECT_NAME}
+        PRIVATE
+        Vulkan::Vulkan
+)
 
 target_include_directories(${PROJECT_NAME}
         PUBLIC

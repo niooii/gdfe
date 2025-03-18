@@ -41,6 +41,41 @@ GDF_Camera GDF_CameraCreate(GDF_CameraCreateInfo* camera_info);
 void GDF_CameraDestroy(GDF_Camera camera);
 
 /**
+  * @brief Constrain the camera's pitch to a specific range. Set both params to 0 for no constraint.
+  *
+  * @param camera The camera to modify
+  * @param min_pitch The lower bound for the pitch in radians
+  * @param max_pitch The upper bound for the pitch in radians
+  */
+void GDF_CameraConstrainPitch(GDF_Camera camera, f32 min_pitch, f32 max_pitch);
+
+/**
+  * @brief Set the global axis of the camera, which all relative pitch/yaw/roll operations are based on
+  *
+  * @param camera The camera to modify
+  * @param axis The axis (default: <0, 1, 0>) to perform the relative rotate operations
+  */
+void GDF_CameraSetGlobalAxis(GDF_Camera camera, vec3 axis);
+
+/**
+  * @brief Get the global axis of the camera, which all relative pitch/yaw/roll operations are based on
+  *
+  * @param camera The camera to query
+  * @return The global axis unit vector
+  */
+vec3 GDF_CameraGetGlobalAxis(GDF_Camera camera);
+
+/**
+  * @brief Get the global axis of the camera, which all relative pitch/yaw/roll operations are based on
+  *
+  * @param camera The camera to query
+  * @param forward The output forward vector
+  * @param right The output right vector
+  * @param up The output up vector
+  */
+void GDF_CameraGetGlobalAxes(GDF_Camera camera, vec3* forward, vec3* right, vec3* up);
+
+/**
  * @brief Set the pitch of the camera (rotation around X axis)
  *
  * @param camera The camera to modify
@@ -65,15 +100,23 @@ void GDF_CameraSetYaw(GDF_Camera camera, f32 yaw);
 void GDF_CameraSetRoll(GDF_Camera camera, f32 roll);
 
 /**
- * @brief Set the pitch, yaw and roll of the camera all at once
+ * @brief Set the pitch, yaw and roll of the camera all at once in world space
  *
  * @param camera The camera to modify
- * @param pyr The new pitch, yaw, and roll values as a vec3 (in radians)
+ * @param pyr The new pitch, yaw, and roll values as a vec3, in world space (in radians)
  */
-void GDF_CameraSetRotation(GDF_Camera camera, vec3 pyr);
+void GDF_CameraSetAbsoluteRotation(GDF_Camera camera, vec3 pyr);
 
 /**
- * @brief Adds to the pitch of the camera (rotation around X axis)
+ * @brief Set the internal rotation quaternion of the camera
+ *
+ * @param camera The camera to modify
+ * @param rotation The new rotation
+ */
+void GDF_CameraSetRotationQuaternion(GDF_Camera camera, quaternion rotation);
+
+/**
+ * @brief Adds to the local pitch of the camera (rotation around the camera's local X axis)
  *
  * @param camera The camera to modify
  * @param pitch The new pitch value in radians
@@ -81,7 +124,7 @@ void GDF_CameraSetRotation(GDF_Camera camera, vec3 pyr);
 void GDF_CameraAddPitch(GDF_Camera camera, f32 pitch);
 
 /**
- * @brief Adds to the yaw of the camera (rotation around Y axis)
+ * @brief Adds to the local yaw of the camera (rotation around the camera's local Y axis)
  *
  * @param camera The camera to modify
  * @param yaw The new yaw value in radians
@@ -89,7 +132,7 @@ void GDF_CameraAddPitch(GDF_Camera camera, f32 pitch);
 void GDF_CameraAddYaw(GDF_Camera camera, f32 yaw);
 
 /**
- * @brief Adds to the roll of the camera (rotation around Z/front axis)
+ * @brief Adds to the local roll of the camera (rotation around the camera's local Z/front axis)
  *
  * @param camera The camera to modify
  * @param roll The new roll value in radians
@@ -97,7 +140,7 @@ void GDF_CameraAddYaw(GDF_Camera camera, f32 yaw);
 void GDF_CameraAddRoll(GDF_Camera camera, f32 roll);
 
 /**
- * @brief Set the pitch, yaw and roll of the camera all at once
+ * @brief Adds to the pitch, yaw and roll of the camera all at once
  *
  * @param camera The camera to modify
  * @param pyr The new pitch, yaw, and roll values as a vec3 (in radians)

@@ -11,6 +11,7 @@
 #include <gdfe/render/vk_utils.h>
 #include <gdfe/render/vk_utils.h>
 #include "irender/vk_utils.h"
+#include <vulkan/vulkan.h>
 
 VKAPI_ATTR VkBool32 VKAPI_CALL __vk_dbg_callback(
     VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,

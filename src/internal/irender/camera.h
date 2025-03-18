@@ -4,7 +4,15 @@
 typedef struct GDF_Camera_T {
     vec3 pos;
 
-    quarternion rotation;
+    GDF_BOOL constrain_pitch;
+    f32 min_pitch;
+    f32 max_pitch;
+    vec3 euler;
+    quaternion rotation;
+
+    vec3 axis;
+    vec3 axis_right;
+    vec3 axis_forward;
 
     mat4 view_matrix;
     mat4 perspective_matrix;
@@ -25,6 +33,16 @@ typedef struct GDF_Camera_T {
     GDF_BOOL needs_dir_vecs_recalc;
 } GDF_Camera_T;
 
+FORCEINLINE void gdfe_camera_update_orientation_vecs(GDF_Camera_T* camera)
+{
+    quaternion_orientation(
+        camera->rotation,
+        &camera->forward,
+        &camera->right,
+        &camera->up
+    );
+}
+
 FORCEINLINE void gdfe_camera_update(GDF_Camera_T* camera)
 {
     GDF_BOOL matrices_changed = GDF_FALSE;
@@ -36,6 +54,10 @@ FORCEINLINE void gdfe_camera_update(GDF_Camera_T* camera)
         );
         camera->needs_view_recalc = GDF_FALSE;
         matrices_changed = GDF_TRUE;
+        if (camera->needs_dir_vecs_recalc)
+        {
+            gdfe_camera_update_orientation_vecs(camera);
+        }
     }
 
     if (camera->needs_persp_recalc) {
