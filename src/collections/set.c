@@ -1,3 +1,4 @@
+#include <string.h>
 #include <gdfe/collections/set.h>
 #include <superfasthash.h>
 // TODO! move away from memcmp for comparison, use custom comparison function

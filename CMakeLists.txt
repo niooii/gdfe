@@ -9,8 +9,6 @@ set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
-find_package(Vulkan REQUIRED)
-
 set(NO_WARNING_FLAGS "-Wno-deprecated-declarations -Wno-unused-parameter -Wno-missing-braces -Wno-unused-variable -Wno-ignored-qualifiers -Wno-missing-field-initializers")
 
 set(CMAKE_C_FLAGS "-Wall -W -Wextra ${NO_WARNING_FLAGS} -ffast-math -march=native -mavx2 -fcolor-diagnostics")
@@ -36,10 +34,19 @@ SET_SOURCE_FILES_PROPERTIES(${GDFE_SRC} ${GDFE_EXTERN} PROPERTIES LANGUAGE C)
 
 add_library(${PROJECT_NAME} ${GDFE_SRC} ${GDFE_EXTERN})
 
-target_link_libraries(${PROJECT_NAME}
-        PRIVATE
-        Vulkan::Vulkan
-)
+if(DEFINED ENV{VULKAN_SDK})
+    set(Vulkan_INCLUDE_DIRS "$ENV{VULKAN_SDK}/include")
+    set(Vulkan_LIBRARIES "$ENV{VULKAN_SDK}/lib")
+    include_directories(${Vulkan_INCLUDE_DIRS})
+    link_directories(${Vulkan_LIBRARIES})
+else()
+    find_package(Vulkan REQUIRED)
+    include_directories(${Vulkan_INCLUDE_DIRS})
+    target_link_libraries(${PROJECT_NAME}
+            PRIVATE
+            Vulkan::Vulkan
+    )
+endif()
 
 target_include_directories(${PROJECT_NAME}
         PUBLIC

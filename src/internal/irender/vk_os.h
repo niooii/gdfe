@@ -1,6 +1,6 @@
 #pragma once
 
-#include <gdfe/../../../include/gdfe/core.h>
+#include <gdfe/core.h>
 #include <gdfe/os/window.h>
 #include <gdfe/render/vk_types.h>
 

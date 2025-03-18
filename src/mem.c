@@ -5,6 +5,7 @@
 // TODO: Custom string lib
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 struct memory_stats {
     u64 total_allocated;
@@ -62,7 +63,7 @@ void* GDF_Malloc(u64 size, GDF_MEMTAG tag)
         LOG_FATAL("It appears you have ran out of memory. womp womp");
     }
     
-    memzero(block, size);
+    GDF_MemZero(block, size);
     // stats.total_allocated += total_allocated;
     // stats.tagged_allocations[tag] += total_allocated;
     return block;
@@ -90,7 +91,7 @@ void GDF_Free(void* block)
 
 void GDF_MemZero(void* block, u64 size)
 {
-    memzero(block, size);
+    memset(block, 0, size);
 }
 
 // TODO! copy over memtag and shi
