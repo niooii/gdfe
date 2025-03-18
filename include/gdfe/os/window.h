@@ -30,6 +30,8 @@ void GDF_GetWindowPos(GDF_Window window, i16* x, i16* y);
 void GDF_GetWindowSize(GDF_Window window, u16* w, u16* h);
 GDF_BOOL GDF_DestroyWindow(GDF_Window window);
 
+void GDF_SetShowCursor(GDF_Window window);
+
 #ifdef __cplusplus
 }
 #endif

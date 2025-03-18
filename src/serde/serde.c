@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <gdfe/serde/serde.h>
 
 // Function to replace %ENV_VAR% with the value of the environment variable

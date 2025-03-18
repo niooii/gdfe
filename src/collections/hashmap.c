@@ -1,3 +1,4 @@
+#include <string.h>
 #include <gdfe/collections/hashmap.h>
 #include <superfasthash.h>
 

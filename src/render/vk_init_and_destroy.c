@@ -205,7 +205,7 @@ GDF_Renderer gdfe_renderer_init(
     GDF_GetWindowSize(window, &w, &h);
     renderer->framebuffer_width = w;
     renderer->framebuffer_height = h;
-    renderer->callbacks = callbacks;
+    renderer->callbacks = &callbacks->render_callbacks;
     renderer->app_state = app_state;
 
     GDF_VkRenderContext* vk_ctx = &renderer->vk_ctx;
