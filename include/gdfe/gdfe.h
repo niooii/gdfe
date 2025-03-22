@@ -55,6 +55,7 @@ typedef struct GDF_RenderCallbacks {
     // Custom rendering should happen here.
     GDF_BOOL (*on_render)(
         const GDF_VkRenderContext* vulkan_ctx,
+        GDF_RENDER_MODE mode,
         const GDF_AppState* app_state,
         void* state
     );

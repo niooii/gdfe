@@ -44,6 +44,11 @@ GDF_BOOL default_events(u16 event_code, void *sender, void *listener_instance, G
                     GDF_CURSOR_LOCK_STATE state = APP_STATE.mouse_lock_toggle ? GDF_CURSOR_LOCK_STATE_Locked : GDF_CURSOR_LOCK_STATE_Free;
                     GDF_SetMouseLockState(state);
                     LOG_DEBUG("TOGGLE MOUSE LOCK");
+                    break;
+                }
+                case GDF_KEYCODE_V:
+                {
+                    GDF_RendererCycleRenderMode(APP_STATE.public.renderer);
                 }
             }
             break;
