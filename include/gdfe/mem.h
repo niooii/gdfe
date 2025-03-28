@@ -2,6 +2,7 @@
 
 #include <gdfe/core.h>
 #ifdef OS_WINDOWS
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #define strdup(p) _strdup(p)
 #define memzero(block, size) (void) memset((block), 0, (size))

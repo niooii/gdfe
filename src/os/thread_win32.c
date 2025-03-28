@@ -1,6 +1,7 @@
 #include <gdfe/os/thread.h>
 
 #ifdef OS_WINDOWS
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 typedef struct GDF_Mutex_T {
