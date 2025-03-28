@@ -201,6 +201,9 @@ void GDF_CameraAddPitch(GDF_Camera camera, f32 pitch)
         }
         f32 d_pitch = new_pitch - camera->euler.x;
         camera->euler.x = new_pitch;
+        // TODO! this breaks down when roll is non zero. need to
+        // rotate by camera right projected onto the same plane as
+        // axis forward and axis right. MAN wtf
         pitch_quat = quaternion_from_axis_angle(camera->right, d_pitch);
     }
     else

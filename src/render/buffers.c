@@ -167,7 +167,6 @@ void GDF_VkBufferDestroy(
     GDF_VkBuffer* buf
 )
 {
-    
     vkUnmapMemory(GDFE_INTERNAL_VK_CTX->device.handle, buf->memory);
     vkFreeMemory(
         GDFE_INTERNAL_VK_CTX->device.handle,
