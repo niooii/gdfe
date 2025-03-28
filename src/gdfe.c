@@ -44,10 +44,16 @@ GDF_BOOL default_events(u16 event_code, void *sender, void *listener_instance, G
                     GDF_CURSOR_LOCK_STATE state = APP_STATE.mouse_lock_toggle ? GDF_CURSOR_LOCK_STATE_Locked : GDF_CURSOR_LOCK_STATE_Free;
                     GDF_SetMouseLockState(state);
                     LOG_DEBUG("TOGGLE MOUSE LOCK");
+                    break;
+                }
+                case GDF_KEYCODE_V:
+                {
+                    GDF_RendererCycleRenderMode(APP_STATE.public.renderer);
                 }
             }
             break;
         }
+
         case GDF_EVENT_INTERNAL_APP_QUIT:
         {
             LOG_INFO("Shutting down app...");
@@ -128,15 +134,23 @@ GDF_AppState* GDF_Init(GDF_InitInfo init_info) {
     GDF_InitIO();
     if (!GDF_InitSysinfo())
         return NULL;
-    if (!GDF_InitWindowing())
-        return NULL;
     if (!GDF_InitEvents())
         return NULL;
-    GDF_InitInput();
     if (!GDF_InitSockets() || !GDF_InitLogging())
         return NULL;
     if (!GDF_InitThreadLogging("Main"))
         return NULL;
+
+    APP_STATE.stopwatch = GDF_StopwatchCreate();
+
+    APP_STATE.initialized = GDF_TRUE;
+
+    if (init_info.config.disable_video)
+        return &APP_STATE.public;
+
+    if (!GDF_InitWindowing())
+        return NULL;
+    GDF_InitInput();
 
     GDF_AppState* public = &APP_STATE.public;
     public->window = GDF_CreateWindow(
@@ -164,10 +178,6 @@ GDF_AppState* GDF_Init(GDF_InitInfo init_info) {
 
     GDF_EventRegister(GDF_EVENT_INTERNAL_WINDOW_RESIZE, public->renderer, on_resize);
 
-    APP_STATE.stopwatch = GDF_StopwatchCreate();
-
-    APP_STATE.initialized = GDF_TRUE;
-
     return public;
 }
 
@@ -181,7 +191,7 @@ f64 GDF_Run() {
     public->alive = GDF_TRUE;
 
     GDF_Stopwatch running_timer = GDF_StopwatchCreate();
-    u32 fps = APP_STATE.conf.fps_cap;
+    u32 fps = APP_STATE.conf.max_updates_per_sec;
     f64 secs_per_frame = fps != 0 ? 1.0/fps : 0.0;
     GDF_Stopwatch frame_timer = GDF_StopwatchCreate();
 
@@ -201,18 +211,19 @@ f64 GDF_Run() {
         APP_STATE.last_time = current_time;
         GDF_StopwatchReset(frame_timer);
 
-        if (APP_STATE.callbacks.on_frame) {
+        if (APP_STATE.callbacks.on_loop) {
             if (
-                !APP_STATE.callbacks.on_frame(
+                !APP_STATE.callbacks.on_loop(
                 &APP_STATE.public,
                 dt,
-                APP_STATE.callbacks.on_frame_state
+                APP_STATE.callbacks.on_loop_state
             )) {
                 return -1;
             }
         }
 
-        GDF_RendererDrawFrame(public->renderer, dt);
+        if (!APP_STATE.conf.disable_video)
+            GDF_RendererDrawFrame(public->renderer, dt);
 
         f64 frame_time = GDF_StopwatchElapsed(frame_timer);
 

@@ -133,6 +133,7 @@ GDF_BOOL core_renderer_draw(GDF_Renderer renderer, GDF_VkRenderContext* vk_ctx, 
     {
         if (!callbacks->on_render(
             vk_ctx,
+            renderer->render_mode,
             renderer->app_state,
             callbacks->on_render_state
         ))

@@ -238,7 +238,7 @@ void GDF_CameraAddRoll(GDF_Camera camera, f32 roll)
 
     camera->euler.z += roll;
 
-    quaternion roll_quat = quaternion_from_axis_angle(camera->forward, roll);
+    quaternion roll_quat = quaternion_from_axis_angle(camera->axis_forward, roll);
     camera->rotation = quaternion_mul(roll_quat, camera->rotation);
 
     camera->needs_view_recalc = GDF_TRUE;

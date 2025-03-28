@@ -55,6 +55,7 @@ typedef struct GDF_RenderCallbacks {
     // Custom rendering should happen here.
     GDF_BOOL (*on_render)(
         const GDF_VkRenderContext* vulkan_ctx,
+        GDF_RENDER_MODE mode,
         const GDF_AppState* app_state,
         void* state
     );
@@ -74,24 +75,29 @@ typedef struct GDF_RenderCallbacks {
 
 typedef struct GDF_AppCallbacks {
     GDF_RenderCallbacks render_callbacks;
-    // Called on each frame, before any rendering and after updating
+    // Called on each iteration of the application loop, before any rendering and after updating
     // the input subsystem.
-    GDF_BOOL (*on_frame)(
+    GDF_BOOL (*on_loop)(
         const GDF_AppState* app_state,
         f64 delta_time,
         void* state
     );
-    // State to be passed into the on_frame callback.
-    void* on_frame_state;
+    // State to be passed into the on_loop callback.
+    void* on_loop_state;
 
 } GDF_AppCallbacks;
 
 typedef struct GDF_Config {
     // Set to 0 for no cap
-    u32 fps_cap;
+    // if the main application loop should be capped at an amount of iterations
+    // per second
+    u32 max_updates_per_sec;
     // Disable the internal quit event when pressing 'Esc' or closing the window.
     // Additionally disables the grave keybind for locking/unlocking the cursor.
     GDF_BOOL disable_default_events;
+    // Disables everything video related, including input, windowing, rendering.
+    // Good for minimal server applications
+    GDF_BOOL disable_video;
 } GDF_Config;
 
 // Initialization info for the GDF engine.
