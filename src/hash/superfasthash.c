@@ -24,7 +24,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-#include "superfasthash.h"
+#include <gdfe/hash/superfasthash.h>
 
 uint32_t SuperFastHash (const char * data, int len) {
 uint32_t hash = (uint32_t)len, tmp;

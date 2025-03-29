@@ -1,6 +1,6 @@
 #include <string.h>
 #include <gdfe/collections/set.h>
-#include <superfasthash.h>
+#include <gdfe/hash/superfasthash.h>
 // TODO! move away from memcmp for comparison, use custom comparison function
 
 typedef struct GDF_Set_T {

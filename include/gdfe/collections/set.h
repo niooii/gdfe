@@ -2,7 +2,7 @@
 
 #include <gdfe/core.h>
 
-#include <superfasthash.h>
+#include <gdfe/hash/superfasthash.h>
 // TODO! move away from memcmp for comparison, use custom comparison function
 
 static FORCEINLINE u32 _superfasthash_wrapper(const u8* data, u32 len) 

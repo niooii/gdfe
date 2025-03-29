@@ -28,11 +28,11 @@ function(find_src_files result search_dir)
 endfunction()
 
 find_src_files(GDFE_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
-find_src_files(GDFE_EXTERN "${CMAKE_CURRENT_SOURCE_DIR}/extern")
+find_src_files(GDFE_EXTERNAL "${CMAKE_CURRENT_SOURCE_DIR}/external")
 
-SET_SOURCE_FILES_PROPERTIES(${GDFE_SRC} ${GDFE_EXTERN} PROPERTIES LANGUAGE C)
+SET_SOURCE_FILES_PROPERTIES(${GDFE_SRC} ${GDFE_EXTERNAL} PROPERTIES LANGUAGE C)
 
-add_library(${PROJECT_NAME} ${GDFE_SRC} ${GDFE_EXTERN})
+add_library(${PROJECT_NAME} ${GDFE_SRC} ${GDFE_EXTERNAL})
 
 if(DEFINED ENV{VULKAN_SDK})
     if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -62,6 +62,6 @@ target_include_directories(${PROJECT_NAME}
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/extern
+        ${CMAKE_CURRENT_SOURCE_DIR}/external
         ${CMAKE_CURRENT_SOURCE_DIR}/src/internal
 )
