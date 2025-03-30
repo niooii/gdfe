@@ -250,7 +250,7 @@ f64 GDF_Run() {
                 avg_frametime += frame_times[i];
             }
             avg_frametime /= frame_times_sample_size;
-            LOG_INFO("Avg frame time: %lfs, FPS: %lf", avg_frametime, 1.0/avg_frametime);
+            // LOG_INFO("Avg frame time: %lfs, FPS: %lf", avg_frametime, 1.0/avg_frametime);
             last_whole_second = (u32)current_time;
         }
 
