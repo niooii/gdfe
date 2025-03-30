@@ -33,6 +33,10 @@ GDF_Thread GDF_CreateThread(unsigned long thread_fn(void*), void* args) {
     return thread;
 }
 
+void GDF_DestroyThread(GDF_Thread thread) {
+    GDF_Free(thread);
+}
+
 u32 GDF_GetCurrentThreadId()
 {
     return GetCurrentThreadId();
