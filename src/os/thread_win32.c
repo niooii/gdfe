@@ -6,7 +6,6 @@
 
 typedef struct GDF_Mutex_T {
     HANDLE mutex_handle;
-    GDF_BOOL locked;
 } GDF_Mutex_T;
 
 typedef struct GDF_Thread_T {
@@ -56,7 +55,6 @@ GDF_Mutex GDF_CreateMutex()
 {
     HANDLE handle = CreateMutex(NULL, FALSE, NULL);
     GDF_Mutex mutex = GDF_Malloc(sizeof(GDF_Mutex_T), GDF_MEMTAG_APPLICATION);
-    mutex->locked = GDF_FALSE;
     mutex->mutex_handle = handle;
 
     return mutex;
@@ -72,6 +70,12 @@ GDF_BOOL GDF_ReleaseMutex(GDF_Mutex mutex)
 {
     ReleaseMutex(mutex->mutex_handle);
     return GDF_TRUE;
+}
+
+void GDF_DestroyMutex(GDF_Mutex mutex)
+{
+    CloseHandle(mutex->mutex_handle);
+    GDF_Free(mutex);
 }
 
 GDF_Semaphore GDF_CreateSemaphore()

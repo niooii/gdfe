@@ -22,6 +22,7 @@ GDF_Mutex GDF_CreateMutex();
 // TODO! Check return value for poisoned mutex, if it returns WAIT_ABANDONED
 GDF_BOOL GDF_LockMutex(GDF_Mutex mutex);
 GDF_BOOL GDF_ReleaseMutex(GDF_Mutex mutex);
+void GDF_DestroyMutex(GDF_Mutex mutex);
  
 // Technically a binary semaphore, used for signaling the completion of code
 // across different threads.
