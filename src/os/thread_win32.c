@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <gdfe/os/thread.h>
 
 #ifdef OS_WINDOWS
@@ -15,7 +16,8 @@ typedef struct GDF_Thread_T {
 
 typedef struct GDF_Semaphore_T {
     HANDLE sm_handle;
-} GDF_Semaphore_T; 
+    const char* name;
+} GDF_Semaphore_T;
 
 GDF_Thread GDF_CreateThread(unsigned long thread_fn(void*), void* args) {
     GDF_Thread thread = GDF_Malloc(sizeof(GDF_Thread_T), GDF_MEMTAG_APPLICATION);
@@ -78,11 +80,48 @@ void GDF_DestroyMutex(GDF_Mutex mutex)
     GDF_Free(mutex);
 }
 
-GDF_Semaphore GDF_CreateSemaphore()
+static const char* GLOBAL_NAMESPACE_PREFIX = "Global\\";
+GDF_Semaphore GDF_CreateSemaphore(const char* name)
 {
-    HANDLE handle = CreateSemaphore(NULL, 0, 1, NULL);
+    char namebuf[strlen(name) + sizeof(GLOBAL_NAMESPACE_PREFIX) + 1];
+    GDF_MemZero(namebuf, sizeof(namebuf));
+
+    if (name)
+        snprintf(namebuf, sizeof(namebuf), "%s%s", GLOBAL_NAMESPACE_PREFIX, name);
+
+    HANDLE handle = CreateSemaphore(NULL, 0, 1, namebuf);
+    if (handle == NULL)
+        return NULL;
+
     GDF_Semaphore sm = GDF_Malloc(sizeof(GDF_Semaphore_T), GDF_MEMTAG_APPLICATION);
     sm->sm_handle = handle;
+    sm->name = name;
+
+    return sm;
+}
+
+GDF_Semaphore GDF_GetSemaphore(const char* name)
+{
+    if (!name)
+        return NULL;
+
+    char namebuf[strlen(name) + sizeof(GLOBAL_NAMESPACE_PREFIX) + 1];
+    GDF_MemZero(namebuf, sizeof(namebuf));
+
+    snprintf(namebuf, sizeof(namebuf), "%s%s", GLOBAL_NAMESPACE_PREFIX, name);
+
+    HANDLE handle = OpenSemaphore(
+        SEMAPHORE_ALL_ACCESS,
+        FALSE,
+        name
+    );
+
+    if (handle == NULL)
+        return NULL;
+
+    GDF_Semaphore sm = GDF_Malloc(sizeof(GDF_Semaphore_T), GDF_MEMTAG_APPLICATION);
+    sm->sm_handle = handle;
+    sm->name = name;
 
     return sm;
 }

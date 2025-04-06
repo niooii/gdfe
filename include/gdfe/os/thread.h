@@ -25,8 +25,12 @@ GDF_BOOL GDF_ReleaseMutex(GDF_Mutex mutex);
 void GDF_DestroyMutex(GDF_Mutex mutex);
  
 // Technically a binary semaphore, used for signaling the completion of code
-// across different threads.
-GDF_Semaphore GDF_CreateSemaphore();
+// across different threads/processes.
+// If name is not NULL, then a globally scoped semaphore is created
+GDF_Semaphore GDF_CreateSemaphore(const char* name);
+// Returns the global semaphore with the provided name, or NULL
+// if it cannot be acquired for any reason
+GDF_Semaphore GDF_GetSemaphore(const char* name);
 // When this function returns, the semaphore will be reset to the unsignaled state.
 GDF_BOOL GDF_WaitSemaphore(GDF_Semaphore semaphore);
 // When called, any thread currently waiting on the semaphore will continue

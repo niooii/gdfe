@@ -59,6 +59,11 @@ void GDF_HideConsole()
     ShowWindow(console_window, SW_HIDE);
 }
 
+const char* GDF_GetExecutablePath()
+{
+    return EXECUTABLE_PATH;
+}
+
 void GDF_WriteConsole(const char* msg)
 {
     // FATAL,ERROR,WARN,INFO,DEBUG,TRACE

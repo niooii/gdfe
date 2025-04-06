@@ -121,6 +121,8 @@ typedef struct GDF_InitInfo {
 extern "C" {
 #endif
 
+GDF_BOOL GDF_InitSubsystems();
+
 GDF_AppState* GDF_Init(GDF_InitInfo);
 
 // Returns the number of seconds ran for, or -1 if something failed.

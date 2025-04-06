@@ -119,7 +119,28 @@ void set_defaults(GDF_InitInfo* info) {
         info->window.title = "Not a GDF";
 }
 
+static GDF_BOOL SUBSYS_INITIALIZED;
+GDF_BOOL GDF_InitSubsystems()
+{
+    GDF_InitMemory();
+    GDF_InitIO();
+    if (!GDF_InitSysinfo())
+        return GDF_FALSE;
+    if (!GDF_InitEvents())
+        return GDF_FALSE;
+    if (!GDF_InitSockets() || !GDF_InitLogging())
+        return GDF_FALSE;
+    if (!GDF_InitThreadLogging("Main"))
+        return GDF_FALSE;
+
+    SUBSYS_INITIALIZED = GDF_TRUE;
+    return GDF_TRUE;
+}
+
 GDF_AppState* GDF_Init(GDF_InitInfo init_info) {
+    if (!SUBSYS_INITIALIZED && !GDF_InitSubsystems())
+        return NULL;
+
     if (APP_STATE.initialized)
     {
         LOG_WARN("Cannot initialize twice - this will be added in the future.");
@@ -129,17 +150,6 @@ GDF_AppState* GDF_Init(GDF_InitInfo init_info) {
     set_defaults(&init_info);
     APP_STATE.callbacks = init_info.callbacks;
     APP_STATE.conf = init_info.config;
-
-    GDF_InitMemory();
-    GDF_InitIO();
-    if (!GDF_InitSysinfo())
-        return NULL;
-    if (!GDF_InitEvents())
-        return NULL;
-    if (!GDF_InitSockets() || !GDF_InitLogging())
-        return NULL;
-    if (!GDF_InitThreadLogging("Main"))
-        return NULL;
 
     APP_STATE.stopwatch = GDF_StopwatchCreate();
 

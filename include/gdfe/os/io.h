@@ -23,6 +23,7 @@ extern "C" {
 void GDF_InitIO();
 void GDF_ShowConsole();
 void GDF_HideConsole();
+const char* GDF_GetExecutablePath();
 void GDF_WriteConsole(const char* msg);
 void GDF_GetAbsolutePath(const char* rel_path, char* out_buf);
 // gets path of resource in a resources/ directory
