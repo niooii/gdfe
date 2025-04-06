@@ -45,10 +45,34 @@ void* __list_push(void* list, const void* value_ptr) {
         list = __list_resize(list);
     }
 
-    u64 addr = (u64)list;
-    addr += (length * stride);
-    GDF_MemCopy((void*)addr, value_ptr, stride);
-    GDF_LIST_SetLength(list, length + 1);
+    if (value_ptr)
+    {
+        u64 addr = (u64)list;
+        addr += (length * stride);
+        GDF_MemCopy((void*)addr, value_ptr, stride);
+        GDF_LIST_SetLength(list, length + 1);
+    }
+    return list;
+}
+
+void* __list_append(void* list, const void* value_ptr, u32 num_values)
+{
+    u64 length = GDF_LIST_GetLength(list);
+    u64 new_len = length + num_values;
+    u64 stride = GDF_LIST_GetStride(list);
+    while (new_len >= GDF_LIST_GetCapacity(list))
+    {
+        list = __list_resize(list);
+    }
+
+    if (value_ptr)
+    {
+        u64 addr = (u64)list;
+        addr += (length * stride);
+        GDF_MemCopy((void*)addr, value_ptr, stride * num_values);
+        GDF_LIST_SetLength(list, new_len);
+    }
+
     return list;
 }
 

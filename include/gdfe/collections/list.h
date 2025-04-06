@@ -1,6 +1,6 @@
 #pragma once
 
-#include <gdfe/../gdfe/core.h>
+#include <gdfe/core.h>
 
 /*
 Memory layout
@@ -20,6 +20,10 @@ enum {
 // For easier reading of struct definitions that contain lists.
 #define GDF_LIST(type) type*
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void* __list_create(u64 length, u64 stride);
 void __list_destroy(void* list);
 
@@ -29,10 +33,15 @@ void __list_field_set(void* list, u64 field, u64 value);
 void* __list_resize(void* list);
 
 void* __list_push(void* list, const void* value_ptr);
+void* __list_append(void* list, const void* value_ptr, u32 num_values);
 void __list_pop(void* list, void* dest);
 
 void* __list_remove_at(void* list, u64 index, void* dest);
 void* __list_insert_at(void* list, u64 index, void* value_ptr);
+
+#ifdef __cplusplus
+    }
+#endif
 
 #define LIST_DEFAULT_CAPACITY 1
 #define LIST_RESIZE_FACTOR 2
@@ -49,10 +58,27 @@ void* __list_insert_at(void* list, u64 index, void* value_ptr);
 
 #define GDF_LIST_Destroy(list) __list_destroy(list);
 
+// Makes a temporary copy of the value
 #define GDF_LIST_Push(list, value)          \
     {                                       \
         TYPEOF(value) temp = (value);         \
         list = (void*)__list_push(list, &temp);     \
+    }
+
+// Does not make a temporary copy of the value, but a pointer
+// to the value being pushed must be passed in
+// If NULL is passed, the list contents remain unchanged,
+// but a resize will be forced if the list is full
+#define GDF_LIST_PushPtr(list, value_ptr)          \
+    {                                       \
+        list = (void*)__list_push(list, value_ptr);     \
+    }
+
+// If values is NULL, then the list will be resized to hold the
+// new amount, however no data will be copied
+#define GDF_LIST_Append(list, values, num_values)          \
+    {                                       \
+        list = (void*)__list_append(list, values, num_values);     \
     }
 
 // Sets the out_val ptr equal to the last element in the array, then decrements length.

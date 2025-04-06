@@ -113,7 +113,7 @@ GDF_Semaphore GDF_GetSemaphore(const char* name)
     HANDLE handle = OpenSemaphore(
         SEMAPHORE_ALL_ACCESS,
         FALSE,
-        name
+        namebuf
     );
 
     if (handle == NULL)
@@ -129,6 +129,11 @@ GDF_Semaphore GDF_GetSemaphore(const char* name)
 GDF_BOOL GDF_WaitSemaphore(GDF_Semaphore semaphore)
 {
     return WaitForSingleObject(semaphore->sm_handle, INFINITE) == WAIT_OBJECT_0;
+}
+
+GDF_BOOL GDF_ConsumeSemaphoreSignal(GDF_Semaphore semaphore)
+{
+    return WaitForSingleObject(semaphore->sm_handle, 0) == WAIT_OBJECT_0;
 }
 
 GDF_BOOL GDF_SignalSemaphore(GDF_Semaphore semaphore)

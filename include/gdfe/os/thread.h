@@ -33,6 +33,10 @@ GDF_Semaphore GDF_CreateSemaphore(const char* name);
 GDF_Semaphore GDF_GetSemaphore(const char* name);
 // When this function returns, the semaphore will be reset to the unsignaled state.
 GDF_BOOL GDF_WaitSemaphore(GDF_Semaphore semaphore);
+// Returns GDF_TRUE if the signal was successfully consumed,
+// or GDF_FALSE if there was no signal.
+// Effectively a non blocking poll on the semaphore
+GDF_BOOL GDF_ConsumeSemaphoreSignal(GDF_Semaphore semaphore);
 // When called, any thread currently waiting on the semaphore will continue
 // execution. If no thread is waiting, the next thread that calls WaitSemaphore
 // will not be blocked, and the semaphore will be reset to the unsignaled state.

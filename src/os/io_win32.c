@@ -424,12 +424,47 @@ char* GDF_StrcatNoOverwrite(const char* s1,const char* s2)
   return start;
 }
 
+#include <gdfe/strutils.h>
 char* GDF_StrDup(const char* str)
 {
     // CHECK HERE
     char* dup = GDF_Malloc(strlen(str) + 1, GDF_MEMTAG_STRING);
     strcpy(dup, str);
     return dup;
+}
+
+typedef struct GDF_Process_T {
+    u32 pid;
+    HANDLE handle;
+    bool running;
+} GDF_Process_T;
+
+GDF_Process GDF_CreateProcess(
+    const char* command,
+    const char* const args[],
+    const char* working_dir,
+    const char* const env[]
+)
+{
+    GDF_StringBuilder exec_str;
+    GDF_InitStringBuilder(&exec_str);
+
+    GDF_PushString(&exec_str, command);
+
+}
+
+GDF_BOOL GDF_WaitForProcess(
+    GDF_Process process,
+    i32* exit_code,
+    u32 timeout_ms
+)
+{
+
+}
+
+GDF_BOOL GDF_TerminateProcess(GDF_Process process)
+{
+
 }
 
 void GDF_FreeDirInfo(GDF_DirInfo* dir_info)
