@@ -451,6 +451,40 @@ GDF_Process GDF_CreateProcess(
 
     GDF_PushString(&exec_str, command);
 
+    for (int i = 0; args && args[i]; i++) {
+        GDF_PushChar(&exec_str, ' ');
+        GDF_PushString(&exec_str, args[i]);
+    }
+
+    LOG_DEBUG("Starting process \"%s\"", exec_str.str);
+
+    STARTUPINFO si = {};
+    si.cb = sizeof(si);
+    PROCESS_INFORMATION pi = {};
+
+    BOOL success = CreateProcess(
+        NULL,               // No module name (use cmd line)
+        exec_str.str,
+        NULL,               // Process handle not inheritable
+        NULL,               // Thread handle not inheritable
+        FALSE,              // Don't inherit handles
+        0,                  // No creation flags
+        NULL,               // Use parent's environment
+        working_dir,
+        &si,
+        &pi
+    );
+
+    if (!success) {
+        return NULL;
+    }
+
+    GDF_Process proc = GDF_Malloc(sizeof(GDF_Process_T), GDF_MEMTAG_IO);
+    proc->handle = pi.hProcess;
+    proc->pid = pi.dwProcessId;
+    proc->running = true;
+
+    return proc;
 }
 
 GDF_BOOL GDF_WaitForProcess(
@@ -459,12 +493,72 @@ GDF_BOOL GDF_WaitForProcess(
     u32 timeout_ms
 )
 {
+    if (!process || !process->handle)
+        return GDF_FALSE;
 
+    DWORD wait_result = WaitForSingleObject(
+        process->handle,
+        timeout_ms == GDF_TIMEOUT_INFINITE ? INFINITE : (DWORD)timeout_ms
+    );
+
+    if (wait_result == WAIT_FAILED)
+        return GDF_FALSE;
+
+    if (wait_result != WAIT_TIMEOUT) {
+        process->running = false;
+
+        if (exit_code) {
+            DWORD code;
+            if (!GetExitCodeProcess(process->handle, &code)) {
+                return GDF_FALSE;
+            }
+            *exit_code = (int)code;
+        }
+    }
+
+    // A timeout is considered a success, if hit
+    return GDF_TRUE;
 }
 
 GDF_BOOL GDF_TerminateProcess(GDF_Process process)
 {
+    if (!process || !process->handle) {
+        return GDF_FALSE;
+    }
 
+    if (!process->running) {
+        return GDF_TRUE;
+    }
+
+    if (!TerminateProcess(process->handle, 1)) {
+        return GDF_FALSE;
+    }
+
+    process->running = false;
+    return GDF_TRUE;
+}
+
+GDF_BOOL GDF_DestroyProcess(GDF_Process process)
+{
+    GDF_BOOL status = GDF_TerminateProcess(process);
+    if (!status)
+        return GDF_FALSE;
+
+    GDF_FreeProcessHandle(process);
+    return GDF_TRUE;
+}
+
+void GDF_FreeProcessHandle(GDF_Process process)
+{
+    if (process) {
+        if (process->handle)
+        {
+            CloseHandle(process->handle);
+            process->handle = NULL;
+            process->running = false;
+        }
+        GDF_Free(process);
+    }
 }
 
 void GDF_FreeDirInfo(GDF_DirInfo* dir_info)

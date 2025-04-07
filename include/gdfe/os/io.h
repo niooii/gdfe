@@ -68,12 +68,12 @@ char* GDF_StrDup(const char* str);
 // Process API
 
 /**
- * Creates and starts a new child process
+ * @brief Creates and starts a new child process
  *
  * @param command       The executable to run
  * @param args          Array of command-line arguments (NULL-terminated)
  * @param working_dir   Working directory (NULL uses current directory)
- * @param env           Environment variables (NULL inherits parent environment)
+ * @param env           Environment variables (NULL-terminated, and NULL inherits parent environment)
  * @return              A process handle, or NULL on failure
  */
 GDF_Process GDF_CreateProcess(
@@ -85,7 +85,7 @@ GDF_Process GDF_CreateProcess(
 
 #define GDF_TIMEOUT_INFINITE 4294967295
 /**
- * Waits for a process to complete
+ * @brief Waits for a process to complete
  *
  * @param process       Process to wait for
  * @param exit_code     Output parameter for exit code (can be NULL)
@@ -99,12 +99,27 @@ GDF_BOOL GDF_WaitForProcess(
 );
 
 /**
- * Terminates a running process
+ * @brief Terminates a running process
  *
  * @param process       Process to terminate
  * @return              If the termination was successful
  */
 GDF_BOOL GDF_TerminateProcess(GDF_Process process);
+
+/**
+* @brief Shorthand for terminating a process and then freeing it's handle
+*
+* @param process       Process handle to free after terminating
+* @return              If the termination and freeing of resources was successful
+*/
+GDF_BOOL GDF_DestroyProcess(GDF_Process process);
+
+/**
+ * @brief Cleans up a handle to a running process
+ *
+ * @param process       The process handle to close
+ */
+void GDF_FreeProcessHandle(GDF_Process process);
 
 // free resources
 void GDF_FreeDirInfo(GDF_DirInfo* dir_info);
