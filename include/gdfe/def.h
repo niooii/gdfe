@@ -79,6 +79,7 @@ STATIC_ASSERT(sizeof(f32) == 4, "expected f32 to be 4 bytes.");
 STATIC_ASSERT(sizeof(f64) == 8, "expected f64 to be 8 bytes.");
 
 #define CLAMP(value, min, max) ((value <= min) ? min : (value >= max) ? max : value)
+#define SIGN(x) ((x > 0) ? 1.0f : ((x < 0) ? -1.0f : 0.0f))
 
 // Microsoft Visual C compiler
 #ifdef _MSC_VER

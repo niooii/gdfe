@@ -110,6 +110,8 @@ void log_output(LOG_LEVEL level, const char* message, ...);
 
 #ifdef GDF_TRACE
     #define LOG_TRACE(message, ...) log_output(LOG_LEVEL_TRACE, message, ##__VA_ARGS__);
+    #define LOG_CALL LOG_TRACE("Line %d::%s", __LINE__, __FUNCTION__)
 #else
     #define LOG_TRACE(message, ...)
+    #define LOG_CALL
 #endif
