@@ -293,17 +293,17 @@ void GDF_CameraSetFarClip(GDF_Camera camera, f32 far_clip)
 
 f32 GDF_CameraGetPitch(GDF_Camera camera)
 {
-    // return camera->pyr.x;
+    return camera->euler.x;
 }
 
 f32 GDF_CameraGetYaw(GDF_Camera camera)
 {
-    // return camera->pyr.y;
+    return camera->euler.y;
 }
 
 f32 GDF_CameraGetRoll(GDF_Camera camera)
 {
-    // return camera->pyr.z;
+    return camera->euler.z;
 }
 
 vec3 GDF_CameraGetRotation(GDF_Camera camera)

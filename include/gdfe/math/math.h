@@ -449,13 +449,13 @@ FORCEINLINE GDF_BOOL vec3_cmp(vec3 vector_0, vec3 vector_1, f32 tolerance)
 FORCEINLINE vec3 vec3_forward(float yaw, float pitch) {
     vec3 forward;
     forward.x = gsin(yaw) * gcos(pitch);
-    forward.y = gsin(pitch);
+    forward.y = -gsin(pitch);
     forward.z = gcos(yaw) * gcos(pitch);
     vec3_normalize(&forward);
     return forward;
 }
 
-FORCEINLINE vec3 vec3_right(float yaw, float pitch) {
+FORCEINLINE vec3 vec3_right(float yaw) {
     vec3 right;
     right.x = -gcos(yaw);
     right.y = 0;
