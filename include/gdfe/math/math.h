@@ -457,9 +457,9 @@ FORCEINLINE vec3 vec3_forward(float yaw, float pitch) {
 
 FORCEINLINE vec3 vec3_right(float yaw) {
     vec3 right;
-    right.x = -gcos(yaw);
+    right.x = gcos(yaw);
     right.y = 0;
-    right.z = gsin(yaw);
+    right.z = -gsin(yaw);
     vec3_normalize(&right);
     return right;
 }

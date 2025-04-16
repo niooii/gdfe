@@ -13,7 +13,7 @@ static GDF_BOOL INITIALIZED = GDF_FALSE;
 
 GDF_BOOL GDF_InitSockets()
 {
-    WSADATA data;
+    WSADATA data = {};
     if (WSAStartup(MAKEWORD(2, 2), &data) != 0)
     {
         return GDF_FALSE;
