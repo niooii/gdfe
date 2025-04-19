@@ -1,6 +1,7 @@
 #include <gdfe/os/io.h>
 
 #ifdef OS_WINDOWS
+#include <gdfe/strutils.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <stdio.h>
@@ -13,7 +14,7 @@ static HWND console_window = NULL;
 static char* EXECUTABLE_PATH;
 static HANDLE stdout_;
 
-void GDF_InitIO() 
+void gdfe_io_init()
 {
     EXECUTABLE_PATH = GDF_Malloc(MAX_PATH_LEN, GDF_MEMTAG_STRING);
     GetModuleFileName(NULL, EXECUTABLE_PATH, MAX_PATH_LEN);
@@ -26,27 +27,19 @@ void GDF_InitIO()
     stdout_ = GetStdHandle(STD_OUTPUT_HANDLE);
 }
 
+void gdfe_io_shutdown()
+{
+    TODO("cleanup io subsys resources")
+}
+
 void GDF_ShowConsole()
 {
     if (console_window == NULL)
-    s
+    {
         console_window = GetConsoleWindow();
     }
 
     ShowWindow(console_window, SW_SHOW);
-}
-
-static void ReplaceFrontSlashWithBack(char* str) 
-{
-    int i = 0;
-    while(str[i] != '\0') 
-    {
-        if (str[i] == '/')
-        {
-            str[i] = '\\';
-        }
-        i++;
-    }
 }
 
 void GDF_HideConsole()
@@ -83,7 +76,7 @@ void GDF_GetAbsolutePath(const char* rel_path, char* out_buf)
     StringCchCopy(out_buf, MAX_PATH_LEN, EXECUTABLE_PATH);
     StringCchCat(out_buf, MAX_PATH_LEN, rel_path);
 
-    ReplaceFrontSlashWithBack(out_buf);
+    GDF_ReplaceCharWith(out_buf, '/', '\\');
 }
 
 void GDF_GetRelativePath(const char* abs_path, char* out_buf)
@@ -425,7 +418,7 @@ char* GDF_StrcatNoOverwrite(const char* s1,const char* s2)
 }
 
 #include <gdfe/strutils.h>
-char* GDF_StrDup(const char* str)
+char* GDF_Strdup(const char* str)
 {
     // CHECK HERE
     char* dup = GDF_Malloc(strlen(str) + 1, GDF_MEMTAG_STRING);

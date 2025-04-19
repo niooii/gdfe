@@ -1,6 +1,6 @@
-#include "irender/core_renderer.h"
-#include "gdfe/render/vk_types.h"
-#include "../../internal/irender/gpu_types.h"
+#include <i_render/core_renderer.h>
+#include "gdfe/render/vk/types.h"
+#include "../../internal/i_render/gpu_types.h"
 
 GDF_BOOL create_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {

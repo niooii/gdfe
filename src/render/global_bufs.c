@@ -1,5 +1,5 @@
-#include "../internal/irender/core_renderer.h"
-#include "../../include/gdfe/render/vk_utils.h"
+#include <i_render/renderer.h>
+#include <gdfe/render/vk/buffers.h>
 
 GDF_BOOL __init_vp_ubos(GDF_VkRenderContext* vk_ctx);
 

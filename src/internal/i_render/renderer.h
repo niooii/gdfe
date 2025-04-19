@@ -1,7 +1,7 @@
 #include <gdfe/camera.h>
 
 #include <gdfe/math/math.h>
-#include <gdfe/os/window.h>
+#include <gdfe/os/video.h>
 #include <gdfe/render/renderer.h>
 #include <gdfe/gdfe.h>
 

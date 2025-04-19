@@ -44,14 +44,14 @@ static const char* GDF_MEMTAG_strings[GDF_MEMTAG_MAX_TAGS] = {
 
 static struct memory_stats stats;
 
-GDF_BOOL GDF_InitMemory()
+GDF_BOOL gdfe_mem_init()
 {
     GDF_Memzero(&stats, sizeof(stats));
 
     return GDF_TRUE;
 }
 
-void GDF_ShutdownMemory() 
+void gdfe_mem_shutdown()
 {
 
 }
@@ -102,13 +102,13 @@ void GDF_Memzero(void* block, u64 size)
 }
 
 // TODO!
-void GDF_MemCopy(void* dest, const void* src, u64 size)
+void GDF_Memcpy(void* dest, const void* src, u64 size)
 {
     memcpy(dest, src, size);
 }
 
 // TODO!
-void GDF_MemSet(void* block, i32 val, u64 size)
+void GDF_Memset(void* block, i32 val, u64 size)
 {
     memset(block, val, size);
 }

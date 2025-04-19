@@ -18,13 +18,15 @@
 // update: I DID IT GUYS - 3/6/2025
 typedef struct GDF_Window_T *GDF_Window;
 
+typedef struct GDF_DisplayInfo {
+    u16 screen_width;
+    u16 screen_height;
+} GDF_DisplayInfo;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// TODO! move this into private headers
-GDF_BOOL GDF_InitWindowing();
-void GDF_ShutdownWindowing();
 GDF_Window GDF_CreateWindow(i16 x, i16 y, i16 w, i16 h, const char* title);
 GDF_BOOL GDF_SetWindowPos(GDF_Window window, i16 dest_x, i16 dest_y);
 void GDF_GetWindowPos(GDF_Window window, i16* x, i16* y);
@@ -32,6 +34,8 @@ void GDF_GetWindowSize(GDF_Window window, u16* w, u16* h);
 GDF_BOOL GDF_DestroyWindow(GDF_Window window);
 
 void GDF_SetShowCursor(GDF_Window window);
+
+void GDF_GetDisplayInfo(GDF_DisplayInfo* display_info);
 
 #ifdef __cplusplus
 }

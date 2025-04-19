@@ -1,16 +1,12 @@
-#include <gdfe/render/vk_types.h>
-#include "irender/gpu_types.h"
 #include <gdfe/collections/list.h>
-#include "irender/renderer.h"
-#include "irender/core_renderer.h"
 #include <gdfe/render/renderer.h>
 #include <vulkan/vk_enum_string_helper.h>
-
 #include <gdfe/gdfe.h>
-#include "irender/vk_os.h"
-#include <gdfe/render/vk_utils.h>
-#include <gdfe/render/vk_utils.h>
-#include "irender/vk_utils.h"
+#include <i_render/core_renderer.h>
+#include <i_render/vk_os.h>
+#include <i_render/vk_utils.h>
+#include <i_render/renderer.h>
+#include <gdfe/render/vk/utils.h>
 #include <vulkan/vulkan.h>
 
 VKAPI_ATTR VkBool32 VKAPI_CALL __vk_dbg_callback(

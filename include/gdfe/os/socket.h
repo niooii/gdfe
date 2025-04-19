@@ -33,9 +33,6 @@ typedef enum GDF_SOCKERR {
 extern "C" {
 #endif
 
-GDF_BOOL GDF_InitSockets();
-void GDF_ShutdownSockets();
-
 // tcp only for now
 GDF_Socket GDF_MakeSocket();
 void GDF_DestroySocket(GDF_Socket socket);

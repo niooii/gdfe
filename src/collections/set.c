@@ -63,7 +63,7 @@ static FORCEINLINE void** __insert(
         if (bucket[idx] == NULL)
         {
             bucket[idx] = GDF_Malloc(stride, GDF_MEMTAG_APPLICATION);
-            GDF_MemCopy(bucket[idx], val, stride);
+            GDF_Memcpy(bucket[idx], val, stride);
             if (existed)
                 *existed = GDF_FALSE;
             return bucket + idx;  
@@ -205,7 +205,7 @@ GDF_BOOL GDF_SetRemove(GDF_Set set, void* value, void* out_val_p)
         {
             if (out_val_p != NULL)
             {
-                GDF_MemCopy(out_val_p, bucket[idx], set->stride);
+                GDF_Memcpy(out_val_p, bucket[idx], set->stride);
             }
             __free_setentry(&bucket[idx]);
             set->num_entries--;
@@ -267,7 +267,7 @@ void GDF_SetIterConsume(SetIterator* iter, void* prev_val_p)
         if (set->bucket[idx] != NULL)
         {
             if (prev_val_p)
-                GDF_MemCopy(prev_val_p, iter->curr, set->stride);
+                GDF_Memcpy(prev_val_p, iter->curr, set->stride);
             __free_setentry(set->bucket + iter->__idx);
             set->num_entries--;
             iter->curr = set->bucket[idx];
@@ -277,7 +277,7 @@ void GDF_SetIterConsume(SetIterator* iter, void* prev_val_p)
     }
 
     if (prev_val_p)
-        GDF_MemCopy(prev_val_p, iter->curr, set->stride);
+        GDF_Memcpy(prev_val_p, iter->curr, set->stride);
 
     __free_setentry(set->bucket + iter->__idx);
     set->num_entries--;

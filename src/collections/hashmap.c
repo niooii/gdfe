@@ -58,7 +58,7 @@ static FORCEINLINE HashmapEntry* __insert(
         if (bucket[idx].key != NULL && memcmp(bucket[idx].key, key, key_size) == 0)
         {
             // update entry
-            GDF_MemCopy(bucket[idx].val, val, val_size);
+            GDF_Memcpy(bucket[idx].val, val, val_size);
             if (existed)
                 *existed = GDF_TRUE;
             return bucket + idx;  
@@ -67,9 +67,9 @@ static FORCEINLINE HashmapEntry* __insert(
         if (bucket[idx].key == NULL)
         {
             bucket[idx].key = GDF_Malloc(key_size, GDF_MEMTAG_APPLICATION);
-            GDF_MemCopy(bucket[idx].key, key, key_size);
+            GDF_Memcpy(bucket[idx].key, key, key_size);
             bucket[idx].val = GDF_Malloc(val_size, GDF_MEMTAG_APPLICATION);
-            GDF_MemCopy(bucket[idx].val, val, val_size);
+            GDF_Memcpy(bucket[idx].val, val, val_size);
             if (existed)
                 *existed = GDF_FALSE;
             return bucket + idx;  
@@ -243,7 +243,7 @@ GDF_BOOL GDF_HashmapRemove(GDF_HashMap hashmap, void* key, void* out_val_p)
         {
             if (out_val_p != NULL)
             {
-                GDF_MemCopy(out_val_p, bucket[idx].val, hashmap->v_stride);
+                GDF_Memcpy(out_val_p, bucket[idx].val, hashmap->v_stride);
             }
             __free_mapentry(&bucket[idx]);
             hashmap->num_entries--;

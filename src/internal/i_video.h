@@ -1,6 +1,6 @@
 #pragma once
-#include <gdfe/../../include/gdfe/def.h>
-#include <gdfe/os/window.h>
+#include <gdfe/def.h>
+#include <gdfe/os/video.h>
 
 // should be client width and height
 // TODO! erm

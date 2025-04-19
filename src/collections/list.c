@@ -31,7 +31,7 @@ void* gdfe_list_resize(void* list) {
     void* new = gdfe_list_create(
         (LIST_RESIZE_FACTOR * GDF_ListCapacity(list)),
         stride);
-    GDF_MemCopy(new, list, length * stride);
+    GDF_Memcpy(new, list, length * stride);
 
     GDF_ListSetLen(new, length);
     gdfe_list_destroy(list);
@@ -49,7 +49,7 @@ void* gdfe_list_push(void* list, const void* value_ptr) {
     {
         u64 addr = (u64)list;
         addr += (length * stride);
-        GDF_MemCopy((void*)addr, value_ptr, stride);
+        GDF_Memcpy((void*)addr, value_ptr, stride);
         GDF_ListSetLen(list, length + 1);
     }
     return list;
@@ -69,7 +69,7 @@ void* gdfe_list_append(void* list, const void* value_ptr, u32 num_values)
     {
         u64 addr = (u64)list;
         addr += (length * stride);
-        GDF_MemCopy((void*)addr, value_ptr, stride * num_values);
+        GDF_Memcpy((void*)addr, value_ptr, stride * num_values);
         GDF_ListSetLen(list, new_len);
     }
 
@@ -83,7 +83,7 @@ void gdfe_list_pop(void* list, void* dest) {
     // quite diabolical
     u64 addr = (u64)list;
     addr += ((length - 1) * stride);
-    GDF_MemCopy(dest, (void*)addr, stride);
+    GDF_Memcpy(dest, (void*)addr, stride);
     GDF_ListSetLen(list, length - 1);
 }
 
@@ -97,11 +97,11 @@ void* gdfe_list_remove_at(void* list, u64 index, void* dest) {
 
     u64 addr = (u64)list;
     if (dest != NULL)
-        GDF_MemCopy(dest, (void*)(addr + (index * stride)), stride);
+        GDF_Memcpy(dest, (void*)(addr + (index * stride)), stride);
 
     // If not on the last element, snip out the entry and copy the rest inward.
     if (index != length - 1) {
-        GDF_MemCopy(
+        GDF_Memcpy(
             (void*)(addr + (index * stride)),
             (void*)(addr + ((index + 1) * stride)),
             stride * (length - index));
@@ -126,14 +126,14 @@ void* __list_insert_at(void* list, u64 index, void* value_ptr) {
 
     // If not on the last element, copy the rest outward.
     if (index != length - 1) {
-        GDF_MemCopy(
+        GDF_Memcpy(
             (void*)(addr + ((index + 1) * stride)),
             (void*)(addr + (index * stride)),
             stride * (length - index));
     }
 
     // Set the value at the index
-    GDF_MemCopy((void*)(addr + (index * stride)), value_ptr, stride);
+    GDF_Memcpy((void*)(addr + (index * stride)), value_ptr, stride);
 
     GDF_ListSetLen(list, length + 1);
     return list;

@@ -84,7 +84,7 @@ static const char* GLOBAL_NAMESPACE_PREFIX = "Global\\";
 GDF_Semaphore GDF_CreateSemaphore(const char* name)
 {
     char namebuf[strlen(name) + sizeof(GLOBAL_NAMESPACE_PREFIX) + 1];
-    GDF_MemZero(namebuf, sizeof(namebuf));
+    GDF_Memzero(namebuf, sizeof(namebuf));
 
     if (name)
         snprintf(namebuf, sizeof(namebuf), "%s%s", GLOBAL_NAMESPACE_PREFIX, name);
@@ -106,7 +106,7 @@ GDF_Semaphore GDF_GetSemaphore(const char* name)
         return NULL;
 
     char namebuf[strlen(name) + sizeof(GLOBAL_NAMESPACE_PREFIX) + 1];
-    GDF_MemZero(namebuf, sizeof(namebuf));
+    GDF_Memzero(namebuf, sizeof(namebuf));
 
     snprintf(namebuf, sizeof(namebuf), "%s%s", GLOBAL_NAMESPACE_PREFIX, name);
 

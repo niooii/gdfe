@@ -1,5 +1,7 @@
 #pragma once
 
+/* lightweight simple event handler implementation for internal use (maybe external, idk) */
+
 #include <gdfe/core.h>
 
 typedef struct GDF_EventContext {
@@ -30,9 +32,6 @@ typedef GDF_BOOL (*GDF_EventHandlerFP)(u16 event_code, void* sender, void* liste
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-GDF_BOOL GDF_InitEvents();
-void GDF_ShutdownEvents();
 
 GDF_BOOL GDF_EventRegister(u32 event_code, void* listener, GDF_EventHandlerFP callback);
 GDF_BOOL GDF_EventUnregister(u32 event_code, void* listener, GDF_EventHandlerFP callback);

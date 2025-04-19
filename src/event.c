@@ -3,22 +3,22 @@
 #include <gdfe/collections/list.h>
 
 // represents a registered listener for an event
-typedef struct registered_event {
+typedef struct RegisteredEvent {
     void* listener;
     GDF_EventHandlerFP callback;
-} registered_event;
+} RegisteredEvent;
 
 // data stored for each event code
-typedef struct event_code_entry {
-    registered_event* registered_events_list;
-} event_code_entry;
+typedef struct EventCodeEntry {
+    RegisteredEvent* registered_events_list;
+} EventCodeEntry;
 
-typedef struct event_state {
+typedef struct EventSysState {
     GDF_HashMap(u32, event_code_entry) entries;
-} event_state;
+} EventSysState;
 
 static GDF_BOOL INITIALIZED = GDF_FALSE;
-static event_state state;
+static EventSysState state;
 
 u32 u32_hash(const u8* data, u32 len) {
     u32 x = (u32)data[0] | 
@@ -31,14 +31,14 @@ u32 u32_hash(const u8* data, u32 len) {
     return x;
 }
 
-GDF_BOOL GDF_InitEvents()
+GDF_BOOL gdfe_events_init()
 {
     if (INITIALIZED)
         return GDF_FALSE;
     GDF_Memzero(&state, sizeof(state));
     state.entries = GDF_HashmapWithHasher(
         u32,
-        event_code_entry,
+        EventCodeEntry,
         u32_hash,
         GDF_FALSE
     );
@@ -46,14 +46,14 @@ GDF_BOOL GDF_InitEvents()
     return GDF_TRUE;
 }
 
-void GDF_ShutdownEvents()
+void gdfe_events_shutdown()
 {
     for (
         HashmapEntry* entry = GDF_HashmapIter(state.entries); 
         entry != NULL; 
         GDF_HashmapIterAdvance(&entry)
     ) {
-        event_code_entry* event_entry = entry->val; 
+        EventCodeEntry* event_entry = entry->val;
         if (event_entry->registered_events_list != NULL)
         {
             GDF_ListDestroy(event_entry->registered_events_list);
@@ -67,16 +67,16 @@ GDF_BOOL GDF_EventRegister(u32 e_code, void* listener, GDF_EventHandlerFP callba
     if (!INITIALIZED)
         return GDF_FALSE;
 
-    event_code_entry* entry = GDF_HashmapGet(state.entries, &e_code);
+    EventCodeEntry* entry = GDF_HashmapGet(state.entries, &e_code);
 
     if (!entry) 
     {
-        event_code_entry empty = {};
+        EventCodeEntry empty = {};
         entry = GDF_HashmapInsert(state.entries, &e_code, &empty, NULL);
 
         GDF_ASSERT(entry);
 
-        entry->registered_events_list = GDF_ListCreate(registered_event);
+        entry->registered_events_list = GDF_ListCreate(RegisteredEvent);
     }
 
     // quick check for dupe listeners
@@ -90,7 +90,7 @@ GDF_BOOL GDF_EventRegister(u32 e_code, void* listener, GDF_EventHandlerFP callba
         }
     }
 
-    registered_event event;
+    RegisteredEvent event;
     event.listener = listener;
     event.callback = callback;
     GDF_ListPush(entry->registered_events_list, event);
@@ -102,7 +102,7 @@ GDF_BOOL GDF_EventUnregister(u32 e_code, void* listener, GDF_EventHandlerFP call
     if (!INITIALIZED)
         return GDF_FALSE;
     
-    event_code_entry* entry = GDF_HashmapGet(state.entries, &e_code);
+    EventCodeEntry* entry = GDF_HashmapGet(state.entries, &e_code);
 
     if (!entry) 
     {
@@ -113,10 +113,10 @@ GDF_BOOL GDF_EventUnregister(u32 e_code, void* listener, GDF_EventHandlerFP call
     u64 registered_count = GDF_ListLen(entry->registered_events_list);
     for (u64 i = 0; i < registered_count; i++)
     {
-        registered_event e = entry->registered_events_list[i];
+        RegisteredEvent e = entry->registered_events_list[i];
         if (e.listener == listener && e.callback == callback)
         {
-            registered_event removed_event;
+            RegisteredEvent removed_event;
             GDF_ListRemove(entry->registered_events_list, i, &removed_event);
             return GDF_TRUE;
         }
@@ -131,7 +131,7 @@ GDF_BOOL GDF_EventFire(u32 e_code, void* sender, GDF_EventContext ctx)
     if (!INITIALIZED)
         return GDF_FALSE;
 
-    event_code_entry* entry = GDF_HashmapGet(state.entries, &e_code);
+    EventCodeEntry* entry = GDF_HashmapGet(state.entries, &e_code);
 
     if (!entry) 
     {
@@ -142,7 +142,7 @@ GDF_BOOL GDF_EventFire(u32 e_code, void* sender, GDF_EventContext ctx)
     u64 registered_count = GDF_ListLen(entry->registered_events_list);
     for (u64 i = 0; i < registered_count; i++)
     {
-        registered_event e = entry->registered_events_list[i];
+        RegisteredEvent e = entry->registered_events_list[i];
         if (e.callback(e_code, sender, e.listener, ctx))
         {
             // just a way to make it so the event cancels if it

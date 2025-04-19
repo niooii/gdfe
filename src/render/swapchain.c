@@ -1,4 +1,4 @@
-#include "irender/vk_utils.h"
+#include "i_render/vk_utils.h"
 
 #include <gdfe/render/renderer.h>
 
@@ -170,7 +170,7 @@ GDF_BOOL gdfe_swapchain_init(GDF_VkRenderContext* vk_ctx, u16 w, u16 h)
 
     GDF_ListSetLen(vk_ctx->swapchain.images, image_count);
 
-    LOG_TRACE("Fetched %d images from swapchain...", GDF_LIST_GetLength(vk_ctx->swapchain.images));
+    LOG_TRACE("Fetched %d images from swapchain...", GDF_ListLen(vk_ctx->swapchain.images));
 
     return GDF_TRUE;
 }

@@ -1,9 +1,10 @@
-#include "irender/core_renderer.h"
+#include <i_render/core_renderer.h>
+#include <i_render/gpu_types.h>
+#include <i_render/renderer.h>
 
 #include <gdfe/gdfe.h>
-#include <gdfe/render/vk_utils.h>
-#include "irender/gpu_types.h"
-#include "irender/renderer.h"
+#include <gdfe/render/vk/utils.h>
+#include <gdfe/render/vk/buffers.h>
 
 GDF_BOOL create_shaders(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
 
@@ -85,7 +86,7 @@ GDF_BOOL core_renderer_draw(GDF_Renderer renderer, GDF_VkRenderContext* vk_ctx, 
         .view_projection = GDF_CameraGetViewPerspectiveMatrix(camera),
     };
 
-    GDF_MemCopy(vk_per_frame->vp_ubo.mapped_data, &vp_ubo_data, sizeof(ViewProjUB));
+    GDF_Memcpy(vk_per_frame->vp_ubo.mapped_data, &vp_ubo_data, sizeof(ViewProjUB));
 
     VkRenderPassBeginInfo geometry_pass = {
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,

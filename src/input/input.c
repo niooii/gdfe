@@ -1,6 +1,7 @@
-#include <gdfe/../../include/gdfe/input.h>
-#include <gdfe/../../include/gdfe/event.h>
-#include <gdfe/os/window.h>
+#include <windows.h>
+#include <gdfe/input.h>
+#include <gdfe/event.h>
+#include <gdfe/os/video.h>
 #include <gdfe/math/math.h>
 
 typedef struct keyboard_state {
@@ -28,6 +29,7 @@ static input_state state;
 
 static GDF_CURSOR_LOCK_STATE cursor_lock_state = GDF_CURSOR_LOCK_STATE_Free;
 static GDF_CURSOR_LOCK_STATE prev_cursor_lock_state = GDF_CURSOR_LOCK_STATE_Free;
+
 static RECT mouse_confinement_rect;
 
 static void __update_mouse_confinement_rect(GDF_Window window)
@@ -71,7 +73,7 @@ static GDF_BOOL __input_system_on_event(u16 event_code, void* sender, void* list
 }
 
 // Relies on the event system being initialized first.
-void GDF_InitInput() 
+void gdfe_input_init()
 {
     GDF_Memzero(&state, sizeof(input_state));
     initialized = GDF_TRUE;
@@ -82,20 +84,20 @@ void GDF_InitInput()
     GDF_EventRegister(GDF_EVENT_INTERNAL_WINDOW_MOVE, NULL, __input_system_on_event);
 }
 
-void GDF_ShutdownInput() 
+void gdfe_input_shutdown()
 {
     // TODO: shutdown routine later
     initialized = GDF_FALSE;
 }
 
-void GDF_INPUT_Update(GDF_Window active, f64 delta_time)
+void gdfe_input_update(GDF_Window active, f64 delta_time)
 {
     if (!initialized)
         return;
 
     // Copy current states to previous states.
-    GDF_MemCopy(&state.keyboard_previous, &state.keyboard_current, sizeof(keyboard_state));
-    GDF_MemCopy(&state.mbutton_states_previous, &state.mbutton_states_current, sizeof(state.mbutton_states_current));
+    GDF_Memcpy(&state.keyboard_previous, &state.keyboard_current, sizeof(keyboard_state));
+    GDF_Memcpy(&state.mbutton_states_previous, &state.mbutton_states_current, sizeof(state.mbutton_states_current));
     GDF_Memzero(&state.mouse_delta, sizeof(state.mouse_delta));
     if (cursor_lock_state != prev_cursor_lock_state)
     {
@@ -112,7 +114,7 @@ void GDF_INPUT_Update(GDF_Window active, f64 delta_time)
         prev_cursor_lock_state = cursor_lock_state;
         // return;
     }
-    GDF_MemCopy(&state.mpos_previous, &state.mpos_current, sizeof(state.mpos_current));
+    GDF_Memcpy(&state.mpos_previous, &state.mpos_current, sizeof(state.mpos_current));
 }
 
 GDF_BOOL GDF_IsKeyDown(GDF_KEYCODE key)

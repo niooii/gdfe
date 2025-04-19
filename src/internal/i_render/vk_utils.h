@@ -1,5 +1,5 @@
 #pragma once
-#include <gdfe/render/vk_types.h>
+#include <gdfe/render/vk/types.h>
 
 // Internal utility header.
 

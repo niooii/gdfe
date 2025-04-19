@@ -1,6 +1,6 @@
 #pragma once
 
-#include <gdfe/../../include/gdfe/input.h>
+#include <gdfe/input.h>
 
 void __input_process_key(GDF_KEYCODE key, GDF_BOOL pressed);
 void __input_process_button(GDF_MBUTTON button, GDF_BOOL pressed);

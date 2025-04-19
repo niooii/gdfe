@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <gdfe/def.h>
 
-#include <gdfe/os/sysinfo.h>
+#include <gdfe/os/misc.h>
 
 static GDF_BOOL RAND_SEEDED = GDF_FALSE;
 

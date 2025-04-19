@@ -1,7 +1,7 @@
 #pragma once
 
 #include <gdfe/core.h>
-#include <gdfe/render/vk_types.h>
+#include <gdfe/render/vk/types.h>
 
 #define FOR_EACH_FRAME_IN_FLIGHT(max_frames, code) \
     for(int i = 0; i < max_frames; i++) { \
@@ -66,72 +66,11 @@ VkShaderModule GDF_VkUtilsLoadShader(const char* src_rel_path);
 
 i32 GDF_VkUtilsFindMemTypeIdx(u32 type_filter, u32 property_flags);
 
-// The .image field in the VkImageViewCreateInfo struct does not have to point
-// to a valid image. It will be modified to do so within this function.
-GDF_BOOL GDF_VkImageCreate(VkImageCreateInfo* image_info, VkImageViewCreateInfo* view_info, GDF_VkImage* out_image);
-
-void GDF_VkImageDestroy(GDF_VkRenderContext* context, GDF_VkImage* image);
-
 // For applications with custom rendering, any graphics pipeline created
 // for rendering geometry during the deferred pass
 // must be passed to this function before being used.
 // Only the fields renderPass, subpass are modified
 void GDF_VkPipelineInfoFillGeometryPass(VkGraphicsPipelineCreateInfo* info);
-
-GDF_BOOL GDF_VkBufferCreate(
-    u64 alloc_size,
-    u32 usage_flags,
-    u32 mem_property_flags,
-    GDF_VkBuffer* out_buf
-);
-
-// TODO! make completely gpu local and transfer data with staging buffers
-GDF_BOOL GDF_VkBufferCreateStorage(
-    void* data,
-    u64 data_size,
-    GDF_VkBuffer* out_buf
-);
-
-// Right now support only fixed size creation YUCKY
-GDF_BOOL GDF_VkBufferCreateVertex(
-    void* vertices,
-    u32 vertex_count,
-    u32 vertex_size,
-    GDF_VkBuffer* out_buf
-);
-
-GDF_BOOL GDF_VkBufferCreateIndex(
-    u16* indices,
-    u32 index_count,
-    GDF_VkBuffer* out_buf
-);
-
-GDF_BOOL GDF_VkBufferCreateUniform(
-    u32 size,
-    GDF_VkUniformBuffer* out_uniform_buf
-);
-
-GDF_BOOL GDF_VkBufferUpdate(
-    GDF_VkBuffer* buffer,
-    void* data,
-    u64 data_size
-);
-
-void GDF_VkBufferDestroy(
-    GDF_VkBuffer* buf
-);
-
-void GDF_VkBufferDestroyUniform(
-    GDF_VkUniformBuffer* uniform_buf
-);
-
-GDF_BOOL GDF_VkBufferCreateSingleUseCmd(
-    VkCommandBuffer* out_command_buf
-);
-
-void GDF_VkBufferDestroySingleUseCmd(
-    VkCommandBuffer* command_buf
-);
 
 #ifdef __cplusplus
 }

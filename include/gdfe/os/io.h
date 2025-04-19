@@ -22,7 +22,6 @@ typedef struct GDF_Process_T *GDF_Process;
 extern "C" {
 #endif
 
-void GDF_InitIO();
 void GDF_ShowConsole();
 void GDF_HideConsole();
 const char* GDF_GetExecutablePath();
@@ -63,19 +62,16 @@ u64 GDF_GetFileSize(const char* rel_path);
 u64 GDF_GetFileSizeAbs(const char* abs_path);
 char* GDF_StrcatNoOverwrite(const char* s1, const char* s2);
 // must be freed with GDF_Free
-char* GDF_StrDup(const char* str);
+char* GDF_Strdup(const char* str);
 
 // Process API
 
-/**
- * @brief Creates and starts a new child process
- *
- * @param command       The executable to run
- * @param args          Array of command-line arguments (NULL-terminated)
- * @param working_dir   Working directory (NULL uses current directory)
- * @param env           Environment variables (NULL-terminated, and NULL inherits parent environment)
- * @return              A process handle, or NULL on failure
- */
+/// @brief Creates and starts a new child process.
+/// @param command       The executable to run.
+/// @param args          Array of command-line arguments (NULL-terminated).
+/// @param working_dir   Working directory (NULL uses current directory).
+/// @param env           Environment variables (NULL-terminated, and NULL inherits parent environment).
+/// @return              A process handle, or NULL on failure.
 GDF_Process GDF_CreateProcess(
     const char* command,
     const char* const args[],
@@ -84,41 +80,29 @@ GDF_Process GDF_CreateProcess(
 );
 
 #define GDF_TIMEOUT_INFINITE 4294967295
-/**
- * @brief Waits for a process to complete
- *
- * @param process       Process to wait for
- * @param exit_code     Output parameter for exit code (can be NULL)
- * @param timeout_ms    Timeout in milliseconds (or GDF_TIMEOUT_INFINITE)
- * @return              If the waiting was successful
- */
+/// @brief Waits for a process to complete.
+/// @param process       Process to wait for.
+/// @param exit_code     Output parameter for exit code (can be NULL).
+/// @param timeout_ms    Timeout in milliseconds (or GDF_TIMEOUT_INFINITE).
+/// @return              If the waiting was successful.
 GDF_BOOL GDF_WaitForProcess(
     GDF_Process process,
     i32* exit_code,
     u32 timeout_ms
 );
 
-/**
- * @brief Terminates a running process
- *
- * @param process       Process to terminate
- * @return              If the termination was successful
- */
+/// @brief Terminates a running process.
+/// @param process       Process to terminate.
+/// @return              If the termination was successful.
 GDF_BOOL GDF_TerminateProcess(GDF_Process process);
 
-/**
-* @brief Shorthand for terminating a process and then freeing it's handle
-*
-* @param process       Process handle to free after terminating
-* @return              If the termination and freeing of resources was successful
-*/
+/// @brief Shorthand for terminating a process and then freeing it's handle.
+/// @param process       Process handle to free after terminating
+/// @return              If the termination and freeing of resources was successful
 GDF_BOOL GDF_DestroyProcess(GDF_Process process);
 
-/**
- * @brief Cleans up a handle to a running process
- *
- * @param process       The process handle to close
- */
+/// @brief Cleans up a handle to a running process.
+/// @param process A process handle.
 void GDF_FreeProcessHandle(GDF_Process process);
 
 // free resources

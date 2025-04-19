@@ -11,7 +11,7 @@ typedef struct GDF_Socket_T {
 
 static GDF_BOOL INITIALIZED = GDF_FALSE;
 
-GDF_BOOL GDF_InitSockets()
+GDF_BOOL gdfe_sock_init()
 {
     WSADATA data = {};
     if (WSAStartup(MAKEWORD(2, 2), &data) != 0)
@@ -23,7 +23,7 @@ GDF_BOOL GDF_InitSockets()
     return GDF_TRUE;
 }
 
-void GDF_ShutdownSockets()
+void gdfe_sock_shutdown()
 {
     if (INITIALIZED)
     {

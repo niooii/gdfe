@@ -1,12 +1,13 @@
 #include <gdfe/event.h>
 #include <gdfe/gdfe.h>
 #include <gdfe/os/socket.h>
-#include <gdfe/os/sysinfo.h>
+#include <gdfe/os/misc.h>
 #include <gdfe/os/thread.h>
-#include <gdfe/os/window.h>
-#include "os/window_internal.h"
+#include <gdfe/os/video.h>
+#include <i_video.h>
 #include <gdfe/input.h>
-#include "internal/irender/renderer.h"
+#include "internal/i_render/renderer.h"
+#include <i_subsystems.h>
 
 typedef struct GdfApp {
     i16 width;
@@ -122,13 +123,12 @@ void set_defaults(GDF_InitInfo* info) {
 static GDF_BOOL SUBSYS_INITIALIZED;
 GDF_BOOL GDF_InitSubsystems()
 {
-    GDF_InitMemory();
-    GDF_InitIO();
-    if (!GDF_InitSysinfo())
+    gdfe_mem_init();
+    gdfe_io_init();
+    gdfe_misc_init();
+    if (!gdfe_events_init())
         return GDF_FALSE;
-    if (!GDF_InitEvents())
-        return GDF_FALSE;
-    if (!GDF_InitSockets() || !GDF_InitLogging())
+    if (!gdfe_sock_init() || !gdfe_logging_init())
         return GDF_FALSE;
     if (!GDF_InitThreadLogging("Main"))
         return GDF_FALSE;
@@ -158,9 +158,9 @@ GDF_AppState* GDF_Init(GDF_InitInfo init_info) {
     if (init_info.config.disable_video)
         return &APP_STATE.public;
 
-    if (!GDF_InitWindowing())
+    if (!gdfe_windowing_init())
         return NULL;
-    GDF_InitInput();
+    gdfe_input_init();
 
     GDF_AppState* public = &APP_STATE.public;
     public->window = GDF_CreateWindow(
@@ -213,13 +213,13 @@ f64 GDF_Run() {
 
     while(public->alive)
     {
-        // grabs the latest input states
-        pump_messages();
-
         f64 current_time = GDF_StopwatchElapsed(APP_STATE.stopwatch);
         f64 dt = (current_time - APP_STATE.last_time);
         APP_STATE.last_time = current_time;
         GDF_StopwatchReset(frame_timer);
+
+        // grabs the latest input states
+        pump_messages();
 
         if (APP_STATE.callbacks.on_loop) {
             if (
@@ -264,7 +264,7 @@ f64 GDF_Run() {
             last_whole_second = (u32)current_time;
         }
 
-        GDF_INPUT_Update(public->window, dt);
+        gdfe_input_update(public->window, dt);
 
         // only thing that should produce innacuracies is if pumpmessages takes a bit of time
         frame_count++;

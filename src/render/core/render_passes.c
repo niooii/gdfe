@@ -1,5 +1,5 @@
-#include "irender/core_renderer.h"
-#include <gdfe/render/vk_types.h>
+#include <i_render/core_renderer.h>
+#include <gdfe/render/vk/types.h>
 
 GDF_BOOL create_geometry_pass(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {

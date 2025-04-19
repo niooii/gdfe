@@ -1,5 +1,6 @@
-#include "irender/core_renderer.h"
-#include <gdfe/render/vk_utils.h>
+#include <i_render/core_renderer.h>
+#include <gdfe/render/vk/utils.h>
+#include <gdfe/render/vk/image.h>
 
 GDF_BOOL create_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {

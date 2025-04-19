@@ -1,5 +1,5 @@
 #include <gdfe/camera.h>
-#include "irender/camera.h"
+#include <i_render/camera.h>
 
 GDF_Camera GDF_CameraCreate(GDF_CameraCreateInfo* camera_info)
 {

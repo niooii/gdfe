@@ -1,4 +1,4 @@
-#include <gdfe/os/window.h>
+#include <gdfe/os/video.h>
 
 #ifdef OS_WINDOWS
 #include <gdfe/logging.h>
@@ -9,10 +9,11 @@
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_win32.h>
 #include <gdfe/event.h>
-#include "../input/internal.h"
-#include "window_internal.h"
+#include <i_input.h>
+#include <i_video.h>
 #include <hidusage.h>
 #include <gdfe/collections/hashmap.h>
+#include <gdfe/collections/list.h>
 
 const char win_class_name[] = "gdf_window";
 static u16 current_window_id = 0;
@@ -199,7 +200,7 @@ LRESULT CALLBACK process_msg(HWND hwnd, u32 msg, WPARAM w_param, LPARAM l_param)
     return DefWindowProc(hwnd, msg, w_param, l_param);
 }
 
-GDF_BOOL GDF_InitWindowing()
+GDF_BOOL gdfe_windowing_init()
 {
     // resgister window class
     // HICON icon = LoadIconA(internals->h_instance, IDI_APPLICATION);
@@ -234,7 +235,7 @@ GDF_BOOL GDF_InitWindowing()
     return GDF_TRUE;
 }
 
-void GDF_ShutdownWindowing()
+void gdfe_windowing_shutdown()
 {
     // TODO! destroy windows then unregisterclass 
     // even though it should be automatic but its fine
@@ -332,14 +333,6 @@ void GDF_GetWindowPos(GDF_Window window, i16* x, i16* y)
     *y = window->y;
 }
 
-// TODO! this seems to be incomplete..
-GDF_BOOL set_internal_size(GDF_Window window, i16 w, i16 h)
-{
-    window->client_w = w;
-    window->client_h = h;
-    return GDF_TRUE;
-}
-
 void GDF_GetWindowSize(GDF_Window window, u16* w, u16* h)
 {
     *w = window->client_w;
@@ -359,6 +352,14 @@ GDF_BOOL pump_messages()
     return GDF_TRUE;
 }
 
+// TODO! this seems to be incomplete..
+GDF_BOOL set_internal_size(GDF_Window window, i16 w, i16 h)
+{
+    window->client_w = w;
+    window->client_h = h;
+    return GDF_TRUE;
+}
+
 GDF_BOOL GDF_DestroyWindow(GDF_Window window)
 {
     GDF_ASSERT(GDF_HashmapRemove(windows, &window->hwnd, NULL));
@@ -369,10 +370,10 @@ GDF_BOOL GDF_DestroyWindow(GDF_Window window)
 
 void GDF_VK_GetRequiredExtensionNames(const char*** names_list)
 {
-    GDF_LIST_Push(*names_list, &"VK_KHR_win32_surface");
+    GDF_ListPush(*names_list, &"VK_KHR_win32_surface");
 }
 
-#include "../internal/irender/vk_os.h"
+#include <i_render/vk_os.h>
 GDF_BOOL GDF_VK_CreateSurface(GDF_Window window, GDF_VkRenderContext* context)
 {
     VkWin32SurfaceCreateInfoKHR create_info = {VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR};
@@ -391,6 +392,12 @@ GDF_BOOL GDF_VK_CreateSurface(GDF_Window window, GDF_VkRenderContext* context)
 
     LOG_DEBUG("Created Vulkan surface.");
     return GDF_TRUE;
+}
+
+void GDF_GetDisplayInfo(GDF_DisplayInfo* display_info)
+{
+    display_info->screen_height = GetSystemMetrics(SM_CYSCREEN);
+    display_info->screen_width= GetSystemMetrics(SM_CXSCREEN);
 }
 
 #endif

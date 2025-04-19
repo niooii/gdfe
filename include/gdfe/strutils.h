@@ -24,7 +24,9 @@ void GDF_PushFormat(
 );
 
 // Does not deallocate used memory.
-void GDF_ClearStringBuilder(GDF_StringBuilder* builder);
+void GDF_ClearStringBuilder(const GDF_StringBuilder* builder);
+
+void GDF_ReplaceCharWith(char* str, char from, char to);
 
 #ifdef __cplusplus
     }

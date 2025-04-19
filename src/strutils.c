@@ -21,7 +21,7 @@ void GDF_PushChar(GDF_StringBuilder* builder, const char c)
     builder->len++;
 
     // null terminate
-    if (UNLIKELY(GDF_LIST_GetLength(builder->str) >= GDF_LIST_GetCapacity(builder->str)))
+    if (UNLIKELY(GDF_ListLen(builder->str) >= GDF_ListCapacity(builder->str)))
     {
         GDF_ListPushPtr(builder->str, NULL);
     }
@@ -36,7 +36,7 @@ void GDF_PushString(GDF_StringBuilder* builder, const char* str)
     builder->len += len;
 
     // null terminate
-    if (UNLIKELY(GDF_LIST_GetLength(builder->str) >= GDF_LIST_GetCapacity(builder->str)))
+    if (UNLIKELY(GDF_ListLen(builder->str) >= GDF_ListCapacity(builder->str)))
     {
         GDF_ListPushPtr(builder->str, NULL);
     }
@@ -75,7 +75,21 @@ void GDF_PushFormat(
     // builder->str[builder->len] = 0;
 }
 
-void GDF_ClearStringBuilder(GDF_StringBuilder* builder)
+void GDF_ClearStringBuilder(const GDF_StringBuilder* builder)
 {
     GDF_ListClear(builder->str);
+    builder->str[0] = 0;
+}
+
+void GDF_ReplaceCharWith(char* str, char from, char to)
+{
+    u32 i = 0;
+    while(str[i])
+    {
+        if (str[i] == from)
+        {
+            str[i] = to;
+        }
+        i++;
+    }
 }

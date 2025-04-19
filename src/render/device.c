@@ -1,5 +1,5 @@
-#include <gdfe/render/vk_utils.h>
-#include "irender/vk_utils.h"
+#include <gdfe/render/vk/utils.h>
+#include "i_render/vk_utils.h"
 #include <gdfe/os/io.h>
 
 VkFormat __find_depth_format(VkPhysicalDevice physical_device)

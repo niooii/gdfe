@@ -7,7 +7,7 @@
 #include <stdarg.h>
 #include <gdfe/collections/hashmap.h>
 #include <gdfe/os/thread.h>
-#include <gdfe/os/sysinfo.h>
+#include <gdfe/os/misc.h>
 #include <gdfe/core.h>
 
 #define MAX_MSG_LEN 16384
@@ -185,7 +185,8 @@ unsigned long flushing_thread_fn(void* args)
     }
 }
 
-GDF_BOOL GDF_InitLogging()
+// TODO! YIKES HOLY ALLOCATIONS
+GDF_BOOL gdfe_logging_init()
 {
     entries_mutex = GDF_CreateMutex();
     flushing_mutex = GDF_CreateMutex();
@@ -205,6 +206,11 @@ GDF_BOOL GDF_InitLogging()
     INITIALIZED = GDF_TRUE;
 
     return GDF_TRUE;
+}
+
+void gdfe_logging_shutdown()
+{
+
 }
 
 GDF_BOOL GDF_InitThreadLogging(const char* thread_name)

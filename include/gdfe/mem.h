@@ -36,9 +36,6 @@ typedef enum GDF_MEMTAG {
 extern "C" {
 #endif
 
-GDF_BOOL GDF_InitMemory();
-void GDF_ShutdownMemory();
-
 // memory allocated with this is automatically zero'd
 void* GDF_Malloc(u64 size, GDF_MEMTAG tag);
 
@@ -49,10 +46,10 @@ void GDF_Free(void* block);
 void GDF_Memzero(void* block, u64 size);
 
 // TODO!
-void GDF_MemCopy(void* dest, const void* src, u64 size);
+void GDF_Memcpy(void* dest, const void* src, u64 size);
 
 // TODO!
-void GDF_MemSet(void* block, i32 val, u64 size);
+void GDF_Memset(void* block, i32 val, u64 size);
 
 // void GDF_GetMemUsageStr(char* out_str);
 

@@ -32,7 +32,6 @@ typedef enum LOG_LEVEL {
 extern "C" {
 #endif
 
-GDF_BOOL GDF_InitLogging();
 GDF_BOOL GDF_InitThreadLogging(const char* thread_name);
 void GDF_ShutdownLogging();
 

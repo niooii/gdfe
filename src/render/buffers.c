@@ -1,6 +1,7 @@
-#include <gdfe/render/vk_utils.h>
+#include <gdfe/render/vk/buffers.h>
 
-#include "irender/renderer.h"
+#include <gdfe/render/vk/utils.h>
+#include <i_render/renderer.h>
 
 GDF_BOOL GDF_VkBufferCreate(
     u64 alloc_size,
@@ -65,7 +66,7 @@ GDF_BOOL GDF_VkBufferCreateStorage(
         vkMapMemory(GDFE_INTERNAL_VK_CTX->device.handle, out_buf->memory, 0, data_size, 0, &out_buf->mapped_data)
     );
     if (data) {
-        GDF_MemCopy(out_buf->mapped_data, data, data_size);
+        GDF_Memcpy(out_buf->mapped_data, data, data_size);
     }
 
     return GDF_TRUE;
@@ -94,7 +95,7 @@ GDF_BOOL GDF_VkBufferCreateVertex(
         vkMapMemory(GDFE_INTERNAL_VK_CTX->device.handle, out_buf->memory, 0, vertex_count * vertex_size, 0, &out_buf->mapped_data)
     );
     if (vertices) {
-        GDF_MemCopy(out_buf->mapped_data, vertices, vertex_count * vertex_size);
+        GDF_Memcpy(out_buf->mapped_data, vertices, vertex_count * vertex_size);
     }
     return GDF_TRUE;
 }
@@ -121,7 +122,7 @@ GDF_BOOL GDF_VkBufferCreateIndex(
         vkMapMemory(GDFE_INTERNAL_VK_CTX->device.handle, out_buf->memory, 0, index_count * sizeof(*indices), 0, &out_buf->mapped_data)
     );
     if (indices) {
-        GDF_MemCopy(out_buf->mapped_data, indices, index_count * sizeof(*indices));
+        GDF_Memcpy(out_buf->mapped_data, indices, index_count * sizeof(*indices));
     }
     return GDF_TRUE;
 }
@@ -158,7 +159,7 @@ GDF_BOOL GDF_VkBufferUpdate(
     if (data_size > buffer->size) {
         LOG_FATAL("Tried to transfer data of a larger size into a fixed size buffer");
     }
-    GDF_MemCopy(buffer->mapped_data, data, data_size);
+    GDF_Memcpy(buffer->mapped_data, data, data_size);
 
     return GDF_TRUE;
 }

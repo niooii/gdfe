@@ -1,7 +1,7 @@
 #include <gdfe/render/vk/image.h>
-#include <gdfe/render/vk_utils.h>
+#include <gdfe/render/vk/utils.h>
 
-#include "irender/renderer.h"
+#include "i_render/renderer.h"
 
 GDF_BOOL GDF_VkImageCreate(VkImageCreateInfo* image_info, VkImageViewCreateInfo* view_info, GDF_VkImage* out_image)
 {

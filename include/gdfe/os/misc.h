@@ -1,11 +1,6 @@
 #pragma once
 #include <gdfe/core.h>
 
-typedef struct GDF_DisplayInfo {
-    u16 screen_width;
-    u16 screen_height;
-} GDF_DisplayInfo;
-
 typedef enum MONTH {
     JANUARY = 1,
     FEBURARY = 2,
@@ -46,15 +41,12 @@ typedef struct GDF_DateTime {
 extern "C" {
 #endif
 
-// This should be constantly updated. Maybe.. who knows?
-GDF_BOOL GDF_InitSysinfo();
-// Absolute time since progarm has ran.
+// Absolute time since program has ran.
 f64 GDF_GetAbsoluteTime();
 // Attempts to get the local system time.
 void GDF_GetSystemTime(GDF_DateTime* datetime);
 // Attempts to get the system time in UTC.
 void GDF_GetSystemTimeUTC(GDF_DateTime* datetime);
-void GDF_GetDisplayInfo(GDF_DisplayInfo* display_info);
 
 #ifdef __cplusplus
 }

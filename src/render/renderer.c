@@ -1,8 +1,8 @@
-#include <gdfe/render/vk_types.h>
-#include "../internal/irender/gpu_types.h"
+#include <gdfe/render/vk/types.h>
+#include "../internal/i_render/gpu_types.h"
 #include <gdfe/collections/list.h>
-#include "irender/vk_os.h"
-#include "irender/renderer.h"
+#include "i_render/vk_os.h"
+#include "i_render/renderer.h"
 
 #include <inttypes.h>
 #include <gdfe/render/renderer.h>
@@ -12,8 +12,8 @@
 #define GDFP_DISABLE
 
 #include "gdfe/profiler.h"
-#include "gdfe/render/vk_utils.h"
-#include "irender/vk_utils.h"
+#include "gdfe/render/vk/utils.h"
+#include "i_render/vk_utils.h"
 
 void GDF_RendererResize(GDF_Renderer renderer, u16 width, u16 height)
 {
@@ -232,12 +232,12 @@ void GDF_RendererSetActiveCamera(GDF_Renderer renderer, GDF_Camera camera)
 }
 
 
-GDF_RenderHandle GDF_DebugDrawLine(GDF_Renderer renderer, GDF_Camera camera)
+void GDF_DebugDrawLine(GDF_Renderer renderer)
 {
     TODO("debug draw line");
 }
 
-GDF_RenderHandle GDF_DebugDrawAABB(GDF_Renderer renderer, GDF_Camera camera)
+void GDF_DebugDrawAABB(GDF_Renderer renderer)
 {
     TODO("debug draw aabb");
 }
@@ -249,5 +249,5 @@ void GDF_RendererSetRenderMode(GDF_Renderer renderer, GDF_RENDER_MODE mode)
 
 void GDF_RendererCycleRenderMode(GDF_Renderer renderer)
 {
-    renderer->render_mode = ++renderer->render_mode % __GDF_RENDER_MODE_MAX;
+    renderer->render_mode = ++renderer->render_mode % GDF_RENDER_MODE_MAX;
 }

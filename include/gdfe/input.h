@@ -2,7 +2,7 @@
 
 #include <gdfe/core.h>
 #include <gdfe/math/math.h>
-#include <gdfe/os/window.h>
+#include <gdfe/os/video.h>
 
 typedef enum GDF_MBUTTON {
     GDF_MBUTTON_LEFT,
@@ -151,10 +151,6 @@ typedef enum GDF_CURSOR_LOCK_STATE {
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-void GDF_InitInput();
-void GDF_ShutdownInput();
-void GDF_INPUT_Update(GDF_Window active, f64 delta_time);
 
 // keyboard input
 // Returns GDF_TRUE if the key is pressed down on the frame this was called.

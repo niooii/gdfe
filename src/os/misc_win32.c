@@ -1,4 +1,4 @@
-#include <gdfe/os/sysinfo.h>
+#include <gdfe/os/misc.h>
 
 #ifdef OS_WINDOWS
 #include <Windows.h>
@@ -6,13 +6,17 @@
 static f64 clock_freq;
 static LARGE_INTEGER start_time;
 
-GDF_BOOL GDF_InitSysinfo()
+void gdfe_misc_init()
 {
     LARGE_INTEGER freq;
     QueryPerformanceFrequency(&freq);
     clock_freq = 1.0 / (f64)freq.QuadPart;
     QueryPerformanceCounter(&start_time);
-    return GDF_TRUE;
+}
+
+void gdfe_misc_shutdown()
+{
+
 }
 
 f64 GDF_GetAbsoluteTime()
@@ -34,12 +38,6 @@ void GDF_GetSystemTime(GDF_DateTime* datetime)
     datetime->minute = time.wMinute; 
     datetime->second = time.wSecond; 
     datetime->milli = time.wMilliseconds; 
-}
-
-void GDF_GetDisplayInfo(GDF_DisplayInfo* display_info)
-{
-    display_info->screen_height = GetSystemMetrics(SM_CYSCREEN);
-    display_info->screen_width= GetSystemMetrics(SM_CXSCREEN);
 }
 
 #endif
