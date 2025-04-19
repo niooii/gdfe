@@ -29,7 +29,7 @@ void GDF_InitIO()
 void GDF_ShowConsole()
 {
     if (console_window == NULL)
-    {
+    s
         console_window = GetConsoleWindow();
     }
 

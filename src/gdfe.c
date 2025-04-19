@@ -201,7 +201,7 @@ f64 GDF_Run() {
     public->alive = GDF_TRUE;
 
     GDF_Stopwatch running_timer = GDF_StopwatchCreate();
-    u32 fps = APP_STATE.conf.max_updates_per_sec;
+    u32 fps = APP_STATE.conf.updates_per_sec;
     f64 secs_per_frame = fps != 0 ? 1.0/fps : 0.0;
     GDF_Stopwatch frame_timer = GDF_StopwatchCreate();
 

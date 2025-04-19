@@ -146,7 +146,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL __vk_dbg_callback(
 // filters the vk_ctx->physical_device_info list
 void __filter_available_devices(GDF_VkRenderContext* vk_ctx, GDF_VkPhysicalDeviceInfo* phys_list)
 {
-    u32 list_len = GDF_LIST_GetLength(phys_list);
+    u32 list_len = GDF_ListLen(phys_list);
     for (i32 i = (i32)list_len - 1; i >= 0; i--)
     {
         GDF_VkPhysicalDeviceInfo* device = &phys_list[i];
@@ -228,22 +228,22 @@ GDF_Renderer gdfe_renderer_init(
     create_info.pApplicationInfo = &app_info;
 
     // extensions
-    const char** extensions = GDF_LIST_Create(const char*);
-    GDF_LIST_Push(extensions, &VK_KHR_SURFACE_EXTENSION_NAME);  // Generic surface extension
+    const char** extensions = GDF_ListCreate(const char*);
+    GDF_ListPush(extensions, &VK_KHR_SURFACE_EXTENSION_NAME);  // Generic surface extension
     GDF_VK_GetRequiredExtensionNames(&extensions);
 
 #ifndef GDF_RELEASE
-    GDF_LIST_Push(extensions, &VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    GDF_ListPush(extensions, &VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
 
-    create_info.enabledExtensionCount = GDF_LIST_GetLength(extensions);
+    create_info.enabledExtensionCount = GDF_ListLen(extensions);
     create_info.ppEnabledExtensionNames = extensions;
 
     // validation layers
 #ifndef GDF_RELEASE
-    const char** validation_layers = GDF_LIST_Create(const char*);
-    GDF_LIST_Push(validation_layers, &"VK_LAYER_KHRONOS_validation");
-    create_info.enabledLayerCount = GDF_LIST_GetLength(validation_layers);
+    const char** validation_layers = GDF_ListCreate(const char*);
+    GDF_ListPush(validation_layers, &"VK_LAYER_KHRONOS_validation");
+    create_info.enabledLayerCount = GDF_ListLen(validation_layers);
     create_info.ppEnabledLayerNames = validation_layers;
 #endif
     VK_ASSERT(vkCreateInstance(&create_info, vk_ctx->device.allocator, &vk_ctx->instance));
@@ -283,13 +283,13 @@ GDF_Renderer gdfe_renderer_init(
 
     GDF_VK_CreateSurface(window, vk_ctx);
 
-    vk_ctx->pdevices = GDF_LIST_Reserve(GDF_VkPhysicalDeviceInfo, physical_device_count);
+    vk_ctx->pdevices = GDF_ListReserve(GDF_VkPhysicalDeviceInfo, physical_device_count);
     for (u32 i = 0; i < physical_device_count; i++)
     {
         gdfe_physical_device_init(vk_ctx, physical_devices[i], &vk_ctx->pdevices[i]);
     }
 
-    GDF_LIST_SetLength(vk_ctx->pdevices, physical_device_count);
+    GDF_ListSetLen(vk_ctx->pdevices, physical_device_count);
 
     __filter_available_devices(vk_ctx, vk_ctx->pdevices);
 
@@ -300,7 +300,7 @@ GDF_Renderer gdfe_renderer_init(
     // and dies. something about
     // vkCreateDevice(): pCreateInfo->pQueueCreateInfos[0].queueCount (2) is not less than or equal to available queue count for this pCreateInfo->pQueueCreateInfos[0].queueFamilyIndex} (0) obtained previously
     GDF_VkPhysicalDeviceInfo* selected_physical_device = NULL;
-    u32 device_num = GDF_LIST_GetLength(vk_ctx->pdevices);
+    u32 device_num = GDF_ListLen(vk_ctx->pdevices);
     for (u32 i = 0; i < device_num; i++)
     {
         if (vk_ctx->pdevices[i].usable)
@@ -467,8 +467,8 @@ GDF_Renderer gdfe_renderer_init(
     /* ======================================== */
     /* ----- Create per frame resources ----- */
     /* ======================================== */
-    vk_ctx->per_frame = GDF_LIST_Reserve(PerFrameResources, max_concurrent_frames);
-    vk_ctx->images_in_flight = GDF_LIST_Reserve(VkFence, max_concurrent_frames);
+    vk_ctx->per_frame = GDF_ListReserve(PerFrameResources, max_concurrent_frames);
+    vk_ctx->images_in_flight = GDF_ListReserve(VkFence, max_concurrent_frames);
 
     VkSemaphoreCreateInfo semaphore_info = {
         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO

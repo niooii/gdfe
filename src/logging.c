@@ -59,6 +59,46 @@ typedef struct ColorCombination {
     u8 bg;
 } ColorCombination;
 
+// ANSI codes
+typedef enum TEXT_COLOR {
+    TC_BLACK = 30,
+    TC_RED = 31,
+    TC_GREEN = 32,
+    TC_YELLOW = 33,
+    TC_BLUE = 34,
+    TC_MAGENTA = 35,
+    TC_CYAN = 36,
+    TC_WHITE = 37,
+    TC_BRIGHT_BLACK = 90,
+    TC_BRIGHT_RED = 91,
+    TC_BRIGHT_GREEN = 92,
+    TC_BRIGHT_YELLOW = 93,
+    TC_BRIGHT_BLUE = 94,
+    TC_BRIGHT_MAGENTA = 95,
+    TC_BRIGHT_CYAN = 96,
+    TC_BRIGHT_WHITE = 97
+} TEXT_COLOR;
+
+// ANSI codes
+typedef enum TEXT_BG_COLOR {
+    BG_BLACK = 40,
+    BG_RED = 41,
+    BG_GREEN = 42,
+    BG_YELLOW = 43,
+    BG_BLUE = 44,
+    BG_MAGENTA = 45,
+    BG_CYAN = 46,
+    BG_WHITE = 47,
+    BG_BRIGHT_BLACK = 100,
+    BG_BRIGHT_RED = 101,
+    BG_BRIGHT_GREEN = 102,
+    BG_BRIGHT_YELLOW = 103,
+    BG_BRIGHT_BLUE = 104,
+    BG_BRIGHT_MAGENTA = 105,
+    BG_BRIGHT_CYAN = 106,
+    BG_BRIGHT_WHITE = 107
+} TEXT_BG_COLOR;
+
 static const ColorCombination log_level_color_combinations[] = {
     [LOG_LEVEL_FATAL] = {
         .fg = TC_WHITE,
@@ -90,7 +130,7 @@ static const ColorCombination log_level_color_combinations[] = {
     },
 };
 
-void logging_flush_buffer()
+void GDF_FlushLogBuffer()
 {
     char* write_ptr = FORMAT_BUFFER;
     if (!GDF_LockMutex(entries_mutex))
@@ -98,8 +138,7 @@ void logging_flush_buffer()
         GDF_WriteConsole("Failed to flush log buffer, mutex not acquired..\n");
         return;
     }
-    if (!GDF_LockMutex(flushing_mutex))
-    {
+    if (!GDF_LockMutex(flushing_mutex)) {
         GDF_ReleaseMutex(entries_mutex);
         GDF_WriteConsole("Failed to flush log buffer, mutex not acquired..\n");
         return;
@@ -141,7 +180,7 @@ unsigned long flushing_thread_fn(void* args)
         {
             GDF_StopwatchReset(stopwatch);
             // TODO! optimized IO
-            logging_flush_buffer();
+            GDF_FlushLogBuffer();
         }
     }
 }
@@ -188,11 +227,11 @@ void GDF_ShutdownLogging()
 {
     INITIALIZED = GDF_FALSE;
     // TODO! cleanup logging/write queued entries.
-    logging_flush_buffer();
+    GDF_FlushLogBuffer();
     GDF_WriteConsole("\033[0m");
 }
 
-void log_output(LOG_LEVEL level, const char* message, ...) 
+void gdfe_log_output(LOG_LEVEL level, const char* message, ...)
 {
     if (!INITIALIZED)
     {
@@ -208,7 +247,7 @@ void log_output(LOG_LEVEL level, const char* message, ...)
     // TODO! BAD BAD BAD or is it..
     if (next_free_entry >= ENTRIES_BUFFER_CAPACITY)
     {
-        logging_flush_buffer();
+        GDF_FlushLogBuffer();
     }
 
     u32 thread_id = GDF_GetCurrentThreadId();
@@ -240,15 +279,15 @@ void log_output(LOG_LEVEL level, const char* message, ...)
 
     // TODO! could be optimized more, for now force flush
     if (level == LOG_LEVEL_ERR || level == LOG_LEVEL_FATAL)
-        logging_flush_buffer();
+        GDF_FlushLogBuffer();
 }
 
 void report_assertion_failure(const char* expression, const char* message, const char* file, i32 line) 
 {
-    log_output(LOG_LEVEL_FATAL, "Assertion Failure: %s, message: '%s' in file: %s, line: %d\n", expression, message, file, line);
+    gdfe_log_output(LOG_LEVEL_FATAL, "Assertion Failure: %s, message: '%s' in file: %s, line: %d\n", expression, message, file, line);
 }
 
 void report_todo(const char* message, const char* file, i32 line)
 {
-    log_output(LOG_LEVEL_FATAL, "Unimplemented: '%s' in file: %s, line: %d\n", message, file, line);
+    gdfe_log_output(LOG_LEVEL_FATAL, "Unimplemented: '%s' in file: %s, line: %d\n", message, file, line);
 }

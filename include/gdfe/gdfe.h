@@ -9,10 +9,15 @@
 #endif
 
 typedef struct GDF_AppState {
+    /// A handle to the opened window.
+    /// @note May be null if rendering was disabled via configuration
     GDF_Window window;
     GDF_Renderer renderer;
+    /// The maximum amount of updates per second. Updates may happen with lower frequency under high loads.
+    /// @note May be freely changed at any time. Set to 0 to disable.
     u32 fps_cap;
-    // Set this to GDF_FALSE to kill the app.
+    /// Whether the app is currently running or not.
+    /// @note Setting this to \code GDF_FALSE\endcode will cause the application to exit after the current iteration.
     GDF_BOOL alive;
 } GDF_AppState;
 
@@ -88,10 +93,9 @@ typedef struct GDF_AppCallbacks {
 } GDF_AppCallbacks;
 
 typedef struct GDF_Config {
-    // Set to 0 for no cap
-    // if the main application loop should be capped at an amount of iterations
-    // per second
-    u32 max_updates_per_sec;
+    /// The maximum amount of updates per second. Updates may happen with lower frequency under high loads.
+    /// @note May be freely changed at any time. Set to 0 to disable.
+    u32 updates_per_sec;
     // Disable the internal quit event when pressing 'Esc' or closing the window.
     // Additionally disables the grave keybind for locking/unlocking the cursor.
     GDF_BOOL disable_default_events;

@@ -73,7 +73,7 @@ static GDF_BOOL __input_system_on_event(u16 event_code, void* sender, void* list
 // Relies on the event system being initialized first.
 void GDF_InitInput() 
 {
-    GDF_MemZero(&state, sizeof(input_state));
+    GDF_Memzero(&state, sizeof(input_state));
     initialized = GDF_TRUE;
     LOG_INFO("Input subsystem initialized.");
 
@@ -96,7 +96,7 @@ void GDF_INPUT_Update(GDF_Window active, f64 delta_time)
     // Copy current states to previous states.
     GDF_MemCopy(&state.keyboard_previous, &state.keyboard_current, sizeof(keyboard_state));
     GDF_MemCopy(&state.mbutton_states_previous, &state.mbutton_states_current, sizeof(state.mbutton_states_current));
-    GDF_MemZero(&state.mouse_delta, sizeof(state.mouse_delta));
+    GDF_Memzero(&state.mouse_delta, sizeof(state.mouse_delta));
     if (cursor_lock_state != prev_cursor_lock_state)
     {
         switch (cursor_lock_state) {

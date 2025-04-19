@@ -42,6 +42,7 @@ GDF_BOOL GDF_EventFire(u32 event_code, void* sender, GDF_EventContext ctx);
 }
 #endif
 
+
 typedef enum GDF_EVENT_INTERNAL {
     
     GDF_EVENT_INTERNAL_APP_QUIT = 0x01,

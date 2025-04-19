@@ -30,6 +30,7 @@ extern "C" {
  * @brief Create a new camera. Must be explicitly destroyed.
  *
  * @param camera_info Information about the camera to create
+ * @return Handle to the newly created camera
  */
 GDF_Camera GDF_CameraCreate(GDF_CameraCreateInfo* camera_info);
 

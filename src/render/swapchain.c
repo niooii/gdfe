@@ -122,8 +122,8 @@ GDF_BOOL gdfe_swapchain_init(GDF_VkRenderContext* vk_ctx, u16 w, u16 h)
     u32 image_count = vk_ctx->swapchain.image_count;
     if (!vk_ctx->recreating_swapchain)
     {
-        vk_ctx->swapchain.images = GDF_LIST_Reserve(VkImage, image_count);
-        vk_ctx->swapchain.image_views = GDF_LIST_Reserve(VkImageView, image_count);
+        vk_ctx->swapchain.images = GDF_ListReserve(VkImage, image_count);
+        vk_ctx->swapchain.image_views = GDF_ListReserve(VkImageView, image_count);
     }
 
     VK_ASSERT(
@@ -168,7 +168,7 @@ GDF_BOOL gdfe_swapchain_init(GDF_VkRenderContext* vk_ctx, u16 w, u16 h)
         );
     }
 
-    GDF_LIST_SetLength(vk_ctx->swapchain.images, image_count);
+    GDF_ListSetLen(vk_ctx->swapchain.images, image_count);
 
     LOG_TRACE("Fetched %d images from swapchain...", GDF_LIST_GetLength(vk_ctx->swapchain.images));
 
@@ -196,6 +196,6 @@ void gdfe_swapchain_destroy(GDF_VkRenderContext* vk_ctx)
 
     if (!vk_ctx->recreating_swapchain)
     {
-        GDF_LIST_Destroy(vk_ctx->swapchain.images);
+        GDF_ListDestroy(vk_ctx->swapchain.images);
     }
 }

@@ -7,6 +7,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef OS_WINDOWS
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#define strdup(p) _strdup(p)
+#define memzero(block, size) (void) memset((block), 0, (size))
+#endif
+
 struct memory_stats {
     u64 total_allocated;
     u64 tagged_allocations[GDF_MEMTAG_MAX_TAGS];
@@ -39,7 +46,7 @@ static struct memory_stats stats;
 
 GDF_BOOL GDF_InitMemory()
 {
-    GDF_MemZero(&stats, sizeof(stats));
+    GDF_Memzero(&stats, sizeof(stats));
 
     return GDF_TRUE;
 }
@@ -63,7 +70,7 @@ void* GDF_Malloc(u64 size, GDF_MEMTAG tag)
         LOG_FATAL("It appears you have ran out of memory. womp womp");
     }
     
-    GDF_MemZero(block, size);
+    GDF_Memzero(block, size);
     // stats.total_allocated += total_allocated;
     // stats.tagged_allocations[tag] += total_allocated;
     return block;
@@ -89,12 +96,12 @@ void GDF_Free(void* block)
     // stats.tagged_allocations[tag] -= size;
 }
 
-void GDF_MemZero(void* block, u64 size)
+void GDF_Memzero(void* block, u64 size)
 {
     memset(block, 0, size);
 }
 
-// TODO! copy over memtag and shi
+// TODO!
 void GDF_MemCopy(void* dest, const void* src, u64 size)
 {
     memcpy(dest, src, size);
@@ -106,34 +113,34 @@ void GDF_MemSet(void* block, i32 val, u64 size)
     memset(block, val, size);
 }
 
-void GDF_GetMemUsageStr(char* out_str) 
-{
-    const u64 gib = 1024 * 1024 * 1024;
-    const u64 mib = 1024 * 1024;
-    const u64 kib = 1024;
-
-    char buffer[8000] = "System memory use (tagged):\n";
-    u64 offset = strlen(buffer);
-    for (u32 i = 0; i < GDF_MEMTAG_MAX_TAGS; ++i) {
-        char unit[4] = "XiB";
-        float amount = 1.0f;
-        if (stats.tagged_allocations[i] >= gib) {
-            unit[0] = 'G';
-            amount = stats.tagged_allocations[i] / (float)gib;
-        } else if (stats.tagged_allocations[i] >= mib) {
-            unit[0] = 'M';
-            amount = stats.tagged_allocations[i] / (float)mib;
-        } else if (stats.tagged_allocations[i] >= kib) {
-            unit[0] = 'K';
-            amount = stats.tagged_allocations[i] / (float)kib;
-        } else {
-            unit[0] = 'B';
-            unit[1] = 0;
-            amount = (float)stats.tagged_allocations[i];
-        }
-
-        i32 length = snprintf(buffer + offset, 8000, "  %s: %.2f%s\n", GDF_MEMTAG_strings[i], amount, unit);
-        offset += length;
-    }
-    strcpy(out_str, buffer);
-}
+// void GDF_GetMemUsageStr(char* out_str)
+// {
+//     const u64 gib = 1024 * 1024 * 1024;
+//     const u64 mib = 1024 * 1024;
+//     const u64 kib = 1024;
+//
+//     char buffer[8000] = "System memory use (tagged):\n";
+//     u64 offset = strlen(buffer);
+//     for (u32 i = 0; i < GDF_MEMTAG_MAX_TAGS; ++i) {
+//         char unit[4] = "XiB";
+//         float amount = 1.0f;
+//         if (stats.tagged_allocations[i] >= gib) {
+//             unit[0] = 'G';
+//             amount = stats.tagged_allocations[i] / (float)gib;
+//         } else if (stats.tagged_allocations[i] >= mib) {
+//             unit[0] = 'M';
+//             amount = stats.tagged_allocations[i] / (float)mib;
+//         } else if (stats.tagged_allocations[i] >= kib) {
+//             unit[0] = 'K';
+//             amount = stats.tagged_allocations[i] / (float)kib;
+//         } else {
+//             unit[0] = 'B';
+//             unit[1] = 0;
+//             amount = (float)stats.tagged_allocations[i];
+//         }
+//
+//         i32 length = snprintf(buffer + offset, 8000, "  %s: %.2f%s\n", GDF_MEMTAG_strings[i], amount, unit);
+//         offset += length;
+//     }
+//     strcpy(out_str, buffer);
+// }

@@ -1,12 +1,6 @@
 #pragma once
 
 #include <gdfe/core.h>
-#ifdef OS_WINDOWS
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#define strdup(p) _strdup(p)
-#define memzero(block, size) (void) memset((block), 0, (size))
-#endif
 
 // TODO! replace some stuff with platform specific implementations 
 // maybe later tho
@@ -52,7 +46,7 @@ void* GDF_Realloc(void* block, u64 size);
 
 void GDF_Free(void* block);
 
-void GDF_MemZero(void* block, u64 size);
+void GDF_Memzero(void* block, u64 size);
 
 // TODO!
 void GDF_MemCopy(void* dest, const void* src, u64 size);
@@ -60,7 +54,7 @@ void GDF_MemCopy(void* dest, const void* src, u64 size);
 // TODO!
 void GDF_MemSet(void* block, i32 val, u64 size);
 
-void GDF_GetMemUsageStr(char* out_str);
+// void GDF_GetMemUsageStr(char* out_str);
 
 #ifdef __cplusplus
 }

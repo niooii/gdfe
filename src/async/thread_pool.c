@@ -17,7 +17,7 @@ typedef struct GDF_Threadpool_T {
 GDF_Threadpool GDF_CreateThreadpool()
 {
     GDF_Threadpool tp = GDF_Malloc(sizeof(GDF_Threadpool_T), GDF_MEMTAG_APPLICATION);
-    tp->work_queue = GDF_LIST_Reserve(tp_work, WORK_Q_PREALLOC_SIZE);
+    tp->work_queue = GDF_ListReserve(tp_work, WORK_Q_PREALLOC_SIZE);
 
     return tp;
 }

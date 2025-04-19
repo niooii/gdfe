@@ -1,6 +1,6 @@
 #include <gdfe/collections/list.h>
 
-void* __list_create(u64 length, u64 stride) {
+void* gdfe_list_create(u64 length, u64 stride) {
     u64 header_size = LIST_FIELD_LENGTH * sizeof(u64);
     u64 list_size = length * stride;
     u64* new_list = GDF_Malloc(header_size + list_size, GDF_MEMTAG_COLLECTION);
@@ -10,39 +10,39 @@ void* __list_create(u64 length, u64 stride) {
     return (void*)(new_list + LIST_FIELD_LENGTH);
 }
 
-void __list_destroy(void* list) {
+void gdfe_list_destroy(void* list) {
     u64* header = (u64*)list - LIST_FIELD_LENGTH;
     GDF_Free(header);
 }
 
-u64 __list_field_get(void* list, u64 field) {
+u64 gdfe_list_field_get(void* list, u64 field) {
     u64* header = (u64*)list - LIST_FIELD_LENGTH;
     return header[field];
 }
 
-void __list_field_set(void* list, u64 field, u64 value) {
+void gdfe_list_field_set(void* list, u64 field, u64 value) {
     u64* header = (u64*)list - LIST_FIELD_LENGTH;
     header[field] = value;
 }
 
-void* __list_resize(void* list) {
-    u64 length = GDF_LIST_GetLength(list);
-    u64 stride = GDF_LIST_GetStride(list);
-    void* new = __list_create(
-        (LIST_RESIZE_FACTOR * GDF_LIST_GetCapacity(list)),
+void* gdfe_list_resize(void* list) {
+    u64 length = GDF_ListLen(list);
+    u64 stride = GDF_ListStride(list);
+    void* new = gdfe_list_create(
+        (LIST_RESIZE_FACTOR * GDF_ListCapacity(list)),
         stride);
     GDF_MemCopy(new, list, length * stride);
 
-    GDF_LIST_SetLength(new, length);
-    __list_destroy(list);
+    GDF_ListSetLen(new, length);
+    gdfe_list_destroy(list);
     return new;
 }
 
-void* __list_push(void* list, const void* value_ptr) {
-    u64 length = GDF_LIST_GetLength(list);
-    u64 stride = GDF_LIST_GetStride(list);
-    if (length >= GDF_LIST_GetCapacity(list)) {
-        list = __list_resize(list);
+void* gdfe_list_push(void* list, const void* value_ptr) {
+    u64 length = GDF_ListLen(list);
+    u64 stride = GDF_ListStride(list);
+    if (length >= GDF_ListCapacity(list)) {
+        list = gdfe_list_resize(list);
     }
 
     if (value_ptr)
@@ -50,19 +50,19 @@ void* __list_push(void* list, const void* value_ptr) {
         u64 addr = (u64)list;
         addr += (length * stride);
         GDF_MemCopy((void*)addr, value_ptr, stride);
-        GDF_LIST_SetLength(list, length + 1);
+        GDF_ListSetLen(list, length + 1);
     }
     return list;
 }
 
-void* __list_append(void* list, const void* value_ptr, u32 num_values)
+void* gdfe_list_append(void* list, const void* value_ptr, u32 num_values)
 {
-    u64 length = GDF_LIST_GetLength(list);
+    u64 length = GDF_ListLen(list);
     u64 new_len = length + num_values;
-    u64 stride = GDF_LIST_GetStride(list);
-    while (new_len >= GDF_LIST_GetCapacity(list))
+    u64 stride = GDF_ListStride(list);
+    while (new_len >= GDF_ListCapacity(list))
     {
-        list = __list_resize(list);
+        list = gdfe_list_resize(list);
     }
 
     if (value_ptr)
@@ -70,26 +70,26 @@ void* __list_append(void* list, const void* value_ptr, u32 num_values)
         u64 addr = (u64)list;
         addr += (length * stride);
         GDF_MemCopy((void*)addr, value_ptr, stride * num_values);
-        GDF_LIST_SetLength(list, new_len);
+        GDF_ListSetLen(list, new_len);
     }
 
     return list;
 }
 
-void __list_pop(void* list, void* dest) {
-    u64 length = GDF_LIST_GetLength(list);
-    u64 stride = GDF_LIST_GetStride(list);
+void gdfe_list_pop(void* list, void* dest) {
+    u64 length = GDF_ListLen(list);
+    u64 stride = GDF_ListStride(list);
     // because arithmetic on void pointers is
     // quite diabolical
     u64 addr = (u64)list;
     addr += ((length - 1) * stride);
     GDF_MemCopy(dest, (void*)addr, stride);
-    GDF_LIST_SetLength(list, length - 1);
+    GDF_ListSetLen(list, length - 1);
 }
 
-void* __list_remove_at(void* list, u64 index, void* dest) {
-    u64 length = GDF_LIST_GetLength(list);
-    u64 stride = GDF_LIST_GetStride(list);
+void* gdfe_list_remove_at(void* list, u64 index, void* dest) {
+    u64 length = GDF_ListLen(list);
+    u64 stride = GDF_ListStride(list);
     if (index >= length) {
         LOG_ERR("Invalid index. List len: %i, index: %i", length, index);
         return list;
@@ -107,19 +107,19 @@ void* __list_remove_at(void* list, u64 index, void* dest) {
             stride * (length - index));
     }
 
-    GDF_LIST_SetLength(list, length - 1);
+    GDF_ListSetLen(list, length - 1);
     return list;
 }
 
 void* __list_insert_at(void* list, u64 index, void* value_ptr) {
-    u64 length = GDF_LIST_GetLength(list);
-    u64 stride = GDF_LIST_GetStride(list);
+    u64 length = GDF_ListLen(list);
+    u64 stride = GDF_ListStride(list);
     if (index >= length) {
         LOG_ERR("Invalid index. List len: %i, index: %index", length, index);
         return list;
     }
-    if (length >= GDF_LIST_GetCapacity(list)) {
-        list = __list_resize(list);
+    if (length >= GDF_ListCapacity(list)) {
+        list = gdfe_list_resize(list);
     }
 
     u64 addr = (u64)list;
@@ -135,6 +135,6 @@ void* __list_insert_at(void* list, u64 index, void* value_ptr) {
     // Set the value at the index
     GDF_MemCopy((void*)(addr + (index * stride)), value_ptr, stride);
 
-    GDF_LIST_SetLength(list, length + 1);
+    GDF_ListSetLen(list, length + 1);
     return list;
 }

@@ -128,9 +128,9 @@ GDF_BOOL GDF_DeserializeToMap(char* data, GDF_Map* out_map)
     while(line) {
         LOG_DEBUG("Deserializing line: %s", line);
         line_num++;
-        GDF_MemZero(line_buf, 650);
-        GDF_MemZero(key_buf, 150);
-        GDF_MemZero(val_buf, 500);
+        GDF_Memzero(line_buf, 650);
+        GDF_Memzero(key_buf, 150);
+        GDF_Memzero(val_buf, 500);
         sscanf(line, "%[^=]=%[^\n]", key_buf, val_buf);
 
         char* loc_of_percent = strchr(val_buf, '%');
@@ -139,7 +139,7 @@ GDF_BOOL GDF_DeserializeToMap(char* data, GDF_Map* out_map)
         if (loc_of_percent != NULL)
         {
             char tmp_val_buf[500];
-            GDF_MemZero(tmp_val_buf, 500);
+            GDF_Memzero(tmp_val_buf, 500);
             replace_env_vars(val_buf, tmp_val_buf);
             strcpy(val_buf, tmp_val_buf);
         }

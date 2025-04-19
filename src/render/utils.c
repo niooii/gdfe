@@ -11,7 +11,7 @@ VkShaderModule GDF_VkUtilsLoadShader(const char* src_rel_path)
 {
     u64 src_size = GDF_GetFileSize(src_rel_path);
     char code[src_size];
-    GDF_MemZero(code, src_size);
+    GDF_Memzero(code, src_size);
     if (!GDF_ReadFile(src_rel_path, code, src_size)) 
     {
         LOG_ERR("Failed to read file: %s", src_rel_path);

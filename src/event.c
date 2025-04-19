@@ -35,7 +35,7 @@ GDF_BOOL GDF_InitEvents()
 {
     if (INITIALIZED)
         return GDF_FALSE;
-    GDF_MemZero(&state, sizeof(state));
+    GDF_Memzero(&state, sizeof(state));
     state.entries = GDF_HashmapWithHasher(
         u32,
         event_code_entry,
@@ -56,7 +56,7 @@ void GDF_ShutdownEvents()
         event_code_entry* event_entry = entry->val; 
         if (event_entry->registered_events_list != NULL)
         {
-            GDF_LIST_Destroy(event_entry->registered_events_list);
+            GDF_ListDestroy(event_entry->registered_events_list);
         }
         event_entry->registered_events_list = NULL;
     }
@@ -76,11 +76,11 @@ GDF_BOOL GDF_EventRegister(u32 e_code, void* listener, GDF_EventHandlerFP callba
 
         GDF_ASSERT(entry);
 
-        entry->registered_events_list = GDF_LIST_Create(registered_event);
+        entry->registered_events_list = GDF_ListCreate(registered_event);
     }
 
     // quick check for dupe listeners
-    u64 registered_count = GDF_LIST_GetLength(entry->registered_events_list);
+    u64 registered_count = GDF_ListLen(entry->registered_events_list);
     for (u64 i = 0; i < registered_count; i++)
     {
         if (entry->registered_events_list[0].listener == listener)
@@ -93,7 +93,7 @@ GDF_BOOL GDF_EventRegister(u32 e_code, void* listener, GDF_EventHandlerFP callba
     registered_event event;
     event.listener = listener;
     event.callback = callback;
-    GDF_LIST_Push(entry->registered_events_list, event);
+    GDF_ListPush(entry->registered_events_list, event);
     return GDF_TRUE;
 }
 
@@ -110,14 +110,14 @@ GDF_BOOL GDF_EventUnregister(u32 e_code, void* listener, GDF_EventHandlerFP call
         return GDF_FALSE;
     }
 
-    u64 registered_count = GDF_LIST_GetLength(entry->registered_events_list);
+    u64 registered_count = GDF_ListLen(entry->registered_events_list);
     for (u64 i = 0; i < registered_count; i++)
     {
         registered_event e = entry->registered_events_list[i];
         if (e.listener == listener && e.callback == callback)
         {
             registered_event removed_event;
-            GDF_LIST_Remove(entry->registered_events_list, i, &removed_event);
+            GDF_ListRemove(entry->registered_events_list, i, &removed_event);
             return GDF_TRUE;
         }
     }
@@ -139,7 +139,7 @@ GDF_BOOL GDF_EventFire(u32 e_code, void* sender, GDF_EventContext ctx)
         return GDF_TRUE;
     }
 
-    u64 registered_count = GDF_LIST_GetLength(entry->registered_events_list);
+    u64 registered_count = GDF_ListLen(entry->registered_events_list);
     for (u64 i = 0; i < registered_count; i++)
     {
         registered_event e = entry->registered_events_list[i];

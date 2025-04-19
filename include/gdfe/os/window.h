@@ -22,6 +22,7 @@ typedef struct GDF_Window_T *GDF_Window;
 extern "C" {
 #endif
 
+// TODO! move this into private headers
 GDF_BOOL GDF_InitWindowing();
 void GDF_ShutdownWindowing();
 GDF_Window GDF_CreateWindow(i16 x, i16 y, i16 w, i16 h, const char* title);
