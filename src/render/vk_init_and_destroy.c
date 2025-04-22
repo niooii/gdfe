@@ -376,9 +376,17 @@ GDF_Renderer gdfe_renderer_init(
     device_create_info.queueCreateInfoCount = index_count;
     device_create_info.pQueueCreateInfos = queue_create_infos;
     device_create_info.pEnabledFeatures = &device_features;
-    device_create_info.enabledExtensionCount = 1;
-    const char* extension_names = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
-    device_create_info.ppEnabledExtensionNames = &extension_names;
+    const char* extension_names[] = {
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+        // Dependencies for DESCRIPTOR_BUFFER
+        VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
+        VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
+        VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
+        VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME,
+        VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME
+    };
+    device_create_info.enabledExtensionCount = sizeof(extension_names) / sizeof(*extension_names);
+    device_create_info.ppEnabledExtensionNames = extension_names;
 
     vk_ctx->device.physical_info = selected_physical_device;
 

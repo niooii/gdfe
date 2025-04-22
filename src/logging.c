@@ -237,7 +237,7 @@ void GDF_ShutdownLogging()
     GDF_WriteConsole("\033[0m");
 }
 
-void gdfe_log_output(LOG_LEVEL level, const char* message, ...)
+void GDF_LogOutput(LOG_LEVEL level, const char* message, ...)
 {
     if (!INITIALIZED)
     {
@@ -288,12 +288,12 @@ void gdfe_log_output(LOG_LEVEL level, const char* message, ...)
         GDF_FlushLogBuffer();
 }
 
-void report_assertion_failure(const char* expression, const char* message, const char* file, i32 line) 
+void gdfe_report_assert_fail(const char* expression, const char* message, const char* file, i32 line) 
 {
-    gdfe_log_output(LOG_LEVEL_FATAL, "Assertion Failure: %s, message: '%s' in file: %s, line: %d\n", expression, message, file, line);
+    GDF_LogOutput(LOG_LEVEL_FATAL, "Assertion Failure: %s, message: '%s' in file: %s, line: %d\n", expression, message, file, line);
 }
 
 void report_todo(const char* message, const char* file, i32 line)
 {
-    gdfe_log_output(LOG_LEVEL_FATAL, "Unimplemented: '%s' in file: %s, line: %d\n", message, file, line);
+    GDF_LogOutput(LOG_LEVEL_FATAL, "Unimplemented: '%s' in file: %s, line: %d\n", message, file, line);
 }

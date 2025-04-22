@@ -16,7 +16,7 @@
 extern "C" {
 #endif
 
-void report_assertion_failure(const char* expression, const char* message, const char* file, i32 line);
+void gdfe_report_assert_fail(const char* expression, const char* message, const char* file, i32 line);
 void report_todo(const char* message, const char* file, i32 line);
 
 #ifdef __cplusplus
@@ -33,7 +33,7 @@ void report_todo(const char* message, const char* file, i32 line);
     {   \
         if (!(expr)) {                                                    \
             LOG_INFO("ASSERT FAILED");                                             \
-            report_assertion_failure(#expr, "", __FILE__, __LINE__);    \
+            gdfe_report_assert_fail(#expr, "", __FILE__, __LINE__);    \
             debugBreak();            \
         }                                                               \
     }
@@ -42,7 +42,7 @@ void report_todo(const char* message, const char* file, i32 line);
     {   \
         if (!(expr)) {                                                    \
             LOG_INFO("NON-FATAL ASSERT FAILED. RETURN");                                             \
-            report_assertion_failure(#expr, "", __FILE__, __LINE__);    \
+            gdfe_report_assert_fail(#expr, "", __FILE__, __LINE__);    \
             return GDF_FALSE;          \
         }                                                               \
     }
@@ -50,7 +50,7 @@ void report_todo(const char* message, const char* file, i32 line);
 #define GDF_ASSERT_MSG(expr, message)                                        \
     {                                                                        \
         if (!(expr)) {                                                         \
-            report_assertion_failure(#expr, message, __FILE__, __LINE__);    \
+            gdfe_report_assert_fail(#expr, message, __FILE__, __LINE__);    \
             debugBreak();                                                    \
         }                                                                    \
     }
@@ -59,7 +59,7 @@ void report_todo(const char* message, const char* file, i32 line);
 #define GDF_ASSERT_DEBUG(expr)                                          \
     {                                                                   \
         if (!expr) {                                                    \
-            report_assertion_failure(#expr, "", __FILE__, __LINE__);    \
+            gdfe_report_assert_fail(#expr, "", __FILE__, __LINE__);    \
             debugBreak();                                               \
         }                                                               \
     }

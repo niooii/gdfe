@@ -36,7 +36,7 @@ GDF_BOOL GDF_InitThreadLogging(const char* thread_name);
 void GDF_ShutdownLogging();
 
 void GDF_FlushLogBuffer();
-void gdfe_log_output(LOG_LEVEL level, const char* message, ...);
+void GDF_LogOutput(LOG_LEVEL level, const char* message, ...);
 
 #ifdef __cplusplus
 }
@@ -44,34 +44,34 @@ void gdfe_log_output(LOG_LEVEL level, const char* message, ...);
 
 /// @param message The format message, followed by variadic arguments.
 /// @note This will flush the log buffer immediately.
-#define LOG_FATAL(message, ...) gdfe_log_output(LOG_LEVEL_FATAL, message, ##__VA_ARGS__);
+#define LOG_FATAL(message, ...) GDF_LogOutput(LOG_LEVEL_FATAL, message, ##__VA_ARGS__);
 
 /// @param message The format message, followed by variadic arguments.
 /// @note This will flush the log buffer immediately.
-#define LOG_ERR(message, ...) gdfe_log_output(LOG_LEVEL_ERR, message, ##__VA_ARGS__);
+#define LOG_ERR(message, ...) GDF_LogOutput(LOG_LEVEL_ERR, message, ##__VA_ARGS__);
 
 #ifdef GDF_WARN
-    #define LOG_WARN(message, ...) gdfe_log_output(LOG_LEVEL_WARN, message, ##__VA_ARGS__);
+    #define LOG_WARN(message, ...) GDF_LogOutput(LOG_LEVEL_WARN, message, ##__VA_ARGS__);
 #else
     #define LOG_WARN(message, ...)
 #endif
 
 #ifdef GDF_INFO
 /// @param message The format message, followed by variadic arguments.
-    #define LOG_INFO(message, ...) gdfe_log_output(LOG_LEVEL_INFO, message, ##__VA_ARGS__);
+    #define LOG_INFO(message, ...) GDF_LogOutput(LOG_LEVEL_INFO, message, ##__VA_ARGS__);
 #else
     #define LOG_INFO(message, ...)
 #endif
 
 #if defined(GDF_DEBUG)
 /// @param message The format message, followed by variadic arguments.
-    #define LOG_DEBUG(message, ...) gdfe_log_output(LOG_LEVEL_DEBUG, message, ##__VA_ARGS__);
+    #define LOG_DEBUG(message, ...) GDF_LogOutput(LOG_LEVEL_DEBUG, message, ##__VA_ARGS__);
 #else
     #define LOG_DEBUG(message, ...)
 #endif
 
 #ifdef GDF_TRACE
-    #define LOG_TRACE(message, ...) gdfe_log_output(LOG_LEVEL_TRACE, message, ##__VA_ARGS__);
+    #define LOG_TRACE(message, ...) GDF_LogOutput(LOG_LEVEL_TRACE, message, ##__VA_ARGS__);
     #define LOG_CALL LOG_TRACE("Line %d::%s", __LINE__, __FUNCTION__)
 #else
     #define LOG_TRACE(message, ...)

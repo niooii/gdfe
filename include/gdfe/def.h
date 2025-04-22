@@ -8,7 +8,6 @@
 #endif
 
 #include <stdint.h>
-#include <stddef.h>
 
 typedef unsigned char GDF_BOOL;
 #define GDF_TRUE 1

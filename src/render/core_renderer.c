@@ -5,6 +5,7 @@
 #include <gdfe/gdfe.h>
 #include <gdfe/render/vk/utils.h>
 #include <gdfe/render/vk/buffers.h>
+#include <i_render/mesh.h>
 
 GDF_BOOL create_shaders(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
 
@@ -29,6 +30,7 @@ static const u16 plane_indices[] = {
 GDF_BOOL core_renderer_init(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx) {
     ctx->per_frame = GDF_ListReserve(CoreRendererPerFrame, vk_ctx->max_concurrent_frames);
     GDF_ListSetLen(ctx->per_frame, vk_ctx->max_concurrent_frames);
+    gdfe_init_primitive_meshes();
     if (!create_shaders(vk_ctx, ctx))
     {
         LOG_ERR("Failed to load builtin shaders.");

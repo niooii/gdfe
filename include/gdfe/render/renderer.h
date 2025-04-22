@@ -5,6 +5,7 @@
 #include <gdfe/math/math.h>
 #include <gdfe/os/video.h>
 #include "vk/types.h"
+#include "mesh.h"
 
 #define MAX_FRAMES_IN_FLIGHT 3
 
