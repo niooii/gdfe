@@ -83,7 +83,7 @@ void GDF_DestroyMutex(GDF_Mutex mutex)
 static const char* GLOBAL_NAMESPACE_PREFIX = "Global\\";
 GDF_Semaphore GDF_CreateSemaphore(const char* name)
 {
-    char namebuf[strlen(name) + sizeof(GLOBAL_NAMESPACE_PREFIX) + 1];
+    char namebuf[name ? strlen(name) : 0 + sizeof(GLOBAL_NAMESPACE_PREFIX) + 1];
     GDF_Memzero(namebuf, sizeof(namebuf));
 
     if (name)
