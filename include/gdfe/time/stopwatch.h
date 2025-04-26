@@ -23,6 +23,17 @@ f64 GDF_StopwatchReset(GDF_Stopwatch stopwatch);
 /// @param stopwatch A stopwatch handle.
 void GDF_StopwatchDestroy(GDF_Stopwatch stopwatch);
 
+/// Halts a thread until the stopwatch reaches a certain value. Good for running tasks
+/// at a fixed rate.
+/// @param stopwatch A stopwatch handle.
+/// @param secs The target amount of seconds the stopwatch should reach, before resuming the thread.
+/// @return 0 if the wait was successful. If \code secs\endcode is less than the stopwatch's
+/// current value, then \code elapsed-secs\endcode is returned, that is, how far ahead the stopwatch
+/// is from \code secs\endcode.
+/// @remark This is guarenteed to wait until at least the specified time. This does not reset the
+/// stopwatch, it must be manually reset when desired.
+f64 GDF_StopwatchSleepUntil(GDF_Stopwatch stopwatch, f64 secs);
+
 #ifdef __cplusplus
 }
 #endif

@@ -19,8 +19,8 @@ f64 GDF_StopwatchElapsed(GDF_Stopwatch stopwatch)
 
 f64 GDF_StopwatchReset(GDF_Stopwatch stopwatch)
 {
-    f64 curr = GDF_GetAbsoluteTime();
-    f64 elapsed = curr - stopwatch->start_time;
+    const f64 curr = GDF_GetAbsoluteTime();
+    const f64 elapsed = curr - stopwatch->start_time;
     stopwatch->start_time = curr;
     return elapsed;
 }
@@ -28,4 +28,16 @@ f64 GDF_StopwatchReset(GDF_Stopwatch stopwatch)
 void GDF_StopwatchDestroy(GDF_Stopwatch stopwatch)
 {
     GDF_Free(stopwatch);
+}
+
+#include <gdfe/os/thread.h>
+f64 GDF_StopwatchSleepUntil(const GDF_Stopwatch stopwatch, const f64 secs)
+{
+    const f64 elapsed = GDF_GetAbsoluteTime() - stopwatch->start_time;
+    if (elapsed >= secs)
+        return elapsed - secs;
+
+    GDF_ThreadSleep((secs - elapsed) * 1000u);
+
+    return 0;
 }

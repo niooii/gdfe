@@ -200,21 +200,21 @@ f64 GDF_Run() {
     GDF_AppState* public = &APP_STATE.public;
     public->alive = GDF_TRUE;
 
-    GDF_Stopwatch running_timer = GDF_StopwatchCreate();
+    const GDF_Stopwatch running_timer = GDF_StopwatchCreate();
     u32 fps = APP_STATE.conf.updates_per_sec;
     f64 secs_per_frame = fps != 0 ? 1.0/fps : 0.0;
-    GDF_Stopwatch frame_timer = GDF_StopwatchCreate();
+    const GDF_Stopwatch frame_timer = GDF_StopwatchCreate();
 
     // periodically print average fps
     const u32 frame_times_sample_size = 10;
     f64 frame_times[frame_times_sample_size] = {};
-    u64 frame_count = 0;
     u64 last_whole_second = 0;
+    u64 frame_count = 0;
 
     while(public->alive)
     {
-        f64 current_time = GDF_StopwatchElapsed(APP_STATE.stopwatch);
-        f64 dt = (current_time - APP_STATE.last_time);
+        const f64 current_time = GDF_StopwatchElapsed(APP_STATE.stopwatch);
+        const f64 dt = (current_time - APP_STATE.last_time);
         APP_STATE.last_time = current_time;
         GDF_StopwatchReset(frame_timer);
 
@@ -235,39 +235,38 @@ f64 GDF_Run() {
         if (!APP_STATE.conf.disable_video)
             GDF_RendererDrawFrame(public->renderer, dt);
 
-        f64 frame_time = GDF_StopwatchElapsed(frame_timer);
-
-        // wait a certain amount of time after each frame to cap fps
-        f64 wait_secs = secs_per_frame - frame_time;
-        if (wait_secs > 0)
-        {
-            GDF_ThreadSleep((u64)(wait_secs * 1000));
-            frame_times[frame_count % frame_times_sample_size]
-            = secs_per_frame;
-        }
-        else
-        {
-            frame_times[frame_count % frame_times_sample_size]
-            = frame_time;
-        }
-
-        // temporary fps diagnostics, remove later.
-        if (last_whole_second != (u32)current_time)
-        {
-            f64 avg_frametime = 0;
-            for (u32 i = 0; i < frame_times_sample_size; i++)
-            {
-                avg_frametime += frame_times[i];
-            }
-            avg_frametime /= frame_times_sample_size;
-            // LOG_INFO("Avg frame time: %lfs, FPS: %lf", avg_frametime, 1.0/avg_frametime);
-            last_whole_second = (u32)current_time;
-        }
-
         gdfe_input_update(public->window, dt);
 
         // only thing that should produce innacuracies is if pumpmessages takes a bit of time
         frame_count++;
+
+        // wait a certain amount of time after each frame to cap fps
+        const f64 frame_time = GDF_StopwatchElapsed(frame_timer);
+
+        f64 overflow = GDF_StopwatchSleepUntil(frame_timer, secs_per_frame);
+        if (overflow > 0)
+        {
+            frame_times[frame_count % frame_times_sample_size]
+            = frame_time;
+        }
+        else
+        {
+            frame_times[frame_count % frame_times_sample_size]
+            = secs_per_frame;
+        }
+
+        // // temporary fps diagnostics, remove later.
+        // if (last_whole_second != (u32)current_time)
+        // {
+        //     f64 avg_frametime = 0;
+        //     for (u32 i = 0; i < frame_times_sample_size; i++)
+        //     {
+        //         avg_frametime += frame_times[i];
+        //     }
+        //     avg_frametime /= frame_times_sample_size;
+        //     // LOG_INFO("Avg frame time: %lfs, FPS: %lf", avg_frametime, 1.0/avg_frametime);
+        //     last_whole_second = (u32)current_time;
+        // }
     }
 
     // CLEAN UP STUFF
