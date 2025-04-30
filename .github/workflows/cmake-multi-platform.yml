@@ -39,26 +39,12 @@ jobs:
       with:
         submodules: recursive
 
-    # Install Vulkan SDK on Windows
-    - name: Install Vulkan SDK (Windows)
-      if: runner.os == 'Windows'
-      shell: powershell
-      run: |
-        $vulkanSdkUrl = "https://sdk.lunarg.com/sdk/download/latest/windows/vulkan-sdk.exe"
-        Invoke-WebRequest -Uri $vulkanSdkUrl -OutFile vulkan-sdk.exe
-        Start-Process -FilePath vulkan-sdk.exe -Wait -ArgumentList @("/S")
-        [Environment]::SetEnvironmentVariable("VULKAN_SDK", "$env:VULKAN_SDK", [EnvironmentVariableTarget]::Machine)
-        echo "VULKAN_SDK=$env:VULKAN_SDK" >> $env:GITHUB_ENV
-        echo "$env:VULKAN_SDK/Bin" >> $env:GITHUB_PATH
-    
-    # Install Vulkan SDK on Ubuntu
-    - name: Install Vulkan SDK (Ubuntu)
-      if: runner.os == 'Linux'
-      run: |
-        wget -qO - https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add -
-        sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-jammy.list https://packages.lunarg.com/vulkan/lunarg-vulkan-jammy.list
-        sudo apt update
-        sudo apt install -y vulkan-sdk
+    - name: Prepare Vulkan SDK
+      uses: humbletim/setup-vulkan-sdk@v1.2.1
+      with:
+           vulkan-query-version: 1.4.304.1
+           vulkan-components: Vulkan-Headers, Vulkan-Loader
+           vulkan-use-cache: true
 
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
