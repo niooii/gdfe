@@ -9,6 +9,17 @@ set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
+add_subdirectory(external/vma)
+
+# store the original build type to restore to later
+set(TEMP_CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE})
+
+# always set release build for spirv_tools
+set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+add_subdirectory(external/spirv_tools)
+
+set(CMAKE_BUILD_TYPE ${TEMP_CMAKE_BUILD_TYPE} CACHE STRING "Build type" FORCE)
+
 set(NO_WARNING_FLAGS "-Wno-deprecated-declarations -Wno-unused-parameter -Wno-missing-braces -Wno-unused-variable -Wno-ignored-qualifiers -Wno-missing-field-initializers")
 
 set(CMAKE_C_FLAGS "-Wall -W -Wextra ${NO_WARNING_FLAGS} -ffast-math -march=native -mavx2 -fcolor-diagnostics")
