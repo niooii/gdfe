@@ -1,6 +1,3 @@
 [submodule "external/vma"]
 	path = external/vma
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
-[submodule "external/spirv_tools"]
-	path = external/spirv_tools
-	url = https://github.com/niooii/SPIRV-Tools.git

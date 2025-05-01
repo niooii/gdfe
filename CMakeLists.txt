@@ -11,15 +11,6 @@ set(CMAKE_C_EXTENSIONS OFF)
 
 add_subdirectory(external/vma)
 
-# store the original build type to restore to later
-set(TEMP_CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE})
-
-# always set release build for spirv_tools
-set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
-add_subdirectory(external/spirv_tools)
-
-set(CMAKE_BUILD_TYPE ${TEMP_CMAKE_BUILD_TYPE} CACHE STRING "Build type" FORCE)
-
 set(NO_WARNING_FLAGS "-Wno-deprecated-declarations -Wno-unused-parameter -Wno-missing-braces -Wno-unused-variable -Wno-ignored-qualifiers -Wno-missing-field-initializers")
 
 set(CMAKE_C_FLAGS "-Wall -W -Wextra ${NO_WARNING_FLAGS} -ffast-math -march=native -mavx2 -fcolor-diagnostics")
@@ -49,8 +40,10 @@ add_library(${PROJECT_NAME} ${GDFE_SRC} ${GDFE_EXTERNAL}
 if(DEFINED ENV{VULKAN_SDK})
     if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         set(Vulkan_INCLUDE_DIRS "$ENV{VULKAN_SDK}/Include")
+        set(Vulkan_LIBRARY_DIRS "$ENV{VULKAN_SDK}/Lib")
     else()
         set(Vulkan_INCLUDE_DIRS "$ENV{VULKAN_SDK}/include")
+        set(Vulkan_LIBRARY_DIRS "$ENV{VULKAN_SDK}/lib")
     endif()
     include_directories(${Vulkan_INCLUDE_DIRS})
     find_package(Vulkan REQUIRED)
@@ -59,9 +52,21 @@ else()
     include_directories(${Vulkan_INCLUDE_DIRS})
 endif()
 
+# find shaderc
+find_library(SHADERC_LIBRARY
+    NAMES shaderc_combined
+    PATHS ${Vulkan_LIBRARY_DIRS}
+    NO_DEFAULT_PATH
+)
+
+if(NOT SHADERC_LIBRARY)
+    message(FATAL_ERROR "Could not find shaderc library in Vulkan SDK")
+endif()
+
 target_link_libraries(${PROJECT_NAME}
         PRIVATE
         Vulkan::Vulkan
+        ${SHADERC_LIBRARY}
 )
 
 target_include_directories(${PROJECT_NAME}
