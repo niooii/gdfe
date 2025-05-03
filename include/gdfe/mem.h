@@ -1,6 +1,6 @@
 #pragma once
 
-#include <gdfe/core.h>
+#include <gdfe/prelude.h>
 
 // TODO! replace some stuff with platform specific implementations 
 // maybe later tho

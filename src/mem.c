@@ -1,6 +1,6 @@
 #include <gdfe/mem.h>
 
-#include <gdfe/core.h>
+#include <gdfe/prelude.h>
 
 // TODO: Custom string lib
 #include <string.h>

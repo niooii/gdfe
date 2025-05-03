@@ -1,6 +1,6 @@
 #pragma once
 
-#include <gdfe/core.h>
+#include <gdfe/prelude.h>
 #include <gdfe/hash/superfasthash.h>
 
 // TODO! move away from memcmp for comparison, use custom comparison function

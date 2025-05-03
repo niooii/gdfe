@@ -1,6 +1,6 @@
 #pragma once
 
-#include <gdfe/core.h>
+#include <gdfe/prelude.h>
 #include <gdfe/math/math.h>
 
 typedef struct GDF_Camera_T* GDF_Camera;

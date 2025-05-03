@@ -1,6 +1,6 @@
 #pragma once
 
-#include <gdfe/core.h>
+#include <gdfe/prelude.h>
 
 typedef struct GDF_Stopwatch_T* GDF_Stopwatch;
 

@@ -8,7 +8,7 @@
 #include <gdfe/collections/hashmap.h>
 #include <gdfe/os/thread.h>
 #include <gdfe/os/misc.h>
-#include <gdfe/core.h>
+#include <gdfe/prelude.h>
 
 #define MAX_MSG_LEN 16384
 #define ENTRIES_BUFFER_CAPACITY 1024

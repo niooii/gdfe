@@ -1,5 +1,5 @@
 #pragma once
-#include <gdfe/core.h>
+#include <gdfe/prelude.h>
 #include <gdfe/os/io.h>
 #include <gdfe/collections/list.h>
 

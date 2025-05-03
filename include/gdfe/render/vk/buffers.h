@@ -1,6 +1,6 @@
 #pragma once
 
-#include <gdfe/core.h>
+#include <gdfe/prelude.h>
 #include "types.h"
 #ifdef __cplusplus
 extern "C" {

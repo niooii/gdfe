@@ -1,5 +1,5 @@
 #pragma once
-#include <gdfe/core.h>
+#include <gdfe/prelude.h>
 
 typedef struct GDF_Thread_T* GDF_Thread;
 typedef struct GDF_Mutex_T* GDF_Mutex;

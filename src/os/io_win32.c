@@ -8,7 +8,10 @@
 #include <stdlib.h>
 #include <tchar.h>
 #include <direct.h>
+#include <errno.h>
 #include <strsafe.h>
+
+/* TODO! ALL THIS IS SUPER UNSAFE */
 
 static HWND console_window = NULL;
 static char* EXECUTABLE_PATH;
@@ -22,22 +25,21 @@ void gdfe_io_init()
     // Find the last occurrence of '\'
     char* lastBackslash = strrchr(EXECUTABLE_PATH, '\\');
     if (lastBackslash != NULL) {
-        *(lastBackslash+1) = '\0'; // Null-terminate the string at the last '\'
+        *(lastBackslash+1) = 0; // Null-terminate the string at the last '\'
     }
     stdout_ = GetStdHandle(STD_OUTPUT_HANDLE);
 }
 
 void gdfe_io_shutdown()
 {
+    GDF_Free(EXECUTABLE_PATH);
     TODO("cleanup io subsys resources")
 }
 
 void GDF_ShowConsole()
 {
     if (console_window == NULL)
-    {
         console_window = GetConsoleWindow();
-    }
 
     ShowWindow(console_window, SW_SHOW);
 }
@@ -45,9 +47,7 @@ void GDF_ShowConsole()
 void GDF_HideConsole()
 {
     if (console_window == NULL)
-    {
         console_window = GetConsoleWindow();
-    }
 
     ShowWindow(console_window, SW_HIDE);
 }
@@ -72,7 +72,6 @@ void GDF_WriteConsole(const char* msg)
 void GDF_GetAbsolutePath(const char* rel_path, char* out_buf)
 {
     // TODO! 
-    // magic number :devio:
     StringCchCopy(out_buf, MAX_PATH_LEN, EXECUTABLE_PATH);
     StringCchCat(out_buf, MAX_PATH_LEN, rel_path);
 
@@ -183,7 +182,7 @@ GDF_DirInfo* GDF_GetDirInfo(const char* rel_path)
     return dir_info;
 }
 
-GDF_BOOL GDF_MakeFile(const char* rel_path) {
+GDF_IO_RESULT GDF_MakeFile(const char* rel_path) {
     char path[MAX_PATH_LEN];
     GDF_GetAbsolutePath(rel_path, path);
     HANDLE h = CreateFile(path, 0, 0, 0, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, 0);
@@ -207,7 +206,7 @@ GDF_BOOL GDF_MakeFile(const char* rel_path) {
     return success;
 }
 
-GDF_BOOL GDF_MakeDir(const char* rel_path) {
+GDF_IO_RESULT GDF_MakeDir(const char* rel_path) {
     char path[MAX_PATH_LEN];
     GDF_GetAbsolutePath(rel_path, path);
     GDF_BOOL success = CreateDirectoryA(path, NULL);
@@ -232,13 +231,25 @@ GDF_BOOL GDF_MakeDir(const char* rel_path) {
     return success != 0;
 }
 
-GDF_BOOL GDF_MakeDirAbs(const char* abs_path)
+GDF_IO_RESULT GDF_MakeDirAbs(const char* abs_path)
 {
-    return _mkdir(abs_path) == 0;
+    int res = _mkdir(abs_path);
+    if (res == 0)
+        return GDF_IO_RESULT_SUCCESS;
+
+    switch (errno) {
+    case EEXIST:
+        return GDF_IO_RESULT_DIR_EXISTS;
+    case ENOENT:
+        return GDF_IO_RESULT_PATH_NOT_FOUND;
+    default:
+        LOG_ERR("Undocumented error in GDF_MakeDirAbs.");
+        return GDF_IO_RESULT_FAIL;
+    }
 }
 
 
-GDF_BOOL GDF_WriteFile(const char* rel_path, const char* data) {
+GDF_IO_RESULT GDF_WriteFile(const char* rel_path, const char* data) {
     char path[MAX_PATH_LEN];
     GDF_GetAbsolutePath(rel_path, path);
     HANDLE h = CreateFile(path, GENERIC_WRITE, 0, 0, TRUNCATE_EXISTING, 0, 0);
@@ -268,7 +279,7 @@ GDF_BOOL GDF_WriteFile(const char* rel_path, const char* data) {
     return w_success;
 }
 
-GDF_BOOL GDF_ReadFile(const char* rel_path, char* out_buf, size_t bytes_to_read) {
+GDF_IO_RESULT GDF_ReadFile(const char* rel_path, char* out_buf, size_t bytes_to_read) {
     const char path[MAX_PATH_LEN];
     GDF_GetAbsolutePath(rel_path, path);
     HANDLE h = CreateFile(path, GENERIC_READ, 0, 0, OPEN_EXISTING, 0, 0);
@@ -367,14 +378,22 @@ u8* GDF_ReadBytesExactLen(const char* rel_path, u64* bytes_read)
     return out_bytes;
 }
 
-GDF_BOOL GDF_CopyFile(const char* src_path, const char* dest_path, GDF_BOOL overwrite_existing)
+GDF_IO_RESULT GDF_CopyFile(const char* src_path, const char* dest_path, GDF_BOOL overwrite_existing)
 {
     char src_path_abs[MAX_PATH_LEN];
     GDF_GetAbsolutePath(src_path, src_path_abs);
     char dest_path_abs[MAX_PATH_LEN];
     GDF_GetAbsolutePath(dest_path, dest_path_abs);
+    BOOL result = CopyFile(src_path_abs, dest_path_abs, !overwrite_existing);
+    if (result == 0)
+        return GDF_IO_RESULT_SUCCESS;
 
-    return CopyFile(src_path_abs, dest_path_abs, !overwrite_existing);
+    switch (GetLastError()) {
+    case ERROR_ACCESS_DENIED:
+        return GDF_IO_RESULT_ACCESS_DENIED;
+    default:
+        return GDF_IO_RESULT_FAIL;
+    }
 }
 
 u64 GDF_GetFileSize(const char* rel_path)
@@ -480,14 +499,14 @@ GDF_Process GDF_CreateProcess(
     return proc;
 }
 
-GDF_BOOL GDF_WaitForProcess(
+GDF_IO_RESULT GDF_WaitForProcess(
     GDF_Process process,
     i32* exit_code,
     u32 timeout_ms
 )
 {
     if (!process || !process->handle)
-        return GDF_FALSE;
+        return GDF_IO_RESULT_BAD_HANDLE;
 
     DWORD wait_result = WaitForSingleObject(
         process->handle,
@@ -495,7 +514,7 @@ GDF_BOOL GDF_WaitForProcess(
     );
 
     if (wait_result == WAIT_FAILED)
-        return GDF_FALSE;
+        return GDF_IO_RESULT_FAIL;
 
     if (wait_result != WAIT_TIMEOUT) {
         process->running = false;
@@ -503,42 +522,41 @@ GDF_BOOL GDF_WaitForProcess(
         if (exit_code) {
             DWORD code;
             if (!GetExitCodeProcess(process->handle, &code)) {
-                return GDF_FALSE;
+                return GDF_IO_RESULT_FAIL;
             }
             *exit_code = (int)code;
         }
     }
 
-    // A timeout is considered a success, if hit
-    return GDF_TRUE;
+    return GDF_IO_RESULT_PROC_WAIT_TIMEOUT;
 }
 
-GDF_BOOL GDF_TerminateProcess(GDF_Process process)
+GDF_IO_RESULT GDF_TerminateProcess(GDF_Process process)
 {
     if (!process || !process->handle) {
-        return GDF_FALSE;
+        return GDF_IO_RESULT_BAD_HANDLE;
     }
 
     if (!process->running) {
-        return GDF_TRUE;
+        return GDF_IO_RESULT_SUCCESS;
     }
 
     if (!TerminateProcess(process->handle, 1)) {
-        return GDF_FALSE;
+        return GDF_IO_RESULT_FAIL;
     }
 
     process->running = false;
-    return GDF_TRUE;
+    return GDF_IO_RESULT_SUCCESS;
 }
 
-GDF_BOOL GDF_DestroyProcess(GDF_Process process)
+GDF_IO_RESULT GDF_DestroyProcess(GDF_Process process)
 {
-    GDF_BOOL status = GDF_TerminateProcess(process);
-    if (!status)
-        return GDF_FALSE;
+    GDF_IO_RESULT status = GDF_TerminateProcess(process);
+    if (status != GDF_IO_RESULT_SUCCESS)
+        return GDF_IO_RESULT_FAIL;
 
     GDF_FreeProcessHandle(process);
-    return GDF_TRUE;
+    return GDF_IO_RESULT_SUCCESS;
 }
 
 void GDF_FreeProcessHandle(GDF_Process process)

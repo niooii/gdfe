@@ -87,9 +87,7 @@ void GDF_ReplaceCharWith(char* str, char from, char to)
     while(str[i])
     {
         if (str[i] == from)
-        {
             str[i] = to;
-        }
         i++;
     }
 }

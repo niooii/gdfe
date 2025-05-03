@@ -10,9 +10,9 @@ typedef struct GDF_StringBuilder {
 extern "C" {
 #endif
 
-// Allocates memory. Must be destroyed with FreeStrBuilder
+/// Allocates memory. Must be destroyed with FreeStrBuilder
 void GDF_InitStringBuilder(GDF_StringBuilder* out);
-// This frees the underlying string as well
+/// This frees the underlying string as well
 void GDF_DestroyStringBuilder(GDF_StringBuilder* builder);
 
 void GDF_PushChar(GDF_StringBuilder* builder, char c);

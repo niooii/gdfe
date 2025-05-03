@@ -2,7 +2,7 @@
 
 /* lightweight simple event handler implementation for internal use (maybe external, idk) */
 
-#include <gdfe/core.h>
+#include <gdfe/prelude.h>
 
 typedef struct GDF_EventContext {
     // 196 bytes

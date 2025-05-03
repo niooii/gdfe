@@ -1,5 +1,5 @@
 #pragma once
-#include <gdfe/core.h>
+#include <gdfe/prelude.h>
 
 typedef struct GDF_Socket_T* GDF_Socket;
 

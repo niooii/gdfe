@@ -8,6 +8,7 @@
 #include <gdfe/input.h>
 #include "internal/i_render/renderer.h"
 #include <i_subsystems.h>
+#include <gdfe/strutils.h>
 
 typedef struct GdfApp {
     i16 width;
@@ -132,6 +133,18 @@ GDF_BOOL GDF_InitSubsystems()
         return GDF_FALSE;
     if (!GDF_InitThreadLogging("Main"))
         return GDF_FALSE;
+
+    // create the .gdfe storage directory
+    GDF_StringBuilder dir;
+    GDF_InitStringBuilder(&dir);
+    GDF_PushFormat(&dir, "%s/%s", GDF_GetExecutablePath(), GDFE_STORAGE_ROOT);
+    GDF_IO_RESULT res = GDF_MakeDirAbs(dir.str);
+    if (res != GDF_IO_RESULT_SUCCESS && res != GDF_IO_RESULT_DIR_EXISTS)
+    {
+        GDF_DestroyStringBuilder(&dir);
+        return GDF_FALSE;
+    }
+    GDF_DestroyStringBuilder(&dir);
 
     SUBSYS_INITIALIZED = GDF_TRUE;
     return GDF_TRUE;

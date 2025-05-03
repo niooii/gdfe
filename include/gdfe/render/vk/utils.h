@@ -1,6 +1,6 @@
 #pragma once
 
-#include <gdfe/core.h>
+#include <gdfe/prelude.h>
 #include <gdfe/render/vk/types.h>
 
 #define FOR_EACH_FRAME_IN_FLIGHT(max_frames, code) \
