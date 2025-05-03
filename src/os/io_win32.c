@@ -187,48 +187,35 @@ GDF_IO_RESULT GDF_MakeFile(const char* rel_path) {
     GDF_GetAbsolutePath(rel_path, path);
     HANDLE h = CreateFile(path, 0, 0, 0, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, 0);
     GDF_BOOL success = h != INVALID_HANDLE_VALUE;
-    if (!success)
-    {
-        if (GetLastError() == ERROR_FILE_EXISTS)
-        {
-            LOG_WARN("File already exists: %s", path);
-        }
-        else
-        {
-            LOG_WARN("Failed to create file: %s", path);
-        }
+    if (success)
+        return GDF_IO_RESULT_SUCCESS;
+
+    switch(GetLastError()) {
+    case ERROR_FILE_EXISTS:
+        return GDF_IO_RESULT_ALREADY_EXISTS;
+    case ERROR_FILE_NOT_FOUND:
+        return GDF_IO_RESULT_PATH_NOT_FOUND;
+    default:
+        return GDF_IO_RESULT_FAIL;
     }
-    else
-    {
-        LOG_INFO("Created file: %s", path);
-        CloseHandle(h);
-    }
-    return success;
 }
 
 GDF_IO_RESULT GDF_MakeDir(const char* rel_path) {
     char path[MAX_PATH_LEN];
     GDF_GetAbsolutePath(rel_path, path);
     GDF_BOOL success = CreateDirectoryA(path, NULL);
-    // TODO! replace with custom allocator
-    if (!success) 
-    {
-        if (GetLastError() == ERROR_ALREADY_EXISTS) 
-        {
-            LOG_WARN("Directory already exists: %s", path);
-        }
-        else
-        {
-            LOG_ERR("Unknown error creating directory: %s", path);
-        }
-    }
-    else
-    {
-        LOG_INFO("Created directory: %s", path);
-    }
 
-    // back to only 0 and 1s not some random value from win32 api
-    return success != 0;
+    if (success)
+        return GDF_IO_RESULT_SUCCESS;
+
+    switch (GetLastError()) {
+    case ERROR_ALREADY_EXISTS:
+        return GDF_IO_RESULT_ALREADY_EXISTS;
+    case ERROR_PATH_NOT_FOUND:
+        return GDF_IO_RESULT_PATH_NOT_FOUND;
+    default:
+        return GDF_IO_RESULT_FAIL;
+    }
 }
 
 GDF_IO_RESULT GDF_MakeDirAbs(const char* abs_path)
@@ -239,11 +226,10 @@ GDF_IO_RESULT GDF_MakeDirAbs(const char* abs_path)
 
     switch (errno) {
     case EEXIST:
-        return GDF_IO_RESULT_DIR_EXISTS;
+        return GDF_IO_RESULT_ALREADY_EXISTS;
     case ENOENT:
         return GDF_IO_RESULT_PATH_NOT_FOUND;
     default:
-        LOG_ERR("Undocumented error in GDF_MakeDirAbs.");
         return GDF_IO_RESULT_FAIL;
     }
 }
@@ -253,61 +239,52 @@ GDF_IO_RESULT GDF_WriteFile(const char* rel_path, const char* data) {
     char path[MAX_PATH_LEN];
     GDF_GetAbsolutePath(rel_path, path);
     HANDLE h = CreateFile(path, GENERIC_WRITE, 0, 0, TRUNCATE_EXISTING, 0, 0);
-    GDF_BOOL success = h != INVALID_HANDLE_VALUE;
-    if (!success)
-    {   
-        if (GetLastError() == ERROR_FILE_NOT_FOUND)
-        {
-            LOG_ERR("Could not write to non-existent file: %s", path);
+
+    if (h == INVALID_HANDLE_VALUE) {
+        switch (GetLastError()) {
+        case ERROR_FILE_NOT_FOUND:
+            return GDF_IO_RESULT_PATH_NOT_FOUND;
+        default:
+            return GDF_IO_RESULT_FAIL;
         }
-        else
-        {
-            LOG_WARN("Unknown error opening write handle to file: %s", path);
-        }
-        return GDF_FALSE;
     }
-    GDF_BOOL w_success = WriteFile(h, data, strlen(data), NULL, NULL);
-    if (w_success)
-    {
-        LOG_DEBUG("Wrote to file: %s", path);
-    }
-    else
-    {
-        LOG_ERR("Unknown error (%d) writing to file: %s", GetLastError(), path);
-    }
+
+    GDF_BOOL success = WriteFile(h, data, strlen(data), NULL, NULL);
     CloseHandle(h);
-    return w_success;
+
+    if (!success) {
+        LOG_ERR("Unknown error (%d) writing to file: %s", GetLastError(), path);
+        return GDF_IO_RESULT_FAIL;
+    }
+
+    return GDF_IO_RESULT_SUCCESS;
 }
 
 GDF_IO_RESULT GDF_ReadFile(const char* rel_path, char* out_buf, size_t bytes_to_read) {
-    const char path[MAX_PATH_LEN];
+    char path[MAX_PATH_LEN];
     GDF_GetAbsolutePath(rel_path, path);
     HANDLE h = CreateFile(path, GENERIC_READ, 0, 0, OPEN_EXISTING, 0, 0);
-    GDF_BOOL success = h != INVALID_HANDLE_VALUE;
-    if (!success)
-    {   
-        if (GetLastError() == ERROR_FILE_NOT_FOUND)
-        {
-            LOG_ERR("Could not read non-existent file: %s", path);
+
+    if (h == INVALID_HANDLE_VALUE) {
+        switch (GetLastError()) {
+        case ERROR_FILE_NOT_FOUND:
+            return GDF_IO_RESULT_PATH_NOT_FOUND;
+        default:
+            return GDF_IO_RESULT_FAIL;
         }
-        else
-        {
-            LOG_WARN("Unknown error opening read handle to file: %s", path);
-        }
-        return GDF_FALSE;
     }
+
     DWORD bytes_read = 0;
-    GDF_BOOL w_success = ReadFile(h, (LPVOID)out_buf, bytes_to_read, &bytes_read, NULL);
-    if (w_success)
-    {
-        // LOG_INFO("Read file: %s", path);
-    }
-    else
-    {
-        LOG_ERR("Unknown error (%d) reading file: %s", GetLastError(), path);
-    }
+    GDF_BOOL success = ReadFile(h, (LPVOID)out_buf, bytes_to_read, &bytes_read, NULL);
     CloseHandle(h);
-    return w_success;
+
+    if (!success) {
+        LOG_ERR("Unknown error (%d) reading file: %s", GetLastError(), path);
+        return GDF_IO_RESULT_FAIL;
+    }
+
+    // LOG_INFO("Read file: %s", path);
+    return GDF_IO_RESULT_SUCCESS;
 }
 
 char* GDF_ReadFileExactLen(const char* rel_path)

@@ -139,7 +139,7 @@ GDF_BOOL GDF_InitSubsystems()
     GDF_InitStringBuilder(&dir);
     GDF_PushFormat(&dir, "%s/%s", GDF_GetExecutablePath(), GDFE_STORAGE_ROOT);
     GDF_IO_RESULT res = GDF_MakeDirAbs(dir.str);
-    if (res != GDF_IO_RESULT_SUCCESS && res != GDF_IO_RESULT_DIR_EXISTS)
+    if (res != GDF_IO_RESULT_SUCCESS && res != GDF_IO_RESULT_ALREADY_EXISTS)
     {
         GDF_DestroyStringBuilder(&dir);
         return GDF_FALSE;
