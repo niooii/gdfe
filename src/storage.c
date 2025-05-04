@@ -11,11 +11,6 @@ GDF_IO_RESULT GDF_StorageWrite(const char* path, const char* buf, u64 len)
 
     const GDF_IO_RESULT res = GDF_WriteFile(rel_path.str, buf, len);
 
-    if (res != GDF_IO_RESULT_SUCCESS)
-    {
-        LOG_ERR("UH");
-    }
-
     GDF_StringDestroy(&rel_path);
 
     return res;
