@@ -1,9 +1,9 @@
 #include <gdfe/camera.h>
 
+#include <gdfe/gdfe.h>
 #include <gdfe/math/math.h>
 #include <gdfe/os/video.h>
 #include <gdfe/render/renderer.h>
-#include <gdfe/gdfe.h>
 
 #include "core_renderer.h"
 
@@ -18,9 +18,9 @@ typedef struct GDF_Renderer_T {
 
     GDF_Camera* camera;
 
-    GDF_VkRenderContext vk_ctx;
-    GDF_RenderCallbacks* callbacks;
-    GDF_AppState* app_state;
+    GDF_VkRenderContext     vk_ctx;
+    GDF_RenderCallbacks*    callbacks;
+    GDF_AppState*           app_state;
     GDF_CoreRendererContext core_renderer;
 } GDF_Renderer_T;
 
@@ -31,16 +31,13 @@ typedef enum RENDER_OBJ_TYPE {
 
 typedef struct GDF_RenderHandle_T {
     RENDER_OBJ_TYPE type;
-    void* data;
+    void*           data;
 } GDF_RenderHandle_T;
 
-extern GDF_VkRenderContext* GDFE_INTERNAL_VK_CTX;
+extern GDF_VkRenderContext*     GDFE_INTERNAL_VK_CTX;
 extern GDF_CoreRendererContext* GDFE_INTERNAL_CORE_CTX;
 
 GDF_Renderer gdfe_renderer_init(
-    GDF_Window window,
-    GDF_AppState* app_state,
-    GDF_AppCallbacks* callbacks
-);
+    GDF_Window window, GDF_AppState* app_state, GDF_AppCallbacks* callbacks);
 
 void gdfe_renderer_destroy(GDF_Renderer renderer);

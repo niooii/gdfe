@@ -31,7 +31,7 @@ typedef enum LOG_LEVEL {
 EXTERN_C_BEGIN
 
 GDF_BOOL GDF_InitThreadLogging(const char* thread_name);
-void GDF_ShutdownLogging();
+void     GDF_ShutdownLogging();
 
 void GDF_FlushLogBuffer();
 void GDF_LogOutput(LOG_LEVEL level, const char* message, ...);
@@ -68,7 +68,7 @@ EXTERN_C_END
 
 #ifdef GDF_TRACE
     #define LOG_TRACE(message, ...) GDF_LogOutput(LOG_LEVEL_TRACE, message, ##__VA_ARGS__);
-    #define LOG_CALL LOG_TRACE("Line %d::%s", __LINE__, __FUNCTION__)
+    #define LOG_CALL                LOG_TRACE("Line %d::%s", __LINE__, __FUNCTION__)
 #else
     #define LOG_TRACE(message, ...)
     #define LOG_CALL

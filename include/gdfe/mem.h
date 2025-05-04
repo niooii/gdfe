@@ -2,7 +2,7 @@
 
 #include <gdfe/prelude.h>
 
-// TODO! replace some stuff with platform specific implementations 
+// TODO! replace some stuff with platform specific implementations
 // maybe later tho
 
 // TAGGING NAD STATISTICS ARE NOT IMPLEMENTED RN

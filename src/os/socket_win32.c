@@ -2,8 +2,8 @@
 
 #ifdef OS_WINDOWS
 
-#pragma comment(lib, "wsock32.lib")
-#include <winsock.h>
+    #pragma comment(lib, "wsock32.lib")
+    #include <winsock.h>
 
 typedef struct GDF_Socket_T {
     SOCKET sock;
@@ -68,9 +68,9 @@ GDF_BOOL GDF_SocketListen(GDF_Socket socket, u16 port)
 {
     struct sockaddr_in service;
 
-    service.sin_family = AF_INET;
+    service.sin_family      = AF_INET;
     service.sin_addr.s_addr = INADDR_ANY;
-    service.sin_port = htons(port);
+    service.sin_port        = htons(port);
 
     if (bind(socket->sock, (SOCKADDR*)&service, sizeof(service)) == SOCKET_ERROR)
     {
@@ -115,9 +115,9 @@ GDF_BOOL GDF_SocketConnect(GDF_Socket socket, const char* address, u16 port)
 {
     struct sockaddr_in service;
 
-    service.sin_family = AF_INET;
+    service.sin_family      = AF_INET;
     service.sin_addr.s_addr = inet_addr(address);
-    service.sin_port = htons(port);
+    service.sin_port        = htons(port);
 
     if (connect(socket->sock, (SOCKADDR*)&service, sizeof(service)) == SOCKET_ERROR)
     {
@@ -144,29 +144,52 @@ GDF_SOCKERR GDF_SocketGetLastError()
     int error = WSAGetLastError();
     switch (error)
     {
-        case 0: return GDF_SOCKERR_NONE;
-        case WSANOTINITIALISED: return GDF_SOCKERR_NOT_INITIALIZED;
-        case WSAENETDOWN: return GDF_SOCKERR_NET_DOWN;
-        case WSAEADDRINUSE: return GDF_SOCKERR_ADDR_IN_USE;
-        case WSAEINTR: return GDF_SOCKERR_INTR;
-        case WSAEINPROGRESS: return GDF_SOCKERR_IN_PROGRESS;
-        case WSAEFAULT: return GDF_SOCKERR_FAULT;
-        case WSAENOBUFS: return GDF_SOCKERR_NO_BUFS;
-        case WSAENOTCONN: return GDF_SOCKERR_NOT_CONN;
-        case WSAENOTSOCK: return GDF_SOCKERR_NOT_SOCK;
-        case WSAEOPNOTSUPP: return GDF_SOCKERR_OP_NOT_SUPP;
-        case WSAESHUTDOWN: return GDF_SOCKERR_SHUTDOWN;
-        case WSAEMSGSIZE: return GDF_SOCKERR_MSG_SIZE;
-        case WSAEINVAL: return GDF_SOCKERR_INVAL;
-        case WSAECONNABORTED: return GDF_SOCKERR_CONN_ABORTED;
-        case WSAETIMEDOUT: return GDF_SOCKERR_TIMED_OUT;
-        case WSAECONNREFUSED: return GDF_SOCKERR_CONN_REFUSED;
-        case WSAEHOSTDOWN: return GDF_SOCKERR_HOST_DOWN;
-        case WSAEHOSTUNREACH: return GDF_SOCKERR_HOST_UNREACH;
-        case WSAENETUNREACH: return GDF_SOCKERR_NET_UNREACH;
-        case WSAEWOULDBLOCK: return GDF_SOCKERR_WOULD_BLOCK;
-        case WSAEACCES: return GDF_SOCKERR_ACCESS;
-        default: return GDF_SOCKERR_UNKNOWN;
+    case 0:
+        return GDF_SOCKERR_NONE;
+    case WSANOTINITIALISED:
+        return GDF_SOCKERR_NOT_INITIALIZED;
+    case WSAENETDOWN:
+        return GDF_SOCKERR_NET_DOWN;
+    case WSAEADDRINUSE:
+        return GDF_SOCKERR_ADDR_IN_USE;
+    case WSAEINTR:
+        return GDF_SOCKERR_INTR;
+    case WSAEINPROGRESS:
+        return GDF_SOCKERR_IN_PROGRESS;
+    case WSAEFAULT:
+        return GDF_SOCKERR_FAULT;
+    case WSAENOBUFS:
+        return GDF_SOCKERR_NO_BUFS;
+    case WSAENOTCONN:
+        return GDF_SOCKERR_NOT_CONN;
+    case WSAENOTSOCK:
+        return GDF_SOCKERR_NOT_SOCK;
+    case WSAEOPNOTSUPP:
+        return GDF_SOCKERR_OP_NOT_SUPP;
+    case WSAESHUTDOWN:
+        return GDF_SOCKERR_SHUTDOWN;
+    case WSAEMSGSIZE:
+        return GDF_SOCKERR_MSG_SIZE;
+    case WSAEINVAL:
+        return GDF_SOCKERR_INVAL;
+    case WSAECONNABORTED:
+        return GDF_SOCKERR_CONN_ABORTED;
+    case WSAETIMEDOUT:
+        return GDF_SOCKERR_TIMED_OUT;
+    case WSAECONNREFUSED:
+        return GDF_SOCKERR_CONN_REFUSED;
+    case WSAEHOSTDOWN:
+        return GDF_SOCKERR_HOST_DOWN;
+    case WSAEHOSTUNREACH:
+        return GDF_SOCKERR_HOST_UNREACH;
+    case WSAENETUNREACH:
+        return GDF_SOCKERR_NET_UNREACH;
+    case WSAEWOULDBLOCK:
+        return GDF_SOCKERR_WOULD_BLOCK;
+    case WSAEACCES:
+        return GDF_SOCKERR_ACCESS;
+    default:
+        return GDF_SOCKERR_UNKNOWN;
     }
 }
 

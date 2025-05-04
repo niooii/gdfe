@@ -1,8 +1,8 @@
-#include <windows.h>
-#include <gdfe/input.h>
 #include <gdfe/event.h>
-#include <gdfe/os/video.h>
+#include <gdfe/input.h>
 #include <gdfe/math/math.h>
+#include <gdfe/os/video.h>
+#include <windows.h>
 
 typedef struct keyboard_state {
     // TODO! bitmap maybe
@@ -17,40 +17,43 @@ typedef struct mouse_pos {
 typedef struct input_state {
     keyboard_state keyboard_current;
     keyboard_state keyboard_previous;
-    mouse_pos mpos_current;
-    mouse_pos mpos_previous;
-    mouse_pos mouse_delta; 
-    u8 mbutton_states_current[GDF_MBUTTON_MAX];
-    u8 mbutton_states_previous[GDF_MBUTTON_MAX];
+    mouse_pos      mpos_current;
+    mouse_pos      mpos_previous;
+    mouse_pos      mouse_delta;
+    u8             mbutton_states_current[GDF_MBUTTON_MAX];
+    u8             mbutton_states_previous[GDF_MBUTTON_MAX];
 } input_state;
 
-static GDF_BOOL initialized = GDF_FALSE;
+static GDF_BOOL    initialized = GDF_FALSE;
 static input_state state;
 
-static GDF_CURSOR_LOCK_STATE cursor_lock_state = GDF_CURSOR_LOCK_STATE_Free;
+static GDF_CURSOR_LOCK_STATE cursor_lock_state      = GDF_CURSOR_LOCK_STATE_Free;
 static GDF_CURSOR_LOCK_STATE prev_cursor_lock_state = GDF_CURSOR_LOCK_STATE_Free;
 
 static RECT mouse_confinement_rect;
 
 static void __update_mouse_confinement_rect(GDF_Window window)
 {
-    // TODO! rename misc.h to misc.h and slap a (CROSS PLATFORM) GDF_ShowCursor & GDF_ClipCursor in there and call that instead.
+    // TODO! rename misc.h to misc.h and slap a (CROSS PLATFORM) GDF_ShowCursor & GDF_ClipCursor in
+    // there and call that instead.
     i16 screen_offset_x, screen_offset_y;
     GDF_GetWindowPos(window, &screen_offset_x, &screen_offset_y);
     // LOG_INFO("%d, %d", screen_offset_x, screen_offset_y);
     u16 w, h;
     GDF_GetWindowSize(window, &w, &h);
     // LOG_WARN("Window size: %i, %i", w, h);
-    mouse_confinement_rect.bottom = screen_offset_y + h/2;
-    mouse_confinement_rect.top = screen_offset_y + h/2;
-    mouse_confinement_rect.right = screen_offset_x + w/2;
-    mouse_confinement_rect.left = screen_offset_x + w/2;
+    mouse_confinement_rect.bottom = screen_offset_y + h / 2;
+    mouse_confinement_rect.top    = screen_offset_y + h / 2;
+    mouse_confinement_rect.right  = screen_offset_x + w / 2;
+    mouse_confinement_rect.left   = screen_offset_x + w / 2;
 }
 
-static GDF_BOOL __input_system_on_event(u16 event_code, void* sender, void* listener_instance, GDF_EventContext ctx)
+static GDF_BOOL __input_system_on_event(u16 event_code, void* sender, void* listener_instance,
+                                        GDF_EventContext ctx)
 {
-    switch (event_code) {
-        case GDF_EVENT_INTERNAL_WINDOW_FOCUS_CHANGE:
+    switch (event_code)
+    {
+    case GDF_EVENT_INTERNAL_WINDOW_FOCUS_CHANGE:
         {
             GDF_BOOL focus_gained = ctx.data.b;
             if (focus_gained)
@@ -62,7 +65,7 @@ static GDF_BOOL __input_system_on_event(u16 event_code, void* sender, void* list
             }
             break;
         }
-        case GDF_EVENT_INTERNAL_WINDOW_MOVE:
+    case GDF_EVENT_INTERNAL_WINDOW_MOVE:
         {
             __update_mouse_confinement_rect((GDF_Window)sender);
             break;
@@ -97,19 +100,21 @@ void gdfe_input_update(GDF_Window active, f64 delta_time)
 
     // Copy current states to previous states.
     GDF_Memcpy(&state.keyboard_previous, &state.keyboard_current, sizeof(keyboard_state));
-    GDF_Memcpy(&state.mbutton_states_previous, &state.mbutton_states_current, sizeof(state.mbutton_states_current));
+    GDF_Memcpy(&state.mbutton_states_previous, &state.mbutton_states_current,
+               sizeof(state.mbutton_states_current));
     GDF_Memzero(&state.mouse_delta, sizeof(state.mouse_delta));
     if (cursor_lock_state != prev_cursor_lock_state)
     {
-        switch (cursor_lock_state) {
-            case GDF_CURSOR_LOCK_STATE_Free:
-                ClipCursor(NULL);
-                ShowCursor(TRUE);
-                break;
-            case GDF_CURSOR_LOCK_STATE_Locked:
-                __update_mouse_confinement_rect(active);
-                ClipCursor(&mouse_confinement_rect);
-                ShowCursor(FALSE);
+        switch (cursor_lock_state)
+        {
+        case GDF_CURSOR_LOCK_STATE_Free:
+            ClipCursor(NULL);
+            ShowCursor(TRUE);
+            break;
+        case GDF_CURSOR_LOCK_STATE_Locked:
+            __update_mouse_confinement_rect(active);
+            ClipCursor(&mouse_confinement_rect);
+            ShowCursor(FALSE);
         }
         prev_cursor_lock_state = cursor_lock_state;
         // return;
@@ -119,21 +124,21 @@ void gdfe_input_update(GDF_Window active, f64 delta_time)
 
 GDF_BOOL GDF_IsKeyDown(GDF_KEYCODE key)
 {
-    if (!initialized) 
+    if (!initialized)
         return GDF_FALSE;
     return state.keyboard_current.key_states[key] == GDF_TRUE;
 }
 
 GDF_BOOL GDF_IsKeyPressed(GDF_KEYCODE key)
 {
-    if (!initialized) 
+    if (!initialized)
         return GDF_FALSE;
     return state.keyboard_current.key_states[key] && !state.keyboard_previous.key_states[key];
 }
 
 GDF_BOOL GDF_WasKeyDown(GDF_KEYCODE key)
 {
-    if (!initialized) 
+    if (!initialized)
         return GDF_FALSE;
     return state.keyboard_previous.key_states[key];
 }
@@ -141,28 +146,28 @@ GDF_BOOL GDF_WasKeyDown(GDF_KEYCODE key)
 // mouse input
 GDF_BOOL GDF_IsButtonDown(GDF_MBUTTON button)
 {
-    if (!initialized) 
+    if (!initialized)
         return GDF_FALSE;
     return state.mbutton_states_current[button];
 }
 
 GDF_BOOL GDF_IsButtonPressed(GDF_MBUTTON button)
 {
-    if (!initialized) 
+    if (!initialized)
         return GDF_FALSE;
     return state.mbutton_states_current[button] && !state.mbutton_states_previous[button];
 }
 
 GDF_BOOL GDF_WasButtonDown(GDF_MBUTTON button)
 {
-    if (!initialized) 
+    if (!initialized)
         return GDF_FALSE;
     return state.mbutton_states_previous[button];
 }
 
 void GDF_GetMousePos(ivec2* pos)
 {
-    if (!initialized) 
+    if (!initialized)
     {
         pos->x = 0;
         pos->y = 0;
@@ -174,7 +179,7 @@ void GDF_GetMousePos(ivec2* pos)
 
 void GDF_GetPrevMousePos(ivec2* prev)
 {
-    if (!initialized) 
+    if (!initialized)
     {
         prev->x = 0;
         prev->y = 0;
@@ -185,16 +190,13 @@ void GDF_GetPrevMousePos(ivec2* prev)
     prev->y = state.mpos_previous.y;
 }
 
-void GDF_SetMouseLockState(GDF_CURSOR_LOCK_STATE lock_state)
-{
-    cursor_lock_state = lock_state;
-}
+void GDF_SetMouseLockState(GDF_CURSOR_LOCK_STATE lock_state) { cursor_lock_state = lock_state; }
 
 void GDF_GetMouseDelta(ivec2* d)
 {
     d->x = state.mouse_delta.x;
     d->y = state.mouse_delta.y;
-    
+
     // reset the accumulated delta... maybe
     // state.mouse_delta_x = 0;
     // state.mouse_delta_y = 0;
@@ -202,35 +204,38 @@ void GDF_GetMouseDelta(ivec2* d)
 
 // TODO! accumulate input until input update
 
-void __input_process_key(GDF_KEYCODE key, GDF_BOOL pressed) 
+void __input_process_key(GDF_KEYCODE key, GDF_BOOL pressed)
 {
     // check if state changed
-    if (state.keyboard_current.key_states[key] != pressed) 
+    if (state.keyboard_current.key_states[key] != pressed)
     {
         state.keyboard_current.key_states[key] = pressed;
 
         GDF_EventContext context;
         context.data.u16[0] = key;
-        GDF_EventFire(pressed ? GDF_EVENT_INTERNAL_KEY_PRESSED : GDF_EVENT_INTERNAL_KEY_RELEASED, NULL, context);
+        GDF_EventFire(pressed ? GDF_EVENT_INTERNAL_KEY_PRESSED : GDF_EVENT_INTERNAL_KEY_RELEASED,
+                      NULL, context);
     }
 }
 
-void __input_process_button(GDF_MBUTTON button, GDF_BOOL pressed) 
+void __input_process_button(GDF_MBUTTON button, GDF_BOOL pressed)
 {
     // check if state changed
-    if (state.mbutton_states_current[button] != pressed) 
+    if (state.mbutton_states_current[button] != pressed)
     {
         state.mbutton_states_current[button] = pressed;
         GDF_EventContext context;
         context.data.u16[0] = button;
-        GDF_EventFire(pressed ? GDF_EVENT_INTERNAL_MBUTTON_PRESSED : GDF_EVENT_INTERNAL_MBUTTON_RELEASED, NULL, context);
+        GDF_EventFire(pressed ? GDF_EVENT_INTERNAL_MBUTTON_PRESSED :
+                                GDF_EVENT_INTERNAL_MBUTTON_RELEASED,
+                      NULL, context);
     }
 }
 
-void __input_process_mouse_move(i16 x, i16 y) 
+void __input_process_mouse_move(i16 x, i16 y)
 {
     // check if different
-    if (state.mpos_current.x != x || state.mpos_current.y != y) 
+    if (state.mpos_current.x != x || state.mpos_current.y != y)
     {
         state.mpos_current.x = x;
         state.mpos_current.y = y;
@@ -242,7 +247,7 @@ void __input_process_mouse_move(i16 x, i16 y)
     }
 }
 
-void __input_process_raw_mouse_move(i32 dx, i32 dy) 
+void __input_process_raw_mouse_move(i32 dx, i32 dy)
 {
     state.mouse_delta.x += dx;
     state.mouse_delta.y += dy;
@@ -253,7 +258,7 @@ void __input_process_raw_mouse_move(i32 dx, i32 dy)
     GDF_EventFire(GDF_EVENT_INTERNAL_MOUSE_RAW_MOVE, NULL, context);
 }
 
-void __input_process_mouse_wheel(i8 z_delta) 
+void __input_process_mouse_wheel(i8 z_delta)
 {
     GDF_EventContext context;
     context.data.u8[0] = z_delta;

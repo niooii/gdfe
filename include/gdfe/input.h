@@ -1,8 +1,8 @@
 #pragma once
 
-#include <gdfe/prelude.h>
 #include <gdfe/math/math.h>
 #include <gdfe/os/video.h>
+#include <gdfe/prelude.h>
 
 typedef enum GDF_MBUTTON {
     GDF_MBUTTON_LEFT,

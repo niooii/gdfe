@@ -5,7 +5,7 @@
 #include "gdfe/gdfe.h"
 
 typedef struct gdfe_ui_pipeline {
-    VkPipeline handle;
+    VkPipeline       handle;
     VkPipelineLayout layout;
 
     VkShaderModule vert;
@@ -13,7 +13,7 @@ typedef struct gdfe_ui_pipeline {
 } gdfe_ui_pipeline;
 
 typedef struct gdfe_grid_pipeline {
-    VkPipeline handle;
+    VkPipeline       handle;
     VkPipelineLayout layout;
 
     VkShaderModule vert;
@@ -35,7 +35,7 @@ typedef struct GDF_CoreRendererContext {
     GDF_Camera active_camera;
 
     gdfe_grid_pipeline grid_pipeline;
-    gdfe_ui_pipeline ui_pipeline;
+    gdfe_ui_pipeline   ui_pipeline;
 
     // TODO! why do i even need this for a debug grid plane thingy just generate
     // vertices on the fly
@@ -49,6 +49,10 @@ typedef struct GDF_CoreRendererContext {
 } GDF_CoreRendererContext;
 
 GDF_BOOL core_renderer_init(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
-GDF_BOOL core_renderer_draw(GDF_Renderer renderer, GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+
+GDF_BOOL core_renderer_draw(
+    GDF_Renderer renderer, GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+
 GDF_BOOL core_renderer_resize(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+
 GDF_BOOL core_renderer_destroy(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);

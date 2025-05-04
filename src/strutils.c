@@ -1,8 +1,8 @@
+#include <gdfe/collections/list.h>
+#include <gdfe/strutils.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include <gdfe/strutils.h>
-#include <gdfe/collections/list.h>
 
 void GDF_StringInit(GDF_String* out)
 {
@@ -34,10 +34,7 @@ GDF_String GDF_StringCreateFrom(const char* buf, u64 len)
     return str;
 }
 
-void GDF_StringDestroy(GDF_String* builder)
-{
-    gdfe_list_destroy(builder->str);
-}
+void GDF_StringDestroy(GDF_String* builder) { gdfe_list_destroy(builder->str); }
 
 void GDF_StringPushChar(GDF_String* builder, const char c)
 {
@@ -65,11 +62,7 @@ void GDF_StringPush(GDF_String* builder, const char* to_push, u64 len)
     builder->str[builder->len] = 0;
 }
 
-void GDF_StringPushf(
-    GDF_String* builder,
-    const char* format,
-    ...
-)
+void GDF_StringPushf(GDF_String* builder, const char* format, ...)
 {
     va_list arg_ptr;
     va_list arg_ptr_copy;
@@ -81,7 +74,7 @@ void GDF_StringPushf(
 
     GDF_ListAppend(builder->str, NULL, add_len + 1);
 
-    u64 len = builder->len;
+    u64   len   = builder->len;
     char* start = builder->str + len;
 
     vsnprintf(start, add_len + 1, format, arg_ptr);
@@ -100,13 +93,13 @@ void GDF_StringClear(GDF_String* builder)
 {
     GDF_ListClear(builder->str);
     builder->str[0] = 0;
-    builder->len = 0;
+    builder->len    = 0;
 }
 
 void GDF_ReplaceCharWith(char* str, char from, char to)
 {
     u32 i = 0;
-    while(str[i])
+    while (str[i])
     {
         if (str[i] == from)
             str[i] = to;

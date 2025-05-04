@@ -3,15 +3,15 @@
 #include <gdfe/prelude.h>
 
 // TODO: Custom string lib
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef OS_WINDOWS
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#define strdup(p) _strdup(p)
-#define memzero(block, size) (void) memset((block), 0, (size))
+    #define WIN32_LEAN_AND_MEAN
+    #include <windows.h>
+    #define strdup(p)            _strdup(p)
+    #define memzero(block, size) (void)memset((block), 0, (size))
 #endif
 
 struct memory_stats {
@@ -19,28 +19,11 @@ struct memory_stats {
     u64 tagged_allocations[GDF_MEMTAG_MAX_TAGS];
 };
 
-static const char* GDF_MEMTAG_strings[GDF_MEMTAG_MAX_TAGS] = {
-    "UNKNOWN      ",
-    "ARRAY        ",
-    "LIST         ",
-    "DICT         ",
-    "RING_QUEUE   ",
-    "BST          ",
-    "STRING       ",
-    "APPLICATION  ",
-    "JOB          ",
-    "TEXTURE      ",
-    "MAT_INST     ",
-    "RENDERER     ",
-    "GAME         ",
-    "TRANSFORM    ",
-    "ENTITY       ",
-    "ENTITY_NODE  ",
-    "SCENE        ",
-    "TEMP RESOURCE",
-    "IO           ",
-    "FREE         "
-};
+static const char* GDF_MEMTAG_strings[GDF_MEMTAG_MAX_TAGS] = { "UNKNOWN      ", "ARRAY        ",
+    "LIST         ", "DICT         ", "RING_QUEUE   ", "BST          ", "STRING       ",
+    "APPLICATION  ", "JOB          ", "TEXTURE      ", "MAT_INST     ", "RENDERER     ",
+    "GAME         ", "TRANSFORM    ", "ENTITY       ", "ENTITY_NODE  ", "SCENE        ",
+    "TEMP RESOURCE", "IO           ", "FREE         " };
 
 static struct memory_stats stats;
 
@@ -51,67 +34,39 @@ GDF_BOOL gdfe_mem_init()
     return GDF_TRUE;
 }
 
-void gdfe_mem_shutdown()
-{
-
-}
+void gdfe_mem_shutdown() {}
 
 // TODO! make memtag do something or remove it
-void* GDF_Malloc(u64 size, GDF_MEMTAG tag) 
+void* GDF_Malloc(u64 size, GDF_MEMTAG tag)
 {
-    if (tag == GDF_MEMTAG_UNKNOWN) {
+    if (tag == GDF_MEMTAG_UNKNOWN)
         LOG_WARN("GDF_Malloc called using GDF_MEMTAG_UNKNOWN. Re-class this allocation.");
-    }
 
     // u32 total_allocated = 0;
     void* block = malloc(size);
     if (block == NULL)
-    {
         LOG_FATAL("It appears you have ran out of memory. womp womp");
-    }
-    
+
     GDF_Memzero(block, size);
     // stats.total_allocated += total_allocated;
     // stats.tagged_allocations[tag] += total_allocated;
     return block;
 }
 
-void* GDF_Realloc(void* block, u64 size)
-{
-    return realloc(block, size);
-}
+void* GDF_Realloc(void* block, u64 size) { return realloc(block, size); }
 
-void GDF_Free(void* block) 
+void GDF_Free(void* block)
 {
     free(block);
-    // if (tag == GDF_MEMTAG_FREE)
-    // {
-    //     LOG_WARN("Calling GDF_Free on already free memory.");
-    //     return;
-    // }
-    // if (tag == GDF_MEMTAG_UNKNOWN) {
-    //     LOG_WARN("GDF_Free called using GDF_MEMTAG_UNKNOWN. Re-class this allocation.");
-    // }
-    // stats.total_allocated -= size;
-    // stats.tagged_allocations[tag] -= size;
 }
 
-void GDF_Memzero(void* block, u64 size)
-{
-    memset(block, 0, size);
-}
+void GDF_Memzero(void* block, u64 size) { memset(block, 0, size); }
 
 // TODO!
-void GDF_Memcpy(void* dest, const void* src, u64 size)
-{
-    memcpy(dest, src, size);
-}
+void GDF_Memcpy(void* dest, const void* src, u64 size) { memcpy(dest, src, size); }
 
 // TODO!
-void GDF_Memset(void* block, i32 val, u64 size)
-{
-    memset(block, val, size);
-}
+void GDF_Memset(void* block, i32 val, u64 size) { memset(block, val, size); }
 
 // void GDF_GetMemUsageStr(char* out_str)
 // {
@@ -139,8 +94,8 @@ void GDF_Memset(void* block, i32 val, u64 size)
 //             amount = (float)stats.tagged_allocations[i];
 //         }
 //
-//         i32 length = snprintf(buffer + offset, 8000, "  %s: %.2f%s\n", GDF_MEMTAG_strings[i], amount, unit);
-//         offset += length;
+//         i32 length = snprintf(buffer + offset, 8000, "  %s: %.2f%s\n", GDF_MEMTAG_strings[i],
+//         amount, unit); offset += length;
 //     }
 //     strcpy(out_str, buffer);
 // }

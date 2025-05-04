@@ -34,11 +34,7 @@ void GDF_StringDestroy(GDF_String* str);
 
 void GDF_StringPushChar(GDF_String* str, char c);
 void GDF_StringPush(GDF_String* str, const char* to_push, u64 len);
-void GDF_StringPushf(
-    GDF_String* str,
-    const char* format_str,
-    ...
-);
+void GDF_StringPushf(GDF_String* str, const char* format_str, ...);
 
 /// "Clears" the contents of the string by null terminating the underlying string
 /// and setting the len attribute to 0.

@@ -1,9 +1,9 @@
 #include <gdfe/os/misc.h>
 
 #ifdef OS_WINDOWS
-#include <Windows.h>
+    #include <Windows.h>
 
-static f64 clock_freq;
+static f64           clock_freq;
 static LARGE_INTEGER start_time;
 
 void gdfe_misc_init()
@@ -14,10 +14,7 @@ void gdfe_misc_init()
     QueryPerformanceCounter(&start_time);
 }
 
-void gdfe_misc_shutdown()
-{
-
-}
+void gdfe_misc_shutdown() {}
 
 f64 GDF_GetAbsoluteTime()
 {
@@ -30,14 +27,14 @@ void GDF_GetSystemTime(GDF_DateTime* datetime)
 {
     SYSTEMTIME time;
     GetLocalTime(&time);
-    datetime->year = time.wYear; 
-    datetime->month = time.wMonth; 
-    datetime->day_of_week = time.wDayOfWeek; 
-    datetime->day = time.wDay; 
-    datetime->hour = time.wHour;
-    datetime->minute = time.wMinute; 
-    datetime->second = time.wSecond; 
-    datetime->milli = time.wMilliseconds; 
+    datetime->year        = time.wYear;
+    datetime->month       = time.wMonth;
+    datetime->day_of_week = time.wDayOfWeek;
+    datetime->day         = time.wDay;
+    datetime->hour        = time.wHour;
+    datetime->minute      = time.wMinute;
+    datetime->second      = time.wSecond;
+    datetime->milli       = time.wMilliseconds;
 }
 
 #endif

@@ -1,10 +1,10 @@
-#include <gdfe/event.h>
 #include <gdfe/collections/hashmap.h>
 #include <gdfe/collections/list.h>
+#include <gdfe/event.h>
 
 // represents a registered listener for an event
 typedef struct RegisteredEvent {
-    void* listener;
+    void*              listener;
     GDF_EventHandlerFP callback;
 } RegisteredEvent;
 
@@ -17,17 +17,15 @@ typedef struct EventSysState {
     GDF_HashMap(u32, event_code_entry) entries;
 } EventSysState;
 
-static GDF_BOOL INITIALIZED = GDF_FALSE;
+static GDF_BOOL      INITIALIZED = GDF_FALSE;
 static EventSysState state;
 
-u32 u32_hash(const u8* data, u32 len) {
-    u32 x = (u32)data[0] | 
-    ((u32)data[1] << 8) | 
-    ((u32)data[2] << 16) | 
-    ((u32)data[3] << 24);
-    x = ((x >> 16) ^ x) * 0x45d9f3b;
-    x = ((x >> 16) ^ x) * 0x45d9f3b;
-    x = (x >> 16) ^ x;
+u32 u32_hash(const u8* data, u32 len)
+{
+    u32 x = (u32)data[0] | ((u32)data[1] << 8) | ((u32)data[2] << 16) | ((u32)data[3] << 24);
+    x     = ((x >> 16) ^ x) * 0x45d9f3b;
+    x     = ((x >> 16) ^ x) * 0x45d9f3b;
+    x     = (x >> 16) ^ x;
     return x;
 }
 
@@ -36,23 +34,16 @@ GDF_BOOL gdfe_events_init()
     if (INITIALIZED)
         return GDF_FALSE;
     GDF_Memzero(&state, sizeof(state));
-    state.entries = GDF_HashmapWithHasher(
-        u32,
-        EventCodeEntry,
-        u32_hash,
-        GDF_FALSE
-    );
-    INITIALIZED = GDF_TRUE;
+    state.entries = GDF_HashmapWithHasher(u32, EventCodeEntry, u32_hash, GDF_FALSE);
+    INITIALIZED   = GDF_TRUE;
     return GDF_TRUE;
 }
 
 void gdfe_events_shutdown()
 {
-    for (
-        HashmapEntry* entry = GDF_HashmapIter(state.entries); 
-        entry != NULL; 
-        GDF_HashmapIterAdvance(&entry)
-    ) {
+    for (HashmapEntry* entry = GDF_HashmapIter(state.entries); entry != NULL;
+         GDF_HashmapIterAdvance(&entry))
+    {
         EventCodeEntry* event_entry = entry->val;
         if (event_entry->registered_events_list != NULL)
         {
@@ -69,10 +60,10 @@ GDF_BOOL GDF_EventRegister(u32 e_code, void* listener, GDF_EventHandlerFP callba
 
     EventCodeEntry* entry = GDF_HashmapGet(state.entries, &e_code);
 
-    if (!entry) 
+    if (!entry)
     {
         EventCodeEntry empty = {};
-        entry = GDF_HashmapInsert(state.entries, &e_code, &empty, NULL);
+        entry                = GDF_HashmapInsert(state.entries, &e_code, &empty, NULL);
 
         GDF_ASSERT(entry);
 
@@ -101,10 +92,10 @@ GDF_BOOL GDF_EventUnregister(u32 e_code, void* listener, GDF_EventHandlerFP call
 {
     if (!INITIALIZED)
         return GDF_FALSE;
-    
+
     EventCodeEntry* entry = GDF_HashmapGet(state.entries, &e_code);
 
-    if (!entry) 
+    if (!entry)
     {
         LOG_WARN("Internal fail in event system.");
         return GDF_FALSE;
@@ -133,7 +124,7 @@ GDF_BOOL GDF_EventFire(u32 e_code, void* sender, GDF_EventContext ctx)
 
     EventCodeEntry* entry = GDF_HashmapGet(state.entries, &e_code);
 
-    if (!entry) 
+    if (!entry)
     {
         // LOG_WARN("No entry for a fired event. Is this intended?");
         return GDF_TRUE;

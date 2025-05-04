@@ -1,7 +1,7 @@
 #pragma once
 
-#include <gdfe/prelude.h>
 #include <gdfe/math/math.h>
+#include <gdfe/prelude.h>
 
 typedef struct GDF_Camera_T* GDF_Camera;
 
@@ -40,38 +40,41 @@ GDF_Camera GDF_CameraCreate(GDF_CameraCreateInfo* camera_info);
 void GDF_CameraDestroy(GDF_Camera camera);
 
 /**
-  * @brief Constrain the camera's pitch to a specific range. Set both params to 0 for no constraint.
-  *
-  * @param camera The camera to modify
-  * @param min_pitch The lower bound for the pitch in radians
-  * @param max_pitch The upper bound for the pitch in radians
-  */
+ * @brief Constrain the camera's pitch to a specific range. Set both params to 0 for no constraint.
+ *
+ * @param camera The camera to modify
+ * @param min_pitch The lower bound for the pitch in radians
+ * @param max_pitch The upper bound for the pitch in radians
+ */
 void GDF_CameraConstrainPitch(GDF_Camera camera, f32 min_pitch, f32 max_pitch);
 
 /**
-  * @brief Set the global axis of the camera, which all relative pitch/yaw/roll operations are based on
-  *
-  * @param camera The camera to modify
-  * @param axis The axis (default: <0, 1, 0>) to perform the relative rotate operations
-  */
+ * @brief Set the global axis of the camera, which all relative pitch/yaw/roll operations are based
+ * on
+ *
+ * @param camera The camera to modify
+ * @param axis The axis (default: <0, 1, 0>) to perform the relative rotate operations
+ */
 void GDF_CameraSetGlobalAxis(GDF_Camera camera, vec3 axis);
 
 /**
-  * @brief Get the global axis of the camera, which all relative pitch/yaw/roll operations are based on
-  *
-  * @param camera The camera to query
-  * @return The global axis unit vector
-  */
+ * @brief Get the global axis of the camera, which all relative pitch/yaw/roll operations are based
+ * on
+ *
+ * @param camera The camera to query
+ * @return The global axis unit vector
+ */
 vec3 GDF_CameraGetGlobalAxis(GDF_Camera camera);
 
 /**
-  * @brief Get the global axis of the camera, which all relative pitch/yaw/roll operations are based on
-  *
-  * @param camera The camera to query
-  * @param forward The output forward vector
-  * @param right The output right vector
-  * @param up The output up vector
-  */
+ * @brief Get the global axis of the camera, which all relative pitch/yaw/roll operations are based
+ * on
+ *
+ * @param camera The camera to query
+ * @param forward The output forward vector
+ * @param right The output right vector
+ * @param up The output up vector
+ */
 void GDF_CameraGetGlobalAxes(GDF_Camera camera, vec3* forward, vec3* right, vec3* up);
 
 /**

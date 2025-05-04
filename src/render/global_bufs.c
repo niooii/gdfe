@@ -1,5 +1,5 @@
-#include <i_render/renderer.h>
 #include <gdfe/render/vk/buffers.h>
+#include <i_render/renderer.h>
 
 GDF_BOOL __init_vp_ubos(GDF_VkRenderContext* vk_ctx);
 
@@ -16,51 +16,33 @@ GDF_BOOL create_global_buffers(GDF_VkRenderContext* vk_ctx)
 
 GDF_BOOL __init_vp_ubos(GDF_VkRenderContext* vk_ctx)
 {
-    u32 image_count = vk_ctx->max_concurrent_frames;
-    VkDescriptorPoolSize pool_size = {
-        .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        .descriptorCount = image_count
-    };
+    u32                  image_count = vk_ctx->max_concurrent_frames;
+    VkDescriptorPoolSize pool_size   = { .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+          .descriptorCount                     = image_count };
 
-    VkDescriptorPoolCreateInfo pool_info = {
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-        .poolSizeCount = 1,
-        .pPoolSizes = &pool_size,
-        .maxSets = image_count
-    };
+    VkDescriptorPoolCreateInfo pool_info = { .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+        .poolSizeCount                              = 1,
+        .pPoolSizes                                 = &pool_size,
+        .maxSets                                    = image_count };
 
-    VK_RETURN_FALSE_ASSERT(
-        vkCreateDescriptorPool(
-            vk_ctx->device.handle,
-            &pool_info,
-            vk_ctx->device.allocator,
-            &vk_ctx->vp_ubo_pool
-        )
-    );
+    VK_RETURN_FALSE_ASSERT(vkCreateDescriptorPool(
+        vk_ctx->device.handle, &pool_info, vk_ctx->device.allocator, &vk_ctx->vp_ubo_pool));
 
-    VkDescriptorSetLayoutBinding layout_bindings[] = {
-    {
-            .binding = 0,
-            .descriptorCount = 1,
-            .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-            .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
-        }
-    };
+    VkDescriptorSetLayoutBinding layout_bindings[] = { {
+        .binding         = 0,
+        .descriptorCount = 1,
+        .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        .stageFlags      = VK_SHADER_STAGE_VERTEX_BIT,
+    } };
 
     VkDescriptorSetLayoutCreateInfo layout_create_info = {
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+        .sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
         .bindingCount = sizeof(layout_bindings) / sizeof(VkDescriptorSetLayoutBinding),
-        .pBindings = layout_bindings,
+        .pBindings    = layout_bindings,
     };
 
-    VK_RETURN_FALSE_ASSERT(
-        vkCreateDescriptorSetLayout(
-            vk_ctx->device.handle,
-            &layout_create_info,
-            vk_ctx->device.allocator,
-            &vk_ctx->vp_ubo_layout
-        )
-    );
+    VK_RETURN_FALSE_ASSERT(vkCreateDescriptorSetLayout(vk_ctx->device.handle, &layout_create_info,
+        vk_ctx->device.allocator, &vk_ctx->vp_ubo_layout));
 
     const VkDeviceSize buffer_size = sizeof(ViewProjUB);
 
@@ -74,43 +56,29 @@ GDF_BOOL __init_vp_ubos(GDF_VkRenderContext* vk_ctx)
         }
 
         VkDescriptorSetAllocateInfo descriptor_set_alloc_info = {
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-            .descriptorPool = vk_ctx->vp_ubo_pool,
+            .sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+            .descriptorPool     = vk_ctx->vp_ubo_pool,
             .descriptorSetCount = 1,
-            .pSetLayouts = &vk_ctx->vp_ubo_layout
+            .pSetLayouts        = &vk_ctx->vp_ubo_layout
         };
 
         vkAllocateDescriptorSets(
-            vk_ctx->device.handle,
-            &descriptor_set_alloc_info,
-            &per_frame->vp_ubo_set
-        );
+            vk_ctx->device.handle, &descriptor_set_alloc_info, &per_frame->vp_ubo_set);
 
         VkDescriptorBufferInfo buffer_info = {
-            .buffer = per_frame->vp_ubo.buffer.handle,
-            .offset = 0,
-            .range = sizeof(ViewProjUB)
+            .buffer = per_frame->vp_ubo.buffer.handle, .offset = 0, .range = sizeof(ViewProjUB)
         };
 
-        VkWriteDescriptorSet descriptor_writes[1] = {
-            {
-                .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                .dstSet = per_frame->vp_ubo_set,
-                .dstBinding = 0,
-                .dstArrayElement = 0,
-                .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                .descriptorCount = 1,
-                .pBufferInfo = &buffer_info
-            }
-        };
+        VkWriteDescriptorSet descriptor_writes[1] = { { .sType =
+                                                            VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+            .dstSet          = per_frame->vp_ubo_set,
+            .dstBinding      = 0,
+            .dstArrayElement = 0,
+            .descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+            .descriptorCount = 1,
+            .pBufferInfo     = &buffer_info } };
 
-        vkUpdateDescriptorSets(
-            vk_ctx->device.handle,
-            1,
-            descriptor_writes,
-            0,
-            NULL
-        );
+        vkUpdateDescriptorSets(vk_ctx->device.handle, 1, descriptor_writes, 0, NULL);
     };
 
     return GDF_TRUE;

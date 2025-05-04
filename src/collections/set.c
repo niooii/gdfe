@@ -1,35 +1,28 @@
 #ifdef GDF_COLLECTIONS
 
-#include <string.h>
-#include <gdfe/collections/set.h>
-#include <gdfe/hash/superfasthash.h>
+    #include <gdfe/collections/set.h>
+    #include <gdfe/hash/superfasthash.h>
+    #include <string.h>
 // TODO! move away from memcmp for comparison, use custom comparison function
 
 typedef struct GDF_Set_T {
     u32 stride;
     // TODO! string keys should have a different hash function i think
     GDF_BOOL string_keys;
-    u32 num_entries;
-    u32 capacity;
-    void** bucket;
+    u32      num_entries;
+    u32      capacity;
+    void**   bucket;
     u32 (*hash_func)(const u8* data, u32 len);
 } GDF_Set_T;
 
-static FORCEINLINE u32 __get_idx(
-    void* val, 
-    GDF_Set set
-)
+static FORCEINLINE u32 __get_idx(void* val, GDF_Set set)
 {
     u32 idx = set->hash_func((const u8*)val, set->stride) % set->capacity;
     return idx;
 }
 
 static FORCEINLINE u32 __get_idx_custom(
-    void* key, 
-    u32 key_size,
-    u32 capacity,
-    u32 (*hash_func)(const u8* data, u32 len)
-)
+    void* key, u32 key_size, u32 capacity, u32 (*hash_func)(const u8* data, u32 len))
 {
     u32 idx = hash_func((const u8*)key, key_size) % capacity;
     return idx;
@@ -40,13 +33,7 @@ static FORCEINLINE u32 __get_idx_custom(
 // Returns the 'slot' inserted at, or if it was already there.
 // should return NULL on error.
 static FORCEINLINE void** __insert(
-    u32 start_idx, 
-    void* val,
-    u32 stride,
-    u32 capacity,
-    void** bucket,
-    GDF_BOOL* existed
-)
+    u32 start_idx, void* val, u32 stride, u32 capacity, void** bucket, GDF_BOOL* existed)
 {
     u32 idx;
 
@@ -59,7 +46,7 @@ static FORCEINLINE void** __insert(
             // already exists
             if (existed)
                 *existed = GDF_TRUE;
-            return bucket + idx; 
+            return bucket + idx;
         }
 
         if (bucket[idx] == NULL)
@@ -68,7 +55,7 @@ static FORCEINLINE void** __insert(
             GDF_Memcpy(bucket[idx], val, stride);
             if (existed)
                 *existed = GDF_FALSE;
-            return bucket + idx;  
+            return bucket + idx;
         }
     }
 
@@ -82,13 +69,14 @@ static FORCEINLINE void __free_setentry(void** set_entry)
     *set_entry = NULL;
 }
 
-GDF_Set GDF_SetCreateFull(u32 stride, u32 (*hash_func)(const u8* data, u32 len), GDF_BOOL string_keys, u32 initial_capacity)
+GDF_Set GDF_SetCreateFull(u32 stride, u32 (*hash_func)(const u8* data, u32 len),
+    GDF_BOOL string_keys, u32 initial_capacity)
 {
-    GDF_Set set = GDF_Malloc(sizeof(GDF_Set_T), GDF_MEMTAG_APPLICATION);
-    set->stride = stride;
+    GDF_Set set      = GDF_Malloc(sizeof(GDF_Set_T), GDF_MEMTAG_APPLICATION);
+    set->stride      = stride;
     set->string_keys = string_keys;
     set->num_entries = 0;
-    set->capacity = initial_capacity;
+    set->capacity    = initial_capacity;
 
     if (hash_func == NULL)
     {
@@ -105,17 +93,17 @@ GDF_Set GDF_SetCreateFull(u32 stride, u32 (*hash_func)(const u8* data, u32 len),
 GDF_BOOL GDF_SetDestroy(GDF_Set set)
 {
     void** bucket = set->bucket;
-    for (u32 i = 0; i < set->capacity; i++) 
+    for (u32 i = 0; i < set->capacity; i++)
     {
         if (bucket[i] == NULL)
             continue;
-            
+
         __free_setentry(&bucket[i]);
     }
 
     GDF_Free(bucket);
     GDF_Free(set);
-    
+
     return GDF_TRUE;
 }
 
@@ -131,49 +119,31 @@ void* GDF_SetInsert(GDF_Set set, void* value, GDF_BOOL* already_existed)
     // Check if set needs to be expanded
     if (set->num_entries + 1 >= (set->capacity / 2))
     {
-        u32 new_capacity = set->capacity * 2;
-        void** new_bucket = GDF_Malloc(sizeof(void*) * new_capacity, GDF_MEMTAG_COLLECTION);
+        u32    new_capacity = set->capacity * 2;
+        void** new_bucket   = GDF_Malloc(sizeof(void*) * new_capacity, GDF_MEMTAG_COLLECTION);
 
         // Rehash all entries
-        for (u32 i = 0; i < set->capacity; i++) 
+        for (u32 i = 0; i < set->capacity; i++)
         {
-            if (bucket[i] == NULL) 
+            if (bucket[i] == NULL)
                 continue;
 
-            u32 start_idx = __get_idx_custom(
-                bucket[i], 
-                set->stride,
-                new_capacity,
-                set->hash_func
-            );
-            
-            void** entry = __insert(
-                start_idx,
-                bucket[i],
-                set->stride,
-                new_capacity,
-                new_bucket,
-                NULL
-            );
+            u32 start_idx = __get_idx_custom(bucket[i], set->stride, new_capacity, set->hash_func);
+
+            void** entry =
+                __insert(start_idx, bucket[i], set->stride, new_capacity, new_bucket, NULL);
             __free_setentry(bucket + i);
         }
 
         GDF_Free(set->bucket);
-        set->bucket = new_bucket;
+        set->bucket   = new_bucket;
         set->capacity = new_capacity;
     }
 
     // Find next free index to insert in
-    u32 start_idx = __get_idx(value, set);
+    u32      start_idx = __get_idx(value, set);
     GDF_BOOL __existed;
-    void** entry = __insert(
-        start_idx,
-        value,
-        set->stride,
-        set->capacity,
-        set->bucket,
-        &__existed
-    );
+    void** entry = __insert(start_idx, value, set->stride, set->capacity, set->bucket, &__existed);
 
     if (entry == NULL)
     {
@@ -196,12 +166,11 @@ GDF_BOOL GDF_SetRemove(GDF_Set set, void* value, void* out_val_p)
         return GDF_FALSE;
     }
 
-    void** bucket = set->bucket;
-    u32 start_idx = __get_idx(value, set);
+    void** bucket    = set->bucket;
+    u32    start_idx = __get_idx(value, set);
 
-    for (u32 i = 0, idx; i < set->capacity && bucket[(
-        (idx = (start_idx + i) % set->capacity) 
-    )] != NULL; i++)
+    for (u32 i = 0, idx;
+         i < set->capacity && bucket[((idx = (start_idx + i) % set->capacity))] != NULL; i++)
     {
         if (memcmp(bucket[idx], value, set->stride) == 0)
         {
@@ -212,31 +181,27 @@ GDF_BOOL GDF_SetRemove(GDF_Set set, void* value, void* out_val_p)
             __free_setentry(&bucket[idx]);
             set->num_entries--;
             return GDF_TRUE;
-        } 
+        }
     }
-    
+
     return GDF_FALSE;
 }
 
-u32 GDF_SetLen(GDF_Set set)
-{
-    return set->num_entries;
-}
+u32 GDF_SetLen(GDF_Set set) { return set->num_entries; }
 
 SetIterator GDF_SetIter(GDF_Set set)
 {
-    SetIterator iter = {
-        .__owner = set
-    };
+    SetIterator iter = { .__owner = set };
     for (u32 i = 0; i < set->capacity; i++)
     {
-        if (set->bucket[i] != NULL) {
-            iter.curr = set->bucket[i];
+        if (set->bucket[i] != NULL)
+        {
+            iter.curr  = set->bucket[i];
             iter.__idx = i;
             return iter;
         }
     }
-    
+
     iter.curr = NULL;
 
     return iter;
@@ -245,12 +210,12 @@ SetIterator GDF_SetIter(GDF_Set set)
 void GDF_SetIterAdvance(SetIterator* iter)
 {
     GDF_Set set = iter->__owner;
-    u32 idx = iter->__idx + 1;
+    u32     idx = iter->__idx + 1;
     for (; idx < set->capacity; idx++)
     {
         if (set->bucket[idx] != NULL)
         {
-            iter->curr = set->bucket[idx];
+            iter->curr  = set->bucket[idx];
             iter->__idx = idx;
             return;
         }
@@ -263,7 +228,7 @@ void GDF_SetIterAdvance(SetIterator* iter)
 void GDF_SetIterConsume(SetIterator* iter, void* prev_val_p)
 {
     GDF_Set set = iter->__owner;
-    u32 idx = iter->__idx + 1;
+    u32     idx = iter->__idx + 1;
     for (; idx < set->capacity; idx++)
     {
         if (set->bucket[idx] != NULL)
@@ -272,7 +237,7 @@ void GDF_SetIterConsume(SetIterator* iter, void* prev_val_p)
                 GDF_Memcpy(prev_val_p, iter->curr, set->stride);
             __free_setentry(set->bucket + iter->__idx);
             set->num_entries--;
-            iter->curr = set->bucket[idx];
+            iter->curr  = set->bucket[idx];
             iter->__idx = idx;
             return;
         }
@@ -283,7 +248,7 @@ void GDF_SetIterConsume(SetIterator* iter, void* prev_val_p)
 
     __free_setentry(set->bucket + iter->__idx);
     set->num_entries--;
-        
+
     iter->curr = NULL;
     return;
 }

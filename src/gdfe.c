@@ -1,24 +1,24 @@
 #include <gdfe/event.h>
 #include <gdfe/gdfe.h>
-#include <gdfe/os/socket.h>
+#include <gdfe/input.h>
 #include <gdfe/os/misc.h>
+#include <gdfe/os/socket.h>
 #include <gdfe/os/thread.h>
 #include <gdfe/os/video.h>
-#include <i_video.h>
-#include <gdfe/input.h>
-#include "internal/i_render/renderer.h"
-#include <i_subsystems.h>
 #include <gdfe/strutils.h>
+#include <i_subsystems.h>
+#include <i_video.h>
+#include "internal/i_render/renderer.h"
 
 typedef struct GdfApp {
-    i16 width;
-    i16 height;
-    f64 last_time;
+    i16           width;
+    i16           height;
+    f64           last_time;
     GDF_Stopwatch stopwatch;
-    GDF_BOOL initialized;
+    GDF_BOOL      initialized;
 
     GDF_AppCallbacks callbacks;
-    GDF_Config conf;
+    GDF_Config       conf;
     GDF_AppState public;
 
     GDF_BOOL mouse_lock_toggle;
@@ -26,29 +26,32 @@ typedef struct GdfApp {
 
 static GdfApp APP_STATE;
 
-GDF_BOOL default_events(u16 event_code, void *sender, void *listener_instance, GDF_EventContext ctx)
+GDF_BOOL default_events(u16 event_code, void* sender, void* listener_instance, GDF_EventContext ctx)
 {
     switch (event_code)
     {
-        case GDF_EVENT_INTERNAL_KEY_PRESSED:
+    case GDF_EVENT_INTERNAL_KEY_PRESSED:
         {
             u16 key_code = ctx.data.u16[0];
             if (key_code == GDF_KEYCODE_ESCAPE)
             {
-                GDF_EventContext tmp_ctx = {.data = 0};
+                GDF_EventContext tmp_ctx = { .data = 0 };
                 GDF_EventFire(GDF_EVENT_INTERNAL_APP_QUIT, NULL, tmp_ctx);
                 return GDF_TRUE;
             }
-            switch (key_code) {
-                case GDF_KEYCODE_GRAVE:
+            switch (key_code)
+            {
+            case GDF_KEYCODE_GRAVE:
                 {
                     APP_STATE.mouse_lock_toggle = !APP_STATE.mouse_lock_toggle;
-                    GDF_CURSOR_LOCK_STATE state = APP_STATE.mouse_lock_toggle ? GDF_CURSOR_LOCK_STATE_Locked : GDF_CURSOR_LOCK_STATE_Free;
+                    GDF_CURSOR_LOCK_STATE state = APP_STATE.mouse_lock_toggle ?
+                        GDF_CURSOR_LOCK_STATE_Locked :
+                        GDF_CURSOR_LOCK_STATE_Free;
                     GDF_SetMouseLockState(state);
                     LOG_DEBUG("TOGGLE MOUSE LOCK");
                     break;
                 }
-                case GDF_KEYCODE_V:
+            case GDF_KEYCODE_V:
                 {
                     GDF_RendererCycleRenderMode(APP_STATE.public.renderer);
                 }
@@ -56,7 +59,7 @@ GDF_BOOL default_events(u16 event_code, void *sender, void *listener_instance, G
             break;
         }
 
-        case GDF_EVENT_INTERNAL_APP_QUIT:
+    case GDF_EVENT_INTERNAL_APP_QUIT:
         {
             LOG_INFO("Shutting down app...");
             APP_STATE.public.alive = GDF_FALSE;
@@ -69,11 +72,11 @@ GDF_BOOL default_events(u16 event_code, void *sender, void *listener_instance, G
     return GDF_FALSE;
 }
 
-GDF_BOOL on_resize(u16 event_code, void *sender, void *listener_instance, GDF_EventContext ctx)
+GDF_BOOL on_resize(u16 event_code, void* sender, void* listener_instance, GDF_EventContext ctx)
 {
     GDF_Renderer renderer = listener_instance;
-    u16 width = ctx.data.u16[0];
-    u16 height = ctx.data.u16[1];
+    u16          width    = ctx.data.u16[0];
+    u16          height   = ctx.data.u16[1];
 
     // check if different bc i need to resize renderer and whatnot
 
@@ -103,7 +106,8 @@ GDF_BOOL on_resize(u16 event_code, void *sender, void *listener_instance, GDF_Ev
     return GDF_FALSE;
 }
 
-void set_defaults(GDF_InitInfo* info) {
+void set_defaults(GDF_InitInfo* info)
+{
     GDF_DisplayInfo display_info;
     GDF_GetDisplayInfo(&display_info);
 
@@ -122,7 +126,7 @@ void set_defaults(GDF_InitInfo* info) {
 }
 
 static GDF_BOOL SUBSYS_INITIALIZED;
-GDF_BOOL GDF_InitSubsystems()
+GDF_BOOL        GDF_InitSubsystems()
 {
     gdfe_mem_init();
     gdfe_io_init();
@@ -150,7 +154,8 @@ GDF_BOOL GDF_InitSubsystems()
     return GDF_TRUE;
 }
 
-GDF_AppState* GDF_Init(GDF_InitInfo init_info) {
+GDF_AppState* GDF_Init(GDF_InitInfo init_info)
+{
     if (!SUBSYS_INITIALIZED && !GDF_InitSubsystems())
         return NULL;
 
@@ -162,7 +167,7 @@ GDF_AppState* GDF_Init(GDF_InitInfo init_info) {
 
     set_defaults(&init_info);
     APP_STATE.callbacks = init_info.callbacks;
-    APP_STATE.conf = init_info.config;
+    APP_STATE.conf      = init_info.config;
 
     APP_STATE.stopwatch = GDF_StopwatchCreate();
 
@@ -176,18 +181,14 @@ GDF_AppState* GDF_Init(GDF_InitInfo init_info) {
     gdfe_input_init();
 
     GDF_AppState* public = &APP_STATE.public;
-    public->window = GDF_CreateWindow(
-        init_info.window.x,
-        init_info.window.y,
-        init_info.window.w,
-        init_info.window.h,
-        init_info.window.title
-    );
+    public->window = GDF_CreateWindow(init_info.window.x, init_info.window.y, init_info.window.w,
+        init_info.window.h, init_info.window.title);
 
     if (public->window != NULL)
         LOG_INFO("Created window.");
 
-    if (!APP_STATE.conf.disable_default_events) {
+    if (!APP_STATE.conf.disable_default_events)
+    {
         GDF_EventRegister(GDF_EVENT_INTERNAL_KEY_PRESSED, NULL, default_events);
         GDF_EventRegister(GDF_EVENT_INTERNAL_APP_QUIT, NULL, default_events);
     }
@@ -204,43 +205,42 @@ GDF_AppState* GDF_Init(GDF_InitInfo init_info) {
     return public;
 }
 
-f64 GDF_Run() {
+f64 GDF_Run()
+{
     if (!APP_STATE.initialized)
     {
         LOG_ERR("App not initialized properly");
         return -1;
     }
     GDF_AppState* public = &APP_STATE.public;
-    public->alive = GDF_TRUE;
+    public->alive        = GDF_TRUE;
 
-    const GDF_Stopwatch running_timer = GDF_StopwatchCreate();
-    u32 fps = APP_STATE.conf.updates_per_sec;
-    f64 secs_per_frame = fps != 0 ? 1.0/fps : 0.0;
-    const GDF_Stopwatch frame_timer = GDF_StopwatchCreate();
+    const GDF_Stopwatch running_timer  = GDF_StopwatchCreate();
+    u32                 fps            = APP_STATE.conf.updates_per_sec;
+    f64                 secs_per_frame = fps != 0 ? 1.0 / fps : 0.0;
+    const GDF_Stopwatch frame_timer    = GDF_StopwatchCreate();
 
     // periodically print average fps
-    const u32 frame_times_sample_size = 10;
-    f64 frame_times[frame_times_sample_size] = {};
-    u64 last_whole_second = 0;
-    u64 frame_count = 0;
+    const u32 frame_times_sample_size              = 10;
+    f64       frame_times[frame_times_sample_size] = {};
+    u64       last_whole_second                    = 0;
+    u64       frame_count                          = 0;
 
-    while(public->alive)
+    while (public->alive)
     {
         const f64 current_time = GDF_StopwatchElapsed(APP_STATE.stopwatch);
-        const f64 dt = (current_time - APP_STATE.last_time);
-        APP_STATE.last_time = current_time;
+        const f64 dt           = (current_time - APP_STATE.last_time);
+        APP_STATE.last_time    = current_time;
         GDF_StopwatchReset(frame_timer);
 
         // grabs the latest input states
         pump_messages();
 
-        if (APP_STATE.callbacks.on_loop) {
-            if (
-                !APP_STATE.callbacks.on_loop(
-                &APP_STATE.public,
-                dt,
-                APP_STATE.callbacks.on_loop_state
-            )) {
+        if (APP_STATE.callbacks.on_loop)
+        {
+            if (!APP_STATE.callbacks.on_loop(
+                    &APP_STATE.public, dt, APP_STATE.callbacks.on_loop_state))
+            {
                 return -1;
             }
         }
@@ -259,13 +259,11 @@ f64 GDF_Run() {
         f64 overflow = GDF_StopwatchSleepUntil(frame_timer, secs_per_frame);
         if (overflow > 0)
         {
-            frame_times[frame_count % frame_times_sample_size]
-            = frame_time;
+            frame_times[frame_count % frame_times_sample_size] = frame_time;
         }
         else
         {
-            frame_times[frame_count % frame_times_sample_size]
-            = secs_per_frame;
+            frame_times[frame_count % frame_times_sample_size] = secs_per_frame;
         }
 
         // // temporary fps diagnostics, remove later.

@@ -33,13 +33,13 @@ EXTERN_C_BEGIN
 
 // tcp only for now
 GDF_Socket GDF_MakeSocket();
-void GDF_DestroySocket(GDF_Socket socket);
+void       GDF_DestroySocket(GDF_Socket socket);
 
-GDF_BOOL GDF_SocketListen(GDF_Socket socket, u16 port);
+GDF_BOOL   GDF_SocketListen(GDF_Socket socket, u16 port);
 GDF_Socket GDF_SocketAccept(GDF_Socket socket);
-GDF_BOOL GDF_SocketConnect(GDF_Socket socket, const char* address, u16 port);
-GDF_BOOL GDF_SocketSend(GDF_Socket socket, const char* buffer, u32 buf_size);
-GDF_BOOL GDF_SocketRecv(GDF_Socket socket, char* buffer, u32 buf_size);
+GDF_BOOL   GDF_SocketConnect(GDF_Socket socket, const char* address, u16 port);
+GDF_BOOL   GDF_SocketSend(GDF_Socket socket, const char* buffer, u32 buf_size);
+GDF_BOOL   GDF_SocketRecv(GDF_Socket socket, char* buffer, u32 buf_size);
 
 GDF_SOCKERR GDF_SocketGetLastError();
 

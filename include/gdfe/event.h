@@ -27,7 +27,8 @@ typedef struct GDF_EventContext {
     } data;
 } GDF_EventContext;
 
-typedef GDF_BOOL (*GDF_EventHandlerFP)(u16 event_code, void* sender, void* listener_instance, GDF_EventContext ctx);
+typedef GDF_BOOL (*GDF_EventHandlerFP)(u16 event_code, void* sender, void* listener_instance,
+                                       GDF_EventContext ctx);
 
 EXTERN_C_BEGIN
 
@@ -37,9 +38,8 @@ GDF_BOOL GDF_EventFire(u32 event_code, void* sender, GDF_EventContext ctx);
 
 EXTERN_C_END
 
-
 typedef enum GDF_EVENT_INTERNAL {
-    
+
     GDF_EVENT_INTERNAL_APP_QUIT = 0x01,
     /*
     Usage:
@@ -100,4 +100,4 @@ typedef enum GDF_EVENT_INTERNAL {
     // Not actaully an event.
     GDF_EVENT_INTERNAL_MAX = 0xFF
 
-} GDF_EVENT_INTERNAL; 
+} GDF_EVENT_INTERNAL;

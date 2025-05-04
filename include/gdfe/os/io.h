@@ -36,16 +36,23 @@ typedef struct GDF_Process_T *GDF_Process;
 EXTERN_C_BEGIN
 
 void GDF_ShowConsole();
+
 void GDF_HideConsole();
+
 const char* GDF_GetExecutablePath();
+
 void GDF_WriteConsole(const char* msg);
+
 void GDF_GetAbsolutePath(const char* rel_path, char* out_buf);
+
 // gets path of resource in a resources/ directory
 // ex: resources/icon.ico can be accessed by GDF_GetResourcePath("icon.ico", buf)
 void GDF_GetResourcePath(const char* rel_path, char* out_buf);
+
 // if the path is outside the directory of the executable
-// out_buf will be set to NULL. 
+// out_buf will be set to NULL.
 void GDF_GetRelativePath(const char* abs_path, char* out_buf);
+
 // MUST BE DESTROYED with GDF_FreeDirInfo
 // Example:
 // GDF_GetDirInfo("worlds") // gets ./worlds folder form executable folder
@@ -56,28 +63,41 @@ void GDF_GetRelativePath(const char* abs_path, char* out_buf);
 // ASSUMES THE RELATIVE PATH IS A VALID DIRECTORY
 // RETURNS NULL
 GDF_DirInfo* GDF_GetDirInfo(const char* rel_path);
+
 GDF_IO_RESULT GDF_MakeFile(const char* rel_path);
+
 GDF_IO_RESULT GDF_MakeDir(const char* rel_path);
+
 GDF_IO_RESULT GDF_MakeDirAbs(const char* abs_path);
+
 // WILL OVERWRITE CONTENTS OF FILE
 GDF_IO_RESULT GDF_WriteFile(const char* rel_path, const char* buf, u64 len);
+
 GDF_IO_RESULT GDF_ReadFile(const char* rel_path, char* out_buf, size_t bytes_to_read);
+
 // must be freed with GDF_Free
 // returns NULL on error
 char* GDF_ReadFileExactLen(const char* rel_path);
+
 // returns NULL on error
 u8* GDF_ReadBytesExactLen(const char* rel_path, u64* bytes_read);
+
 // returns GDF_FALSE if overwrite_existing is GDF_FALSE and a file already exists at dest_path,
 // or the src_path or dest_path is invalid.
 GDF_IO_RESULT GDF_CopyFile(const char* src_path, const char* dest_path, GDF_BOOL overwrite_existing);
+
 // the size of the file in bytes
 u64 GDF_GetFileSize(const char* rel_path);
+
 u64 GDF_GetFileSizeAbs(const char* abs_path);
+
 char* GDF_StrcatNoOverwrite(const char* s1, const char* s2);
+
 // must be freed with GDF_Free
 char* GDF_Strdup(const char* str);
 
-// Process API
+
+/* Process API */
 
 /// @brief Creates and starts a new child process.
 /// @param command       The executable to run.
