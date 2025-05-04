@@ -6,7 +6,7 @@
 /// expensive to copy.
 typedef struct GDF_String {
     char* str;
-    /// Includes the null terminator. (unconfirmed lol)
+    /// Does not include the null terminator.
     u64 len;
 } GDF_String;
 

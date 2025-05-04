@@ -239,7 +239,7 @@ GDF_IO_RESULT GDF_MakeDirAbs(const char* abs_path)
 GDF_IO_RESULT GDF_WriteFile(const char* rel_path, const char* buf, u64 len) {
     char path[MAX_PATH_LEN];
     GDF_GetAbsolutePath(rel_path, path);
-    HANDLE h = CreateFile(path, GENERIC_WRITE, 0, 0, TRUNCATE_EXISTING, 0, 0);
+    HANDLE h = CreateFile(path, GENERIC_WRITE, 0, 0, CREATE_ALWAYS, 0, 0);
 
     if (h == INVALID_HANDLE_VALUE) {
         switch (GetLastError()) {

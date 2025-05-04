@@ -13,8 +13,9 @@ void GDF_StringInit(GDF_String* out)
 void GDF_StringInitFrom(GDF_String* out, const char* buf, u64 len)
 {
     out->str = GDF_ListReserve(char, MAX(len, 32));
-    out->len = len;
+    out->len = len - 1;
     GDF_Memcpy(out->str, buf, len);
+    GDF_ListSetLen(out->str, len - 1);
 }
 
 GDF_String GDF_StringCreate()
