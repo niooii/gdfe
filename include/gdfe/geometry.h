@@ -12,9 +12,7 @@ typedef struct Transform {
     mat4 model_matrix;
 } Transform;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 FORCEINLINE void transform_recalc_model_matrix(Transform* transform)
 {
@@ -33,6 +31,4 @@ FORCEINLINE void transform_init_default(Transform* out_transform)
     transform_recalc_model_matrix(out_transform);
 }
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END

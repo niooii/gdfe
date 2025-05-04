@@ -135,16 +135,16 @@ GDF_BOOL GDF_InitSubsystems()
         return GDF_FALSE;
 
     // create the .gdfe storage directory
-    GDF_StringBuilder dir;
-    GDF_InitStringBuilder(&dir);
-    GDF_PushFormat(&dir, "%s/%s", GDF_GetExecutablePath(), GDFE_STORAGE_ROOT);
+    GDF_String dir;
+    GDF_StringInit(&dir);
+    GDF_StringPushf(&dir, "%s/%s", GDF_GetExecutablePath(), GDFE_STORAGE_ROOT);
     GDF_IO_RESULT res = GDF_MakeDirAbs(dir.str);
     if (res != GDF_IO_RESULT_SUCCESS && res != GDF_IO_RESULT_ALREADY_EXISTS)
     {
-        GDF_DestroyStringBuilder(&dir);
+        GDF_StringDestroy(&dir);
         return GDF_FALSE;
     }
-    GDF_DestroyStringBuilder(&dir);
+    GDF_StringDestroy(&dir);
 
     SUBSYS_INITIALIZED = GDF_TRUE;
     return GDF_TRUE;

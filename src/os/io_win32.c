@@ -1,4 +1,5 @@
 #include <gdfe/os/io.h>
+#include <gdfe/prelude.h>
 
 #ifdef OS_WINDOWS
 #include <gdfe/strutils.h>
@@ -235,7 +236,7 @@ GDF_IO_RESULT GDF_MakeDirAbs(const char* abs_path)
 }
 
 
-GDF_IO_RESULT GDF_WriteFile(const char* rel_path, const char* data) {
+GDF_IO_RESULT GDF_WriteFile(const char* rel_path, const char* buf, u64 len) {
     char path[MAX_PATH_LEN];
     GDF_GetAbsolutePath(rel_path, path);
     HANDLE h = CreateFile(path, GENERIC_WRITE, 0, 0, TRUNCATE_EXISTING, 0, 0);
@@ -249,7 +250,7 @@ GDF_IO_RESULT GDF_WriteFile(const char* rel_path, const char* data) {
         }
     }
 
-    GDF_BOOL success = WriteFile(h, data, strlen(data), NULL, NULL);
+    GDF_BOOL success = WriteFile(h, buf, len, NULL, NULL);
     CloseHandle(h);
 
     if (!success) {
@@ -435,14 +436,14 @@ GDF_Process GDF_CreateProcess(
     const char* const env[]
 )
 {
-    GDF_StringBuilder exec_str;
-    GDF_InitStringBuilder(&exec_str);
+    GDF_String exec_str;
+    GDF_StringInit(&exec_str);
 
-    GDF_PushString(&exec_str, command);
+    GDF_StringPush(&exec_str, command, strlen(command));
 
     for (int i = 0; args && args[i]; i++) {
-        GDF_PushChar(&exec_str, ' ');
-        GDF_PushString(&exec_str, args[i]);
+        GDF_StringPushChar(&exec_str, ' ');
+        GDF_StringPush(&exec_str, args[i], strlen(args[i]));
     }
 
     LOG_DEBUG("Starting process \"%s\"", exec_str.str);

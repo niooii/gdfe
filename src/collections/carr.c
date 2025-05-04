@@ -1,3 +1,5 @@
+#ifdef GDF_COLLECTIONS
+
 #include <gdfe/collections/carr.h>
 
 typedef struct GDF_CArray_T {
@@ -47,3 +49,5 @@ void* GDF_CArrayGetData(GDF_CArray arr)
 {
     return arr->data;
 }
+
+#endif

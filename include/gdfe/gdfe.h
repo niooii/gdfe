@@ -121,9 +121,7 @@ typedef struct GDF_InitInfo {
 
 } GDF_InitInfo;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 GDF_BOOL GDF_InitSubsystems();
 
@@ -132,6 +130,4 @@ GDF_AppState* GDF_Init(GDF_InitInfo);
 // Returns the number of seconds ran for, or -1 if something failed.
 f64 GDF_Run();
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END

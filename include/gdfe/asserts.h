@@ -12,21 +12,18 @@
 #define debugBreak() __builtin_trap()
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void gdfe_report_assert_fail(const char* expression, const char* message, const char* file, i32 line);
 void report_todo(const char* message, const char* file, i32 line);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #define TODO(message)                                                \
     {   \
         report_todo(message, __FILE__, __LINE__);    \
         debugBreak();            \
+        UNREACHABLE(); \
     }
 
 #define GDF_ASSERT(expr)                                                \

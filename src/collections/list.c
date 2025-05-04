@@ -1,3 +1,5 @@
+#ifdef GDF_COLLECTIONS
+
 #include <gdfe/collections/list.h>
 
 void* gdfe_list_create(u64 length, u64 stride) {
@@ -138,3 +140,5 @@ void* __list_insert_at(void* list, u64 index, void* value_ptr) {
     GDF_ListSetLen(list, length + 1);
     return list;
 }
+
+#endif

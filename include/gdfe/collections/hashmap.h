@@ -5,7 +5,6 @@
 
 // TODO! move away from memcmp for comparison, use custom comparison function
 
-
 static FORCEINLINE u32 superfasthash_wrapper(const u8* data, u32 len) 
 {
     return (u32)SuperFastHash((const char*)data, (int) len);
@@ -40,6 +39,8 @@ GDF_HashMap GDF_HashmapCreateFull(u32 k_stride, u32 v_stride, u32 (*hash_func)(c
 
 #endif
 
+EXTERN_C_BEGIN
+
 GDF_BOOL GDF_HashmapDestroy(GDF_HashMap hashmap);
 
 // The key and value are memcpy'd on insertion.
@@ -65,3 +66,5 @@ HashmapEntry* GDF_HashmapIter(GDF_HashMap hashmap);
 // Sets curr to NULL on end.
 // If a hashmap is modified while an iterator is still being used, behavior is undefined.
 void GDF_HashmapIterAdvance(HashmapEntry** iter);
+
+EXTERN_C_END

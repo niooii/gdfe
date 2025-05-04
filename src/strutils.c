@@ -4,18 +4,41 @@
 #include <gdfe/strutils.h>
 #include <gdfe/collections/list.h>
 
-void GDF_InitStringBuilder(GDF_StringBuilder* out)
+void GDF_StringInit(GDF_String* out)
 {
     out->str = GDF_ListReserve(char, 32);
     out->len = 0;
 }
 
-void GDF_DestroyStringBuilder(GDF_StringBuilder* builder)
+void GDF_StringInitFrom(GDF_String* out, const char* buf, u64 len)
+{
+    out->str = GDF_ListReserve(char, MAX(len, 32));
+    out->len = len;
+    GDF_Memcpy(out->str, buf, len);
+}
+
+GDF_String GDF_StringCreate()
+{
+    GDF_String str;
+    GDF_StringInit(&str);
+
+    return str;
+}
+
+GDF_String GDF_StringCreateFrom(const char* buf, u64 len)
+{
+    GDF_String str;
+    GDF_StringInitFrom(&str, buf, len);
+
+    return str;
+}
+
+void GDF_StringDestroy(GDF_String* builder)
 {
     gdfe_list_destroy(builder->str);
 }
 
-void GDF_PushChar(GDF_StringBuilder* builder, const char c)
+void GDF_StringPushChar(GDF_String* builder, const char c)
 {
     GDF_ListPushPtr(builder->str, &c);
     builder->len++;
@@ -29,23 +52,20 @@ void GDF_PushChar(GDF_StringBuilder* builder, const char c)
     builder->str[builder->len] = 0;
 }
 
-void GDF_PushString(GDF_StringBuilder* builder, const char* str)
+void GDF_StringPush(GDF_String* builder, const char* to_push, u64 len)
 {
-    u32 len = strlen(str);
-    GDF_ListAppend(builder->str, str, len);
+    GDF_ListAppend(builder->str, to_push, len);
     builder->len += len;
 
     // null terminate
     if (UNLIKELY(GDF_ListLen(builder->str) >= GDF_ListCapacity(builder->str)))
-    {
         GDF_ListPushPtr(builder->str, NULL);
-    }
 
     builder->str[builder->len] = 0;
 }
 
-void GDF_PushFormat(
-    GDF_StringBuilder* builder,
+void GDF_StringPushf(
+    GDF_String* builder,
     const char* format,
     ...
 )
@@ -75,10 +95,11 @@ void GDF_PushFormat(
     // builder->str[builder->len] = 0;
 }
 
-void GDF_ClearStringBuilder(const GDF_StringBuilder* builder)
+void GDF_StringClear(GDF_String* builder)
 {
     GDF_ListClear(builder->str);
     builder->str[0] = 0;
+    builder->len = 0;
 }
 
 void GDF_ReplaceCharWith(char* str, char from, char to)

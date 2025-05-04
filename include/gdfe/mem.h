@@ -32,9 +32,7 @@ typedef enum GDF_MEMTAG {
     GDF_MEMTAG_MAX_TAGS
 } GDF_MEMTAG;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 // memory allocated with this is automatically zero'd
 void* GDF_Malloc(u64 size, GDF_MEMTAG tag);
@@ -53,6 +51,4 @@ void GDF_Memset(void* block, i32 val, u64 size);
 
 // void GDF_GetMemUsageStr(char* out_str);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END

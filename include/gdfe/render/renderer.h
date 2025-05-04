@@ -17,9 +17,7 @@ typedef enum GDF_RENDER_MODE {
 
 typedef struct GDF_RenderHandle_T* GDF_RenderHandle;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 typedef struct GDF_Renderer_T* GDF_Renderer;
 
@@ -35,6 +33,4 @@ void GDF_DebugDrawAABB(GDF_Renderer renderer);
 void GDF_RendererSetRenderMode(GDF_Renderer renderer, GDF_RENDER_MODE mode);
 void GDF_RendererCycleRenderMode(GDF_Renderer renderer);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END

@@ -148,9 +148,7 @@ typedef enum GDF_CURSOR_LOCK_STATE {
     GDF_CURSOR_LOCK_STATE_Locked,
 } GDF_CURSOR_LOCK_STATE;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 // keyboard input
 // Returns GDF_TRUE if the key is pressed down on the frame this was called.
@@ -170,6 +168,4 @@ void GDF_GetPrevMousePos(ivec2* prev);
 void GDF_SetMouseLockState(GDF_CURSOR_LOCK_STATE lock_state);
 void GDF_GetMouseDelta(ivec2* delta);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END

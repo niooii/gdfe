@@ -23,9 +23,7 @@ typedef struct GDF_DisplayInfo {
     u16 screen_height;
 } GDF_DisplayInfo;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 GDF_Window GDF_CreateWindow(i16 x, i16 y, i16 w, i16 h, const char* title);
 GDF_BOOL GDF_SetWindowPos(GDF_Window window, i16 dest_x, i16 dest_y);
@@ -37,6 +35,4 @@ void GDF_SetShowCursor(GDF_Window window);
 
 void GDF_GetDisplayInfo(GDF_DisplayInfo* display_info);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END

@@ -1,3 +1,5 @@
+#ifdef GDF_COLLECTIONS
+
 #include <string.h>
 #include <gdfe/collections/hashmap.h>
 
@@ -286,3 +288,5 @@ void GDF_HashmapIterAdvance(HashmapEntry** iter)
     *iter = NULL;
     return;
 }
+
+#endif

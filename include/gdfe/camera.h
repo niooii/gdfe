@@ -22,9 +22,7 @@ typedef struct GDF_CameraCreateInfo {
     f32 far_clip;
 } GDF_CameraCreateInfo;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 /**
  * @brief Create a new camera. Must be explicitly destroyed.
@@ -294,6 +292,4 @@ mat4 GDF_CameraGetViewPerspectiveMatrix(GDF_Camera camera);
  */
 void GDF_CameraOrientation(GDF_Camera camera, vec3* forward, vec3* right, vec3* up);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END

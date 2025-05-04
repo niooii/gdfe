@@ -29,17 +29,13 @@ typedef struct GDF_EventContext {
 
 typedef GDF_BOOL (*GDF_EventHandlerFP)(u16 event_code, void* sender, void* listener_instance, GDF_EventContext ctx);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 GDF_BOOL GDF_EventRegister(u32 event_code, void* listener, GDF_EventHandlerFP callback);
 GDF_BOOL GDF_EventUnregister(u32 event_code, void* listener, GDF_EventHandlerFP callback);
 GDF_BOOL GDF_EventFire(u32 event_code, void* sender, GDF_EventContext ctx);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 
 typedef enum GDF_EVENT_INTERNAL {

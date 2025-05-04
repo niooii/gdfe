@@ -29,9 +29,7 @@ typedef enum GDF_SOCKERR {
     GDF_SOCKERR_UNKNOWN
 } GDF_SOCKERR;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 // tcp only for now
 GDF_Socket GDF_MakeSocket();
@@ -45,6 +43,4 @@ GDF_BOOL GDF_SocketRecv(GDF_Socket socket, char* buffer, u32 buf_size);
 
 GDF_SOCKERR GDF_SocketGetLastError();
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END

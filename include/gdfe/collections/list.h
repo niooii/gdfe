@@ -20,9 +20,7 @@ enum {
 // For easier reading of struct definitions that contain lists.
 #define GDF_LIST(type) type*
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void* gdfe_list_create(u64 length, u64 stride);
 void gdfe_list_destroy(void* list);
@@ -39,9 +37,7 @@ void gdfe_list_pop(void* list, void* dest);
 void* gdfe_list_remove_at(void* list, u64 index, void* dest);
 void* gdfe_list_insert_at(void* list, u64 index, void* value_ptr);
 
-#ifdef __cplusplus
-    }
-#endif
+EXTERN_C_END
 
 #define LIST_DEFAULT_CAPACITY 1
 #define LIST_RESIZE_FACTOR 2

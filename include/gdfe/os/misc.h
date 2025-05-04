@@ -37,9 +37,7 @@ typedef struct GDF_DateTime {
     u16 milli;
 } GDF_DateTime;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 // Absolute time since program has ran.
 f64 GDF_GetAbsoluteTime();
@@ -48,6 +46,4 @@ void GDF_GetSystemTime(GDF_DateTime* datetime);
 // Attempts to get the system time in UTC.
 void GDF_GetSystemTimeUTC(GDF_DateTime* datetime);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END

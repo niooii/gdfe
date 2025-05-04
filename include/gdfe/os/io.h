@@ -1,5 +1,7 @@
 #pragma once
-#include <gdfe/prelude.h>
+
+#include <gdfe/def.h>
+
 #define MB_BYTES 1048576
 #define KB_BYTES 1024
 
@@ -31,9 +33,7 @@ typedef struct GDF_DirInfo {
 
 typedef struct GDF_Process_T *GDF_Process;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void GDF_ShowConsole();
 void GDF_HideConsole();
@@ -60,7 +60,7 @@ GDF_IO_RESULT GDF_MakeFile(const char* rel_path);
 GDF_IO_RESULT GDF_MakeDir(const char* rel_path);
 GDF_IO_RESULT GDF_MakeDirAbs(const char* abs_path);
 // WILL OVERWRITE CONTENTS OF FILE
-GDF_IO_RESULT GDF_WriteFile(const char* rel_path, const char* data);
+GDF_IO_RESULT GDF_WriteFile(const char* rel_path, const char* buf, u64 len);
 GDF_IO_RESULT GDF_ReadFile(const char* rel_path, char* out_buf, size_t bytes_to_read);
 // must be freed with GDF_Free
 // returns NULL on error
@@ -121,6 +121,4 @@ void GDF_FreeProcessHandle(GDF_Process process);
 // free resources
 void GDF_FreeDirInfo(GDF_DirInfo* dir_info);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END

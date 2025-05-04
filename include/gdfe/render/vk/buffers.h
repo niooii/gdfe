@@ -2,9 +2,8 @@
 
 #include <gdfe/prelude.h>
 #include "types.h"
-#ifdef __cplusplus
-extern "C" {
-#endif
+
+EXTERN_C_BEGIN
 
 GDF_BOOL GDF_VkBufferCreate(
     u64 alloc_size,
@@ -61,6 +60,4 @@ void GDF_VkBufferDestroySingleUseCmd(
     VkCommandBuffer* command_buf
 );
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END

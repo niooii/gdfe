@@ -1,3 +1,5 @@
+#ifdef GDF_COLLECTIONS
+
 #include <string.h>
 #include <gdfe/collections/set.h>
 #include <gdfe/hash/superfasthash.h>
@@ -285,3 +287,5 @@ void GDF_SetIterConsume(SetIterator* iter, void* prev_val_p)
     iter->curr = NULL;
     return;
 }
+
+#endif

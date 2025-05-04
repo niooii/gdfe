@@ -28,6 +28,14 @@ typedef unsigned char byte;
 
 // TODO! move some of these defines into a private defs.h
 
+#ifdef __cplusplus
+#define EXTERN_C_BEGIN extern "C" {
+#define EXTERN_C_END   }
+#else
+#define EXTERN_C_BEGIN
+#define EXTERN_C_END
+#endif
+
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
 #define MIN(a,b) (((a) < (b)) ? (a) : (b))
 #define FLOOR(x) ((x) >= 0.0 ? (long long)(x) : (((long long)(x) == (x)) ? (x) : ((long long)(x) - 1)))

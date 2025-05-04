@@ -309,6 +309,7 @@ f32 GDF_CameraGetRoll(GDF_Camera camera)
 vec3 GDF_CameraGetRotation(GDF_Camera camera)
 {
     // return camera->pyr;
+    TODO("unimplemented");
 }
 
 vec3 GDF_CameraGetPosition(GDF_Camera camera)

@@ -38,6 +38,8 @@ GDF_Set GDF_SetCreateFull(u32 stride, u32 (*hash_func)(const u8* data, u32 len),
 
 #endif
 
+EXTERN_C_BEGIN
+
 GDF_BOOL GDF_SetDestroy(GDF_Set set);
 
 // The value and value are memcpy'd on insertion.
@@ -69,3 +71,5 @@ void GDF_SetIterAdvance(SetIterator* iter);
 // will be memcpy'd into prev_val_p.  
 // Pushing any new values to the set while iterating is undefined behavior.
 void GDF_SetIterConsume(SetIterator* iter, void* prev_val_p);
+
+EXTERN_C_END

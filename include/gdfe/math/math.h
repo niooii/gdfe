@@ -91,9 +91,7 @@ typedef union mat4_u {
 // TODO! own fast math implementation
 #include <math.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 FORCEINLINE f32 gsin(f32 x) 
 {
@@ -1650,6 +1648,4 @@ FORCEINLINE void quaternion_orientation(quaternion q,
     *up = quaternion_rotate_vector(q, base_up);
 }
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END

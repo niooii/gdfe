@@ -21,6 +21,8 @@ typedef enum GDF_PRIMITIVE_MESH_TYPE {
     gdfe_primitive_mesh_type_max
 } GDF_PRIMITIVE_MESH_TYPE;
 
+EXTERN_C_BEGIN
+
 /// Get a mesh of a primitive type.
 /// This does not allocate any additional memory, primitive meshes are initialized
 /// on engine initialization.
@@ -45,3 +47,5 @@ GDF_Mesh GDF_MeshCreate(
 /// Deallocates a mesh created by the caller.
 /// @param mesh A mesh handle.
 void GDF_MeshDestroy(GDF_Mesh mesh);
+
+EXTERN_C_END

@@ -6,9 +6,7 @@ typedef struct GDF_Mutex_T* GDF_Mutex;
 typedef struct GDF_Semaphore_T* GDF_Semaphore;
 // https://learn.microsoft.com/en-us/windows/win32/sync/semaphore-objects
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 // Run the thread_fn on a separate thread of execution. This does NOT make a copy of the arguments passed in. 
 GDF_Thread GDF_CreateThread(unsigned long thread_fn(void*), void* args);
@@ -42,6 +40,4 @@ GDF_BOOL GDF_ConsumeSemaphoreSignal(GDF_Semaphore semaphore);
 // will not be blocked, and the semaphore will be reset to the unsignaled state.
 GDF_BOOL GDF_SignalSemaphore(GDF_Semaphore semaphore);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END

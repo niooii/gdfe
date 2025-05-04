@@ -28,9 +28,7 @@ typedef enum LOG_LEVEL {
     LOG_LEVEL_TRACE
 } LOG_LEVEL;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 GDF_BOOL GDF_InitThreadLogging(const char* thread_name);
 void GDF_ShutdownLogging();
@@ -38,9 +36,7 @@ void GDF_ShutdownLogging();
 void GDF_FlushLogBuffer();
 void GDF_LogOutput(LOG_LEVEL level, const char* message, ...);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 /// @param message The format message, followed by variadic arguments.
 /// @note This will flush the log buffer immediately.

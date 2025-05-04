@@ -8,6 +8,7 @@
         code \
     }
 
+EXTERN_C_BEGIN
 
 // As defined by spec. for quick error checking
 FORCEINLINE GDF_BOOL GDF_VkUtilsIsSuccess(VkResult result)
@@ -57,10 +58,6 @@ FORCEINLINE GDF_BOOL GDF_VkUtilsIsSuccess(VkResult result)
     }
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 // Will return VK_NULL_HANDLE if failed.
 VkShaderModule GDF_VkUtilsLoadShader(const char* src_rel_path);
 
@@ -72,6 +69,4 @@ i32 GDF_VkUtilsFindMemTypeIdx(u32 type_filter, u32 property_flags);
 // Only the fields renderPass, subpass are modified
 void GDF_VkPipelineInfoFillGeometryPass(VkGraphicsPipelineCreateInfo* info);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END

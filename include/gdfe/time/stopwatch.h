@@ -4,9 +4,7 @@
 
 typedef struct GDF_Stopwatch_T* GDF_Stopwatch;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 /// @return A stopwatch handle.
 /// @note The stopwatch starts tracking elapsed time upon creation.
@@ -34,6 +32,4 @@ void GDF_StopwatchDestroy(GDF_Stopwatch stopwatch);
 /// stopwatch, it must be manually reset when desired.
 f64 GDF_StopwatchSleepUntil(GDF_Stopwatch stopwatch, f64 secs);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
