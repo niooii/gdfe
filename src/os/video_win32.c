@@ -1,19 +1,19 @@
 #include <gdfe/os/video.h>
 
 #ifdef OS_WINDOWS
-    #include <gdfe/logging.h>
-    #include <gdfe/mem.h>
-    #define WIN32_LEAN_AND_MEAN
-    #include <gdfe/collections/hashmap.h>
-    #include <gdfe/collections/list.h>
-    #include <gdfe/event.h>
-    #include <hidusage.h>
-    #include <i_input.h>
-    #include <i_video.h>
-    #include <vulkan/vulkan.h>
-    #include <vulkan/vulkan_win32.h>
-    #include <windows.h>
-    #include <windowsx.h>
+#include <gdfe/logging.h>
+#include <gdfe/mem.h>
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <windowsx.h>
+#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_win32.h>
+#include <gdfe/event.h>
+#include <i_input.h>
+#include <i_video.h>
+#include <hidusage.h>
+#include <gdfe/collections/hashmap.h>
+#include <gdfe/collections/list.h>
 
 const char     win_class_name[]  = "gdf_window";
 static u16     current_window_id = 0;
