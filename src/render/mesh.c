@@ -7,10 +7,11 @@ void gdfe_init_primitive_meshes()
 {
     /* Create cube mesh */
     {
-        static const GDF_MeshVertex vertices[] = { {
-                                                       .pos    = { -0.5f, -0.5f, -0.5f },
-                                                       .normal = { 0, -1, 0 },
-                                                   },
+        static const GDF_MeshVertex vertices[] = {
+            {
+                .pos    = { -0.5f, -0.5f, -0.5f },
+                .normal = { 0, -1, 0 },
+            },
             {
                 .pos    = { 0.5f, -0.5f, -0.5f },
                 .normal = { 0, -1, 0 },
@@ -40,7 +41,8 @@ void gdfe_init_primitive_meshes()
             {
                 .pos    = { -0.5f, 0.5f, 0.5f },
                 .normal = { 0, 1, 0 },
-            } };
+            },
+        };
 
         static const u16 indices[] = { 0, 1, 2, 2, 3, 0, 4, 7, 6, 6, 5, 4, 3, 2, 6, 6, 7, 3, 0, 4,
             5, 5, 1, 0, 0, 3, 7, 7, 4, 0, 1, 5, 6, 6, 2, 1 };
@@ -56,10 +58,11 @@ void gdfe_init_primitive_meshes()
 
     /* Create plane mesh */
     {
-        static const GDF_MeshVertex vertices[] = { {
-                                                       .pos    = { -0.5f, 0.5f, -0.5f },
-                                                       .normal = { 0, 1, 0 },
-                                                   },
+        static const GDF_MeshVertex vertices[] = {
+            {
+                .pos    = { -0.5f, 0.5f, -0.5f },
+                .normal = { 0, 1, 0 },
+            },
             {
                 .pos    = { 0.5f, 0.5f, -0.5f },
                 .normal = { 0, 1, 0 },
@@ -71,7 +74,8 @@ void gdfe_init_primitive_meshes()
             {
                 .pos    = { -0.5f, 0.5f, 0.5f },
                 .normal = { 0, 1, 0 },
-            } };
+            },
+        };
 
         static const u16 indices[] = { 0, 3, 2, 2, 1, 0 };
 

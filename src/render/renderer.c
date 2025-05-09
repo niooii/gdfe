@@ -134,6 +134,7 @@ GDF_BOOL GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
     VkRect2D scissor = { .offset = { 0, 0 }, .extent = vk_ctx->swapchain.extent };
     vkCmdSetScissor(cmd_buffer, 0, 1, &scissor);
 
+    // ERR! this causes a memory leak - when commented, memory consumption stays still
     if (!core_renderer_draw(renderer, vk_ctx, &renderer->core_renderer))
     {
         // TODO! handle some weird sync stuff here

@@ -63,6 +63,7 @@ GDF_BOOL core_renderer_init(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext
 GDF_BOOL core_renderer_draw(
     GDF_Renderer renderer, GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
+    // MEMROY LEAK HERE
     GDF_RenderCallbacks*  callbacks      = renderer->callbacks;
     u32                   resource_idx   = vk_ctx->resource_idx;
     PerFrameResources*    vk_per_frame   = &vk_ctx->per_frame[resource_idx];
