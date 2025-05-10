@@ -14,13 +14,6 @@ add_subdirectory(external/vma)
 set(NO_WARNING_FLAGS "-Wno-deprecated-declarations -Wno-unused-parameter -Wno-missing-braces -Wno-unused-variable -Wno-ignored-qualifiers -Wno-missing-field-initializers")
 
 set(CMAKE_C_FLAGS "-Wall -W -Wextra ${NO_WARNING_FLAGS} -ffast-math -march=native -mavx2 -fcolor-diagnostics")
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    set(PROFILE_DIR "release")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Ofast -fno-plt -fuse-ld=lld -funroll-loops -finline-functions -fomit-frame-pointer -fno-exceptions -ftree-vectorize -fvectorize -fslp-vectorize -DNDEBUG -DGDF_RELEASE")
-else()
-    set(PROFILE_DIR "debug")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g3 -O0 -fno-omit-frame-pointer -DDEBUG")
-endif()
 
 function(find_src_files result search_dir)
     file(GLOB_RECURSE source_files
@@ -35,6 +28,18 @@ find_src_files(GDFE_EXTERNAL "${CMAKE_CURRENT_SOURCE_DIR}/external")
 SET_SOURCE_FILES_PROPERTIES(${GDFE_SRC} ${GDFE_EXTERNAL} PROPERTIES LANGUAGE C)
 
 add_library(${PROJECT_NAME} ${GDFE_SRC} ${GDFE_EXTERNAL})
+
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(PROFILE_DIR "release")
+    set(SHADERC_LIB_NAME shaderc_combined)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE GDF_RELEASE NDEBUG)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Ofast -fno-plt -fuse-ld=lld -funroll-loops -finline-functions -fomit-frame-pointer -fno-exceptions -ftree-vectorize -fvectorize -fslp-vectorize")
+else()
+    set(PROFILE_DIR "debug")
+    set(SHADERC_LIB_NAME shaderc_combinedd)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE DEBUG)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g3 -Og -fno-omit-frame-pointer")
+endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE GDF_COLLECTIONS)
 
@@ -55,7 +60,7 @@ endif()
 
 # find shaderc
 find_library(SHADERC_LIBRARY
-    NAMES shaderc_combined
+    NAMES ${SHADERC_LIB_NAME}
     PATHS ${Vulkan_LIBRARY_DIRS}
     NO_DEFAULT_PATH
 )

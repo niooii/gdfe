@@ -1,7 +1,8 @@
 #pragma once
 
 #include <gdfe/prelude.h>
-#include "types.h"
+
+typedef struct GDF_Shader_T* GDF_Shader;
 
 EXTERN_C_BEGIN
 

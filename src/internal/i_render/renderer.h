@@ -16,8 +16,6 @@ typedef struct GDF_Renderer_T {
 
     GDF_RENDER_MODE render_mode;
 
-    GDF_Camera* camera;
-
     GDF_VkRenderContext     vk_ctx;
     GDF_RenderCallbacks*    callbacks;
     GDF_AppState*           app_state;

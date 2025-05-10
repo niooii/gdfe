@@ -28,8 +28,6 @@ typedef struct CoreRendererPerFrame {
 } CoreRendererPerFrame;
 
 typedef struct GDF_CoreRendererContext {
-    VkRenderPass geometry_pass;
-
     GDF_LIST(CoreRendererPerFrame) per_frame;
 
     GDF_Camera active_camera;

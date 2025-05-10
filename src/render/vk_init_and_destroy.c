@@ -209,7 +209,7 @@ GDF_Renderer gdfe_renderer_init(
     vk_ctx->device.allocator = NULL;
 
     VkApplicationInfo app_info  = { VK_STRUCTURE_TYPE_APPLICATION_INFO };
-    app_info.apiVersion         = VK_API_VERSION_1_2;
+    app_info.apiVersion         = VK_API_VERSION_1_3;
     app_info.pApplicationName   = "Not a GDFE app...";
     app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     app_info.pEngineName        = "GDFE";
@@ -389,18 +389,28 @@ GDF_Renderer gdfe_renderer_init(
     VkDeviceCreateInfo device_create_info   = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
     device_create_info.queueCreateInfoCount = index_count;
     device_create_info.pQueueCreateInfos    = queue_create_infos;
-    device_create_info.pEnabledFeatures     = &device_features;
     const char* extension_names[]           = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-        // Dependencies for DESCRIPTOR_BUFFER
         VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
         VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
         VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
-        VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME,
-        VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
     };
     device_create_info.enabledExtensionCount   = sizeof(extension_names) / sizeof(*extension_names);
     device_create_info.ppEnabledExtensionNames = extension_names;
+
+    // enable dynamic rendering and stuff
+    VkPhysicalDeviceVulkan13Features vk_1_3_features = {
+        .sType            = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+        .dynamicRendering = VK_TRUE,
+    };
+
+    VkPhysicalDeviceFeatures2 device_features_2 = {
+        .sType    = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+        .pNext    = &vk_1_3_features,
+        .features = device_features,
+    };
+
+    device_create_info.pNext = &device_features_2;
 
     vk_ctx->device.physical_info = selected_physical_device;
 

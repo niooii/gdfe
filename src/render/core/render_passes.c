@@ -91,14 +91,5 @@ GDF_BOOL create_geometry_pass(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererConte
         .pAttachments = attachments,
     };
 
-    VK_ASSERT(
-        vkCreateRenderPass(
-           vk_ctx->device.handle,
-           &rp_create_info,
-           vk_ctx->device.allocator,
-           &ctx->geometry_pass
-        )
-    );
-
     return GDF_TRUE;
 }

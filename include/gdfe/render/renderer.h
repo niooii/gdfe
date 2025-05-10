@@ -30,6 +30,8 @@ void GDF_RendererSetActiveCamera(GDF_Renderer renderer, GDF_Camera camera);
 void GDF_DebugDrawLine(GDF_Renderer renderer);
 void GDF_DebugDrawAABB(GDF_Renderer renderer);
 
+GDF_RenderHandle GDF_DrawMesh(GDF_Renderer renderer);
+
 void GDF_RendererSetRenderMode(GDF_Renderer renderer, GDF_RENDER_MODE mode);
 void GDF_RendererCycleRenderMode(GDF_Renderer renderer);
 

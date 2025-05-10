@@ -54,8 +54,13 @@ i32 GDF_VkUtilsFindMemTypeIdx(u32 type_filter, u32 property_flags)
     return -1;
 }
 
-void GDF_VkPipelineInfoFillGeometryPass(VkGraphicsPipelineCreateInfo* info)
+void GDF_VkPipelineInitRenderingInfo(
+    const GDF_VkRenderContext* vk_ctx, VkPipelineRenderingCreateInfo* info)
 {
-    info->renderPass = GDFE_INTERNAL_CORE_CTX->geometry_pass;
-    info->subpass    = 0;
+    info->sType                   = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;
+    info->pNext                   = VK_NULL_HANDLE;
+    info->colorAttachmentCount    = 1;
+    info->pColorAttachmentFormats = &vk_ctx->device.physical_info->formats.image_format;
+    info->depthAttachmentFormat   = vk_ctx->device.physical_info->formats.depth_format;
+    // info->stencilAttachmentFormat = vk_ctx->device.physical_info->formats.depth_format;
 }

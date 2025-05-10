@@ -63,10 +63,9 @@ VkShaderModule GDF_VkUtilsLoadShader(const char* src_rel_path);
 
 i32 GDF_VkUtilsFindMemTypeIdx(u32 type_filter, u32 property_flags);
 
-// For applications with custom rendering, any graphics pipeline created
-// for rendering geometry during the deferred pass
-// must be passed to this function before being used.
-// Only the fields renderPass, subpass are modified
-void GDF_VkPipelineInfoFillGeometryPass(VkGraphicsPipelineCreateInfo* info);
+/// For applications with custom rendering, any graphics pipeline created
+/// should call this function to initialize a zero'd instance of a VkPipelineRenderingCreateInfo
+/// struct, and then set VkGraphicsPipelineCreateInfo::pNext to the address of the struct
+void GDF_VkPipelineInitRenderingInfo(const GDF_VkRenderContext* vk_ctx, VkPipelineRenderingCreateInfo* info);
 
 EXTERN_C_END

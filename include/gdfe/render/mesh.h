@@ -2,13 +2,16 @@
 #include <gdfe/def.h>
 #include <gdfe/math/math.h>
 
-/// A mesh handle. All meshes should be defined with their vertices in counter-clockwise winding order.
+/// A mesh handle. All meshes should be defined with their vertices in counter-clockwise winding
+/// order.
 typedef struct GDF_Mesh_T* GDF_Mesh;
 
-typedef PACKED_STRUCT GDF_MeshVertex {
+typedef PACKED_STRUCT GDF_MeshVertex
+{
     vec3 pos;
     vec3 normal;
-} GDF_MeshVertex END_PACKED_STRUCT;
+}
+GDF_MeshVertex END_PACKED_STRUCT;
 
 #define GDF_MESH_VERTEX_SIZE (sizeof(MeshVertex))
 
@@ -37,12 +40,7 @@ GDF_Mesh GDF_MeshGetPrimitive(GDF_PRIMITIVE_MESH_TYPE type);
 /// @return A mesh handle. Must be destroyed with \code GDF_MeshDestroy()\endcode
 /// @note This function copies the content of the arrays that are given as parameters.
 /// Because of this, it is not recommended to frequently create new meshes.
-GDF_Mesh GDF_MeshCreate(
-    GDF_MeshVertex* vertices,
-    u32 vertex_count,
-    u32* indices,
-    u32 index_count
-);
+GDF_Mesh GDF_MeshCreate(GDF_MeshVertex* vertices, u32 vertex_count, u32* indices, u32 index_count);
 
 /// Deallocates a mesh created by the caller.
 /// @param mesh A mesh handle.

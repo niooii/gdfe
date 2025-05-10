@@ -1,9 +1,9 @@
 #pragma once
 
 #if defined _WIN32 || defined _WIN64
-#define OS_WINDOWS
+    #define OS_WINDOWS
 #elif defined __linux__
-#define OS_LINUX
+    #define OS_LINUX
 // me when i cant test if my stuff works on a mac without a mac
 #endif
 
@@ -29,17 +29,24 @@ typedef unsigned char byte;
 // TODO! move some of these defines into a private defs.h
 
 #ifdef __cplusplus
-#define EXTERN_C_BEGIN extern "C" {
-#define EXTERN_C_END   }
+    #define EXTERN_C_BEGIN extern "C" {
+    #define EXTERN_C_END   }
 #else
-#define EXTERN_C_BEGIN
-#define EXTERN_C_END
+    #define EXTERN_C_BEGIN
+    #define EXTERN_C_END
 #endif
 
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define FLOOR(x) \
     ((x) >= 0.0 ? (long long)(x) : (((long long)(x) == (x)) ? (x) : ((long long)(x)-1)))
+
+#define RET_FALSE(expr)       \
+    {                         \
+        if (!(expr))          \
+            return GDF_FALSE; \
+    }
+
 
 #define MB_TO_KB(mb) (mb * 1000)
 #define MB_TO_B(mb)  (mb * 1000000)
@@ -58,12 +65,12 @@ typedef unsigned char byte;
 
 #define SET_BITS(data, offset, bit_width, bits)                          \
     data = ((data & ~((((TYPEOF(data))1 << bit_width) - 1) << offset)) | \
-            ((bits & (((TYPEOF(data))1 << bit_width) - 1)) << offset))
+        ((bits & (((TYPEOF(data))1 << bit_width) - 1)) << offset))
 
 #if defined(__clang__) || defined(__gcc__)
-#define STATIC_ASSERT _Static_assert
+    #define STATIC_ASSERT _Static_assert
 #else
-#define STATIC_ASSERT static_assert
+    #define STATIC_ASSERT static_assert
 #endif
 
 STATIC_ASSERT(sizeof(u8) == 1, "expected u8 to be 1 byte.");
@@ -83,59 +90,59 @@ STATIC_ASSERT(sizeof(f64) == 8, "expected f64 to be 8 bytes.");
 // Microsoft Visual C compiler
 #ifdef _MSC_VER
 
-// typeof is a keyword since C23
-#define TYPEOF      typeof
-#define FORCEINLINE __forceinline
-#define NOINLINE    __declspec(noinline)
+    // typeof is a keyword since C23
+    #define TYPEOF      typeof
+    #define FORCEINLINE __forceinline
+    #define NOINLINE    __declspec(noinline)
 
-#define PACKED_STRUCT __pragma(pack(push, 1)) struct
-#define END_PACKED_STRUCT \
-    ;                     \
-    __pragma(pack(pop))
+    #define PACKED_STRUCT __pragma(pack(push, 1)) struct
+    #define END_PACKED_STRUCT \
+        ;                     \
+        __pragma(pack(pop))
 
-#define CTZ(x)        _tzcnt_u32(x) // Count trailing zeros (32-bit)
-#define CTZ64(x)      _tzcnt_u64(x) // Count trailing zeros (64-bit)
-#define CLZ(x)        _lzcnt_u32(x) // Count leading zeros (32-bit)
-#define CLZ64(x)      _lzcnt_u64(x) // Count leading zeros (64-bit)
-#define POPCOUNT(x)   __popcnt(x) // Population count (32-bit)
-#define POPCOUNT64(x) __popcnt64(x) // Population count (64-bit)
-#define BYTESWAP16(x) _byteswap_ushort(x) // Byte swap (16-bit)
-#define BYTESWAP32(x) _byteswap_ulong(x) // Byte swap (32-bit)
-#define BYTESWAP64(x) _byteswap_uint64(x) // Byte swap (64-bit)
+    #define CTZ(x)        _tzcnt_u32(x) // Count trailing zeros (32-bit)
+    #define CTZ64(x)      _tzcnt_u64(x) // Count trailing zeros (64-bit)
+    #define CLZ(x)        _lzcnt_u32(x) // Count leading zeros (32-bit)
+    #define CLZ64(x)      _lzcnt_u64(x) // Count leading zeros (64-bit)
+    #define POPCOUNT(x)   __popcnt(x) // Population count (32-bit)
+    #define POPCOUNT64(x) __popcnt64(x) // Population count (64-bit)
+    #define BYTESWAP16(x) _byteswap_ushort(x) // Byte swap (16-bit)
+    #define BYTESWAP32(x) _byteswap_ulong(x) // Byte swap (32-bit)
+    #define BYTESWAP64(x) _byteswap_uint64(x) // Byte swap (64-bit)
 
-#define LIKELY(x)   (x) // No direct equivalent in MSVC
-#define UNLIKELY(x) (x) // No direct equivalent in MSVC
+    #define LIKELY(x)   (x) // No direct equivalent in MSVC
+    #define UNLIKELY(x) (x) // No direct equivalent in MSVC
 
-#define ALIGNED(x)       __declspec(align(x))
-#define UNREACHABLE()    __assume(0)
-#define PREFETCH(x)      _mm_prefetch((const char*)(x), _MM_HINT_T0)
-#define MEMORY_BARRIER() _ReadWriteBarrier()
+    #define ALIGNED(x)       __declspec(align(x))
+    #define UNREACHABLE()    __assume(0)
+    #define PREFETCH(x)      _mm_prefetch((const char*)(x), _MM_HINT_T0)
+    #define MEMORY_BARRIER() _ReadWriteBarrier()
 
 #else
 // GCC, Clang, and other compilers
 
-#define TYPEOF      typeof
-#define FORCEINLINE __attribute__((always_inline)) inline
-#define NOINLINE    __attribute__((noinline))
+    #define TYPEOF      typeof
+    #define FORCEINLINE __attribute__((always_inline)) inline
+    #define NOINLINE    __attribute__((noinline))
 
-#define PACKED_STRUCT     struct __attribute__((packed))
-#define END_PACKED_STRUCT ;
+    #define PACKED_STRUCT     struct __attribute__((packed))
+    #define END_PACKED_STRUCT ;
 
-#define CTZ(x)        __builtin_ctz(x) // Count trailing zeros (32-bit)
-#define CTZ64(x)      __builtin_ctzll(x) // Count trailing zeros (64-bit)
-#define CLZ(x)        __builtin_clz(x) // Count leading zeros (32-bit)
-#define CLZ64(x)      __builtin_clzll(x) // Count leading zeros (64-bit)
-#define POPCOUNT(x)   __builtin_popcount(x) // Population count (32-bit)
-#define POPCOUNT64(x) __builtin_popcountll(x) // Population count (64-bit)
-#define BYTESWAP16(x) __builtin_bswap16(x) // Byte swap (16-bit) - fixed typo
-#define BYTESWAP32(x) __builtin_bswap32(x) // Byte swap (32-bit)
-#define BYTESWAP64(x) __builtin_bswap64(x) // Byte swap (64-bit)
+    #define CTZ(x)        __builtin_ctz(x) // Count trailing zeros (32-bit)
+    #define CTZ64(x)      __builtin_ctzll(x) // Count trailing zeros (64-bit)
+    #define CLZ(x)        __builtin_clz(x) // Count leading zeros (32-bit)
+    #define CLZ64(x)      __builtin_clzll(x) // Count leading zeros (64-bit)
+    #define POPCOUNT(x)   __builtin_popcount(x) // Population count (32-bit)
+    #define POPCOUNT64(x) __builtin_popcountll(x) // Population count (64-bit)
+    #define BYTESWAP16(x) __builtin_bswap16(x) // Byte swap (16-bit) - fixed typo
+    #define BYTESWAP32(x) __builtin_bswap32(x) // Byte swap (32-bit)
+    #define BYTESWAP64(x) __builtin_bswap64(x) // Byte swap (64-bit)
 
-#define LIKELY(x)   __builtin_expect(!!(x), 1)
-#define UNLIKELY(x) __builtin_expect(!!(x), 0)
+    #define LIKELY(x)   __builtin_expect(!!(x), 1)
+    #define UNLIKELY(x) __builtin_expect(!!(x), 0)
 
-#define ALIGNED(x)       __attribute__((aligned(x)))
-#define UNREACHABLE()    __builtin_unreachable()
-#define PREFETCH(x)      __builtin_prefetch(x)
-#define MEMORY_BARRIER() __asm__ volatile("" ::: "memory")
+    #define ALIGNED(x)       __attribute__((aligned(x)))
+    #define UNREACHABLE()    __builtin_unreachable()
+    #define PREFETCH(x)      __builtin_prefetch(x)
+    #define MEMORY_BARRIER() __asm__ volatile("" ::: "memory")
 #endif

@@ -5,15 +5,19 @@
 
 /* Private header for subsystem initialization, deinitialization and updating */
 
-void gdfe_input_init();
-void gdfe_input_shutdown();
-void gdfe_input_update(GDF_Window active, f64 delta_time);
-
 GDF_BOOL gdfe_logging_init();
 void     gdfe_logging_shutdown();
 
 GDF_BOOL gdfe_events_init();
 void     gdfe_events_shutdown();
+
+void gdfe_input_init();
+void gdfe_input_update(GDF_Window active, f64 delta_time);
+void gdfe_input_shutdown();
+
+/// Initializes the windowing and input subsystem.
+GDF_BOOL gdfe_video_init();
+void gdfe_video_shutdown();
 
 /* OS-specific subsystems */
 
@@ -31,3 +35,4 @@ void gdfe_misc_shutdown();
 
 GDF_BOOL gdfe_sock_init();
 void     gdfe_sock_shutdown();
+

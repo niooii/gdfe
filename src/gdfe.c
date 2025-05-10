@@ -1,16 +1,13 @@
 #include <gdfe/event.h>
 #include <gdfe/gdfe.h>
 #include <gdfe/input.h>
-#include <gdfe/os/misc.h>
-#include <gdfe/os/socket.h>
-#include <gdfe/os/thread.h>
 #include <gdfe/os/video.h>
 #include <gdfe/strutils.h>
 #include <i_subsystems.h>
 #include <i_video.h>
-#include "internal/i_render/renderer.h"
+#include <i_render/renderer.h>
 
-typedef struct GdfApp {
+typedef struct gdfe_state {
     i16           width;
     i16           height;
     f64           last_time;
@@ -22,9 +19,9 @@ typedef struct GdfApp {
     GDF_AppState public;
 
     GDF_BOOL mouse_lock_toggle;
-} GdfApp;
+} gdfe_state;
 
-static GdfApp APP_STATE;
+static gdfe_state APP_STATE;
 
 GDF_BOOL default_events(u16 event_code, void* sender, void* listener_instance, GDF_EventContext ctx)
 {
@@ -48,7 +45,6 @@ GDF_BOOL default_events(u16 event_code, void* sender, void* listener_instance, G
                         GDF_CURSOR_LOCK_STATE_Locked :
                         GDF_CURSOR_LOCK_STATE_Free;
                     GDF_SetMouseLockState(state);
-                    LOG_DEBUG("TOGGLE MOUSE LOCK");
                     break;
                 }
             case GDF_KEYCODE_V:
@@ -129,14 +125,12 @@ static GDF_BOOL SUBSYS_INITIALIZED;
 GDF_BOOL        GDF_InitSubsystems()
 {
     gdfe_mem_init();
+
     gdfe_io_init();
     gdfe_misc_init();
-    if (!gdfe_events_init())
-        return GDF_FALSE;
-    if (!gdfe_sock_init() || !gdfe_logging_init())
-        return GDF_FALSE;
-    if (!GDF_InitThreadLogging("Main"))
-        return GDF_FALSE;
+    RET_FALSE(gdfe_events_init());
+    RET_FALSE(gdfe_sock_init() && gdfe_logging_init());
+    RET_FALSE(GDF_InitThreadLogging("Main"));
 
     // create the .gdfe storage directory
     GDF_String dir;
@@ -176,9 +170,7 @@ GDF_AppState* GDF_Init(GDF_InitInfo init_info)
     if (init_info.config.disable_video)
         return &APP_STATE.public;
 
-    if (!gdfe_windowing_init())
-        return NULL;
-    gdfe_input_init();
+    RET_FALSE(gdfe_video_init());
 
     GDF_AppState* public = &APP_STATE.public;
     public->window = GDF_CreateWindow(init_info.window.x, init_info.window.y, init_info.window.w,
@@ -237,13 +229,9 @@ f64 GDF_Run()
         pump_messages();
 
         if (APP_STATE.callbacks.on_loop)
-        {
             if (!APP_STATE.callbacks.on_loop(
                     &APP_STATE.public, dt, APP_STATE.callbacks.on_loop_state))
-            {
                 return -1;
-            }
-        }
 
         if (!APP_STATE.conf.disable_video)
             GDF_RendererDrawFrame(public->renderer, dt);

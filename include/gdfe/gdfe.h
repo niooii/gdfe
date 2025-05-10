@@ -82,11 +82,11 @@ typedef struct GDF_Config {
     /// loads.
     /// @note May be freely changed at any time. Set to 0 to disable.
     u32 updates_per_sec;
-    // Disable the internal quit event when pressing 'Esc' or closing the window.
-    // Additionally disables the grave keybind for locking/unlocking the cursor.
+    /// Disable the internal quit event when pressing 'Esc' or closing the window.
+    /// Additionally disables the grave keybind for locking/unlocking the cursor.
     GDF_BOOL disable_default_events;
-    // Disables everything video related, including input, windowing, rendering.
-    // Good for minimal server applications
+    /// Disables everything video related, including input, windowing, rendering.
+    /// Good for minimal server applications
     GDF_BOOL disable_video;
 } GDF_Config;
 
