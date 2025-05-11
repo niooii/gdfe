@@ -181,6 +181,7 @@ void __filter_available_devices(GDF_VkRenderContext* vk_ctx, GDF_VkPhysicalDevic
 }
 
 // TODO! removeglobal context
+// eitehr just make it global or make it not man
 GDF_VkRenderContext*     GDFE_INTERNAL_VK_CTX   = NULL;
 GDF_CoreRendererContext* GDFE_INTERNAL_CORE_CTX = NULL;
 

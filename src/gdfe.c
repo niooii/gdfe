@@ -171,6 +171,7 @@ GDF_AppState* GDF_Init(GDF_InitInfo init_info)
         return &APP_STATE.public;
 
     RET_FALSE(gdfe_video_init());
+    gdfe_shaders_init();
 
     GDF_AppState* public = &APP_STATE.public;
     public->window = GDF_CreateWindow(init_info.window.x, init_info.window.y, init_info.window.w,
@@ -268,7 +269,7 @@ f64 GDF_Run()
         // }
     }
 
-    // CLEAN UP STUFF
+    // TODO! CLEAN UP ALL STUFF
     f64 time_ran_for = GDF_StopwatchElapsed(running_timer);
     GDF_StopwatchDestroy(APP_STATE.stopwatch);
     GDF_StopwatchDestroy(running_timer);

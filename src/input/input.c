@@ -24,7 +24,7 @@ typedef struct input_state {
     u8             mbutton_states_previous[GDF_MBUTTON_MAX];
 } input_state;
 
-static GDF_BOOL    initialized = GDF_FALSE;
+static GDF_BOOL    INITIALIZED = GDF_FALSE;
 static input_state state;
 
 static GDF_CURSOR_LOCK_STATE cursor_lock_state      = GDF_CURSOR_LOCK_STATE_Free;
@@ -79,7 +79,7 @@ static GDF_BOOL __input_system_on_event(u16 event_code, void* sender, void* list
 void gdfe_input_init()
 {
     GDF_Memzero(&state, sizeof(input_state));
-    initialized = GDF_TRUE;
+    INITIALIZED = GDF_TRUE;
     LOG_INFO("Input subsystem initialized.");
 
     // register to some important events for the input system
@@ -90,12 +90,12 @@ void gdfe_input_init()
 void gdfe_input_shutdown()
 {
     // TODO: shutdown routine later
-    initialized = GDF_FALSE;
+    INITIALIZED = GDF_FALSE;
 }
 
 void gdfe_input_update(GDF_Window active, f64 delta_time)
 {
-    if (!initialized)
+    if (!INITIALIZED)
         return;
 
     // Copy current states to previous states.
@@ -124,50 +124,44 @@ void gdfe_input_update(GDF_Window active, f64 delta_time)
 
 GDF_BOOL GDF_IsKeyDown(GDF_KEYCODE key)
 {
-    if (!initialized)
-        return GDF_FALSE;
+    RET_FALSE(INITIALIZED);
     return state.keyboard_current.key_states[key] == GDF_TRUE;
 }
 
 GDF_BOOL GDF_IsKeyPressed(GDF_KEYCODE key)
 {
-    if (!initialized)
-        return GDF_FALSE;
+    RET_FALSE(INITIALIZED);
     return state.keyboard_current.key_states[key] && !state.keyboard_previous.key_states[key];
 }
 
 GDF_BOOL GDF_WasKeyDown(GDF_KEYCODE key)
 {
-    if (!initialized)
-        return GDF_FALSE;
+    RET_FALSE(INITIALIZED);
     return state.keyboard_previous.key_states[key];
 }
 
 // mouse input
 GDF_BOOL GDF_IsButtonDown(GDF_MBUTTON button)
 {
-    if (!initialized)
-        return GDF_FALSE;
+    RET_FALSE(INITIALIZED);
     return state.mbutton_states_current[button];
 }
 
 GDF_BOOL GDF_IsButtonPressed(GDF_MBUTTON button)
 {
-    if (!initialized)
-        return GDF_FALSE;
+    RET_FALSE(INITIALIZED);
     return state.mbutton_states_current[button] && !state.mbutton_states_previous[button];
 }
 
 GDF_BOOL GDF_WasButtonDown(GDF_MBUTTON button)
 {
-    if (!initialized)
-        return GDF_FALSE;
+    RET_FALSE(INITIALIZED);
     return state.mbutton_states_previous[button];
 }
 
 void GDF_GetMousePos(ivec2* pos)
 {
-    if (!initialized)
+    if (!INITIALIZED)
     {
         pos->x = 0;
         pos->y = 0;
@@ -179,7 +173,7 @@ void GDF_GetMousePos(ivec2* pos)
 
 void GDF_GetPrevMousePos(ivec2* prev)
 {
-    if (!initialized)
+    if (!INITIALIZED)
     {
         prev->x = 0;
         prev->y = 0;
