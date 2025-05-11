@@ -11,6 +11,10 @@ set(CMAKE_C_EXTENSIONS OFF)
 
 add_subdirectory(external/vma)
 
+set(SPIRV_CROSS_ENABLE_TESTS OFF CACHE BOOL "Enable SPIRV-Cross tests." FORCE)
+set(SPIRV_CROSS_CLI OFF CACHE BOOL "Build SPIRV-Cross CLI" FORCE)
+add_subdirectory(external/spirv_cross)
+
 set(NO_WARNING_FLAGS "-Wno-deprecated-declarations -Wno-unused-parameter -Wno-missing-braces -Wno-unused-variable -Wno-ignored-qualifiers -Wno-missing-field-initializers")
 
 set(CMAKE_C_FLAGS "-Wall -W -Wextra ${NO_WARNING_FLAGS} -ffast-math -march=native -mavx2 -fcolor-diagnostics")
@@ -23,7 +27,7 @@ function(find_src_files result search_dir)
 endfunction()
 
 find_src_files(GDFE_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
-find_src_files(GDFE_EXTERNAL "${CMAKE_CURRENT_SOURCE_DIR}/external")
+#find_src_files(GDFE_EXTERNAL "${CMAKE_CURRENT_SOURCE_DIR}/external")
 
 SET_SOURCE_FILES_PROPERTIES(${GDFE_SRC} ${GDFE_EXTERNAL} PROPERTIES LANGUAGE C)
 
@@ -88,3 +92,10 @@ target_include_directories(${PROJECT_NAME}
         ${CMAKE_CURRENT_SOURCE_DIR}/external
         ${CMAKE_CURRENT_SOURCE_DIR}/src/internal
 )
+
+# build examples
+add_executable(example_scene examples/scene/main.c)
+target_link_libraries(example_scene gdfe)
+
+add_executable(example_io examples/io/main.c)
+target_link_libraries(example_io gdfe)

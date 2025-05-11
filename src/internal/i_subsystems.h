@@ -19,6 +19,9 @@ void gdfe_input_shutdown();
 GDF_BOOL gdfe_video_init();
 void gdfe_video_shutdown();
 
+void gdfe_shaders_init();
+void gdfe_shaders_shutdown();
+
 /* OS-specific subsystems */
 
 GDF_BOOL gdfe_windowing_init();

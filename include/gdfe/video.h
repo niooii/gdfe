@@ -7,8 +7,8 @@ typedef struct GDF_Shader_T* GDF_Shader;
 GDF_Shader GDF_ShaderLoadGLSL(const char* path);
 GDF_Shader GDF_ShaderLoadSPIRV(const char* path);
 
-GDF_Shader GDF_ShaderLoadStrGLSL(const char* path);
-GDF_Shader GDF_ShaderLoadStrSPIRV(const char* path);
+GDF_Shader GDF_ShaderLoadStrGLSL(const char* buf, u64 len);
+GDF_Shader GDF_ShaderLoadStrSPIRV(const char* buf, u64 len);
 
 /// @note Shader hot reloading is disabled in release builds
 GDF_BOOL GDF_ShaderReload(GDF_Shader shader);

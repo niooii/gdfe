@@ -1,5 +1,8 @@
 #pragma once
 
+#include <gdfe/def.h>
+#include <gdfe/math/math.h>
+
 typedef struct GDF_Camera_T {
     vec3 pos;
 
@@ -31,3 +34,25 @@ typedef struct GDF_Camera_T {
     GDF_BOOL needs_persp_recalc;
     GDF_BOOL needs_dir_vecs_recalc;
 } GDF_Camera_T;
+
+#ifndef GDF_RELEASE
+// Types for shader hot reloading utilities
+
+typedef enum GDF_SHADER_ORIGIN_FORMAT {
+    GDF_SHADER_ORIGIN_FORMAT_GLSL,
+    GDF_SHADER_ORIGIN_FORMAT_SPIRV,
+} GDF_SHADER_ORIGIN_FORMAT;
+
+#endif
+
+typedef struct GDF_Shader_T {
+    /// Hot reloading is disabled in release builds
+    #ifndef GDF_RELEASE
+    GDF_SHADER_ORIGIN_FORMAT origin_format;
+
+    /// Either loaded from a file or not, only file reloading is hot reloadable.
+    GDF_BOOL origin_is_file;
+    #endif
+
+
+} GDF_Shader_T;
