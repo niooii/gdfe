@@ -9,7 +9,7 @@ GDF_IO_RESULT GDF_StorageWrite(const char* path, const char* buf, u64 len)
 
     GDF_StringPushf(&rel_path, "/%s", path);
 
-    const GDF_IO_RESULT res = GDF_WriteFile(rel_path.str, buf, len);
+    const GDF_IO_RESULT res = GDF_WriteFileOnce(rel_path.str, buf, len);
 
     GDF_StringDestroy(&rel_path);
 

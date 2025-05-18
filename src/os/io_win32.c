@@ -89,98 +89,83 @@ void GDF_GetRelativePath(const char* abs_path, char* out_buf)
     strcpy(out_buf, &abs_path[exec_path_len]);
 }
 
-GDF_DirInfo* GDF_GetDirInfo(const char* rel_path)
-{
-    HANDLE          hFind;
-    WIN32_FIND_DATA FindData;
-    char            tmp_dir[MAX_PATH_LEN];
-    if (strcmp(rel_path, ".") == 0)
-    {
-        strcpy(tmp_dir, EXECUTABLE_PATH);
-    }
-    else
-    {
-        GDF_GetAbsolutePath(rel_path, tmp_dir);
-    }
-    TCHAR dir[MAX_PATH_LEN];
-    StringCchCopy(dir, MAX_PATH_LEN, tmp_dir);
-    // Find the last occurrence of '\'
-    GDF_BOOL last_char_is_backslash = rel_path[strlen(rel_path) - 1] == '\\';
-    GDF_BOOL last_char_is_slash     = rel_path[strlen(rel_path) - 1] == '/';
-    if (!last_char_is_backslash && !last_char_is_slash)
-    {
-        size_t strlength       = strlen(dir);
-        *(dir + strlength)     = '\\'; // add one ourself '\'
-        *(dir + strlength + 1) = '\0'; // null terminate
-    }
-    else if (last_char_is_slash)
-    {
-        size_t strlength       = strlen(dir);
-        *(dir + strlength - 1) = (char)'\\'; // replace with '\'
-    }
-    TCHAR search_path[MAX_PATH_LEN];
-    StringCchCopy(search_path, MAX_PATH_LEN, dir);
-    StringCchCat(search_path, MAX_PATH_LEN, TEXT("*"));
-
-    hFind                 = FindFirstFile(search_path, &FindData);
-    GDF_DirInfo* dir_info = GDF_Malloc(sizeof(*dir_info), GDF_MEMTAG_TEMP_RESOURCE);
-    dir_info->nodes       = GDF_Malloc(sizeof(*dir_info->nodes), GDF_MEMTAG_TEMP_RESOURCE);
-    // for some reason this never triggers. it always works.
-    // even when given a random ass path it somehow manages
-    // to return a valid handle and quite frankly, i am
-    // very pressed about it. according to the docs, this
-    // is SUPPOSED to work. but of course, why would anything
-    // work as documented, right? i am quite distressed about
-    // the lack of error handling in the FindFirstFileW function
-    // and will pray that this functionality will remain the same
-    // in future versions of windows. Because honestly,
-    // the windows api has to be the most documented api
-    // i've ever come across. and even so, why is it STILL
-    // so DIFFICULT to do ANYTHING in here? I just want simple error handling.
-    // I guess thats okay though. We'll just never know
-    // when something went wrong/. It's just unnecessary right?
-    // Who needs an api to work as documented? Why would anyone
-    // expect it to work the way it was WRITTEN to work?
-    // if (FindData.cFileName == INVALID_HANDLE_VALUE)
-    // {
-    //     LOG_WARN("Could not search directory %s", search_path);
-    //     return NULL;
-    // }
-    int found_files = 0;
-    while (FindNextFile(hFind, &FindData))
-    {
-        // y no work
-        if (strcmp(FindData.cFileName, ".") == 0 || strcmp(FindData.cFileName, "..") == 0)
-        {
-            found_files++;
-            continue;
-        }
-        // add node
-        dir_info->nodes[dir_info->num_nodes] =
-            GDF_Malloc(sizeof(GDF_DirInfoNode*), GDF_MEMTAG_TEMP_RESOURCE);
-        GDF_DirInfoNode* node = dir_info->nodes[dir_info->num_nodes];
-        node                  = GDF_Malloc(sizeof(GDF_DirInfoNode), GDF_MEMTAG_TEMP_RESOURCE);
-        dir_info->num_nodes++;
-        node->name = GDF_Malloc(strlen(FindData.cFileName) + 1, GDF_MEMTAG_STRING);
-        strcpy(node->name, FindData.cFileName);
-        LOG_DEBUG("found file %s", FindData.cFileName);
-        node->full_path    = GDF_StrcatNoOverwrite(dir, FindData.cFileName);
-        node->is_directory = FindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
-        LOG_DEBUG("at path %s", node->full_path);
-    }
-    FindClose(hFind);
-
-    if (found_files == 0)
-    {
-        // we should have found the .. directory and
-        // found_files wouldve been 1, so this
-        // can only mean the directory is invalid.
-        LOG_WARN("Could not search directory: %s", dir);
-        return NULL;
-    }
-
-    return dir_info;
-}
+// GDF_DirInfo* GDF_GetDirInfo(const char* rel_path)
+// {
+//     HANDLE          hFind;
+//     WIN32_FIND_DATA FindData;
+//     char            tmp_dir[MAX_PATH_LEN];
+//     if (strcmp(rel_path, ".") == 0)
+//     {
+//         strcpy(tmp_dir, EXECUTABLE_PATH);
+//     }
+//     else
+//     {
+//         GDF_GetAbsolutePath(rel_path, tmp_dir);
+//     }
+//     TCHAR dir[MAX_PATH_LEN];
+//     StringCchCopy(dir, MAX_PATH_LEN, tmp_dir);
+//     // Find the last occurrence of '\'
+//     GDF_BOOL last_char_is_backslash = rel_path[strlen(rel_path) - 1] == '\\';
+//     GDF_BOOL last_char_is_slash     = rel_path[strlen(rel_path) - 1] == '/';
+//     if (!last_char_is_backslash && !last_char_is_slash)
+//     {
+//         size_t strlength       = strlen(dir);
+//         *(dir + strlength)     = '\\'; // add one ourself '\'
+//         *(dir + strlength + 1) = '\0'; // null terminate
+//     }
+//     else if (last_char_is_slash)
+//     {
+//         size_t strlength       = strlen(dir);
+//         *(dir + strlength - 1) = (char)'\\'; // replace with '\'
+//     }
+//     TCHAR search_path[MAX_PATH_LEN];
+//     StringCchCopy(search_path, MAX_PATH_LEN, dir);
+//     StringCchCat(search_path, MAX_PATH_LEN, TEXT("*"));
+//
+//     hFind                 = FindFirstFile(search_path, &FindData);
+//     GDF_DirInfo* dir_info = GDF_Malloc(sizeof(*dir_info), GDF_MEMTAG_TEMP_RESOURCE);
+//     dir_info->nodes       = GDF_Malloc(sizeof(*dir_info->nodes), GDF_MEMTAG_TEMP_RESOURCE);
+//     // doesnt work hahahah
+//     // if (FindData.cFileName == INVALID_HANDLE_VALUE)
+//     // {
+//     //     LOG_WARN("Could not search directory %s", search_path);
+//     //     return NULL;
+//     // }
+//     int found_files = 0;
+//     while (FindNextFile(hFind, &FindData))
+//     {
+//         // y no work
+//         if (strcmp(FindData.cFileName, ".") == 0 || strcmp(FindData.cFileName, "..") == 0)
+//         {
+//             found_files++;
+//             continue;
+//         }
+//         // add node
+//         dir_info->nodes[dir_info->num_nodes] =
+//             GDF_Malloc(sizeof(GDF_DirInfoNode*), GDF_MEMTAG_TEMP_RESOURCE);
+//         GDF_DirInfoNode* node = dir_info->nodes[dir_info->num_nodes];
+//         node                  = GDF_Malloc(sizeof(GDF_DirInfoNode), GDF_MEMTAG_TEMP_RESOURCE);
+//         dir_info->num_nodes++;
+//         node->name = GDF_Malloc(strlen(FindData.cFileName) + 1, GDF_MEMTAG_STRING);
+//         strcpy(node->name, FindData.cFileName);
+//         LOG_DEBUG("found file %s", FindData.cFileName);
+//         node->full_path    = GDF_StrcatNoOverwrite(dir, FindData.cFileName);
+//         node->is_directory = FindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
+//         LOG_DEBUG("at path %s", node->full_path);
+//     }
+//     FindClose(hFind);
+//
+//     if (found_files == 0)
+//     {
+//         // we should have found the .. directory and
+//         // found_files wouldve been 1, so this
+//         // can only mean the directory is invalid.
+//         LOG_WARN("Could not search directory: %s", dir);
+//         return NULL;
+//     }
+//
+//     return dir_info;
+// }
 
 GDF_IO_RESULT GDF_MakeFile(const char* rel_path)
 {
@@ -240,7 +225,7 @@ GDF_IO_RESULT GDF_MakeDirAbs(const char* abs_path)
 }
 
 
-GDF_IO_RESULT GDF_WriteFile(const char* rel_path, const char* buf, u64 len)
+GDF_IO_RESULT GDF_WriteFileOnce(const char* rel_path, const char* buf, u64 len)
 {
     char path[MAX_PATH_LEN];
     GDF_GetAbsolutePath(rel_path, path);
@@ -269,7 +254,7 @@ GDF_IO_RESULT GDF_WriteFile(const char* rel_path, const char* buf, u64 len)
     return GDF_IO_RESULT_SUCCESS;
 }
 
-GDF_IO_RESULT GDF_ReadFile(const char* rel_path, char* out_buf, size_t bytes_to_read)
+GDF_IO_RESULT GDF_ReadFileOnce(const char* rel_path, char* out_buf, size_t bytes_to_read)
 {
     char path[MAX_PATH_LEN];
     GDF_GetAbsolutePath(rel_path, path);
@@ -300,14 +285,12 @@ GDF_IO_RESULT GDF_ReadFile(const char* rel_path, char* out_buf, size_t bytes_to_
     return GDF_IO_RESULT_SUCCESS;
 }
 
-char* GDF_ReadFileExactLen(const char* rel_path)
+u8* GDF_ReadFileExactLen(const char* rel_path, u64* read_bytes)
 {
     char path[MAX_PATH_LEN];
     GDF_GetAbsolutePath(rel_path, path);
-    // If i dont add a bit more, it reads some garbage characters after the end
-    // of the file. please dont ask me why this happens, i will not know.
-    u64      size    = GDF_GetFileSizeAbs(path) + 25;
-    char*    out_buf = GDF_Malloc(size, GDF_MEMTAG_STRING);
+    *read_bytes      = GDF_GetFileSizeAbs(path);
+    u8*    out_buf = GDF_Malloc(*read_bytes, GDF_MEMTAG_STRING);
     HANDLE   h       = CreateFile(path, GENERIC_READ, 0, 0, OPEN_EXISTING, 0, 0);
     GDF_BOOL success = h != INVALID_HANDLE_VALUE;
     if (!success)
@@ -323,7 +306,7 @@ char* GDF_ReadFileExactLen(const char* rel_path)
         return NULL;
     }
     DWORD    bytes_read = 0;
-    GDF_BOOL w_success  = ReadFile(h, (LPVOID)out_buf, size, &bytes_read, NULL);
+    GDF_BOOL w_success  = ReadFile(h, (LPVOID)out_buf, *read_bytes, &bytes_read, NULL);
     if (w_success)
     {
         // LOG_INFO("Read fil %s", path);
@@ -332,40 +315,10 @@ char* GDF_ReadFileExactLen(const char* rel_path)
     {
         LOG_ERR("Unknown error (%d) reading file: %s", GetLastError(), path);
     }
+
     LOG_DEBUG("%02X", out_buf);
     CloseHandle(h);
     return out_buf;
-}
-
-u8* GDF_ReadBytesExactLen(const char* rel_path, u64* bytes_read)
-{
-    char path[MAX_PATH_LEN];
-    GDF_GetAbsolutePath(rel_path, path);
-    FILE* file = fopen(path, "rb");
-
-    if (file == NULL)
-        return NULL;
-
-    fseek(file, 0, SEEK_END);
-    u64 size = ftell(file);
-    rewind(file);
-    LOG_DEBUG("File size: %u", size);
-
-    u8* out_bytes = GDF_Malloc(size, GDF_MEMTAG_STRING);
-    *bytes_read   = fread(out_bytes, 1, size, file);
-    LOG_DEBUG("bytes read: %u", bytes_read);
-    fclose(file);
-    if (*bytes_read != size)
-    {
-        *bytes_read = 0;
-        LOG_WARN("Reading binary from file failed...");
-        return NULL;
-    }
-    // FILE* file1 = fopen(path, "wb");
-    // fwrite(out_bytes, 1, size, file1);
-    // fclose(file1);
-
-    return out_bytes;
 }
 
 GDF_IO_RESULT GDF_CopyFile(const char* src_path, const char* dest_path, GDF_BOOL overwrite_existing)
@@ -397,43 +350,20 @@ u64 GDF_GetFileSize(const char* rel_path)
 
 u64 GDF_GetFileSizeAbs(const char* abs_path)
 {
-    FILE* file = fopen(abs_path, "rb");
-    if (file == NULL)
-    {
-        perror("Error");
-    }
-    fseek(file, 0, SEEK_END);
-    u64 size = ftell(file);
-    fclose(file);
+    HANDLE hFile = CreateFileW(
+        abs_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
-    return size;
-}
+    // beter error handling later
+    // if (hFile == INVALID_HANDLE_VALUE) {
+    //     LOG_ERR("Error opening file. Error code: %lu\n", GetLastError());
+    //     return FALSE;
+    // }
 
-// MUST CALL FREE AFTER USE
-char* GDF_StrcatNoOverwrite(const char* s1, const char* s2)
-{
-    char* p = GDF_Malloc(strlen(s1) + strlen(s2) + 1, GDF_MEMTAG_STRING);
+    LARGE_INTEGER size;
 
-    char* start = p;
-    if (p != NULL)
-    {
-        while (*s1 != '\0')
-            *p++ = *s1++;
-        while (*s2 != '\0')
-            *p++ = *s2++;
-        *p = '\0';
-    }
+    BOOL result = GetFileSizeEx(hFile, &size);
 
-    return start;
-}
-
-    #include <gdfe/strutils.h>
-char* GDF_Strdup(const char* str)
-{
-    // CHECK HERE
-    char* dup = GDF_Malloc(strlen(str) + 1, GDF_MEMTAG_STRING);
-    strcpy(dup, str);
-    return dup;
+    return size.QuadPart;
 }
 
 typedef struct GDF_Process_T {

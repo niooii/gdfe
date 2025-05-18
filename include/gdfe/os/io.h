@@ -71,16 +71,14 @@ GDF_IO_RESULT GDF_MakeDir(const char* rel_path);
 GDF_IO_RESULT GDF_MakeDirAbs(const char* abs_path);
 
 // WILL OVERWRITE CONTENTS OF FILE
-GDF_IO_RESULT GDF_WriteFile(const char* rel_path, const char* buf, u64 len);
+GDF_IO_RESULT GDF_WriteFileOnce(const char* rel_path, const char* buf, u64 len);
 
-GDF_IO_RESULT GDF_ReadFile(const char* rel_path, char* out_buf, size_t bytes_to_read);
+GDF_IO_RESULT GDF_ReadFileOnce(const char* rel_path, char* out_buf, size_t bytes_to_read);
 
 // must be freed with GDF_Free
 // returns NULL on error
-char* GDF_ReadFileExactLen(const char* rel_path);
-
-// returns NULL on error
-u8* GDF_ReadBytesExactLen(const char* rel_path, u64* bytes_read);
+/// @note read_bytes cannot be NULL.
+u8* GDF_ReadFileExactLen(const char* rel_path, u64* read_bytes);
 
 // returns GDF_FALSE if overwrite_existing is GDF_FALSE and a file already exists at dest_path,
 // or the src_path or dest_path is invalid.
@@ -90,12 +88,6 @@ GDF_IO_RESULT GDF_CopyFile(const char* src_path, const char* dest_path, GDF_BOOL
 u64 GDF_GetFileSize(const char* rel_path);
 
 u64 GDF_GetFileSizeAbs(const char* abs_path);
-
-char* GDF_StrcatNoOverwrite(const char* s1, const char* s2);
-
-// must be freed with GDF_Free
-char* GDF_Strdup(const char* str);
-
 
 /* Process API */
 

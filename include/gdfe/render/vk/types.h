@@ -77,6 +77,14 @@ typedef struct GDF_VkDevice {
     VkAllocationCallbacks* allocator;
 } GDF_VkDevice;
 
+typedef struct GDF_VkPipelineBase {
+    VkPipeline       handle;
+    VkPipelineLayout layout;
+
+    VkShaderModule vert;
+    VkShaderModule frag;
+} GDF_VkPipelineBase;
+
 /* ======================================= */
 /* ===== BUFFER TYPES ===== */
 /* ======================================= */

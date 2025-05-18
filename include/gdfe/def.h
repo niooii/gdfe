@@ -39,7 +39,7 @@ typedef unsigned char byte;
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define FLOOR(x) \
-    ((x) >= 0.0 ? (long long)(x) : (((long long)(x) == (x)) ? (x) : ((long long)(x)-1)))
+    ((x) >= 0.0 ? (long long)(x) : (((long long)(x) == (x)) ? (x) : ((long long)(x) - 1)))
 
 #define RET_FALSE(expr)       \
     {                         \
@@ -47,6 +47,13 @@ typedef unsigned char byte;
             return GDF_FALSE; \
     }
 
+#define GDF_NULL_HANDLE ((void*)0)
+
+#define NONNULL_OR_RET(expr)  \
+    {                         \
+        if (!(expr))          \
+            return GDF_NULL_HANDLE; \
+    }
 
 #define MB_TO_KB(mb) (mb * 1000)
 #define MB_TO_B(mb)  (mb * 1000000)

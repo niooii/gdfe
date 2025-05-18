@@ -2,6 +2,7 @@
 
 #include <gdfe/def.h>
 #include <gdfe/math/math.h>
+#include <vulkan/vulkan_core.h>
 
 typedef struct GDF_Camera_T {
     vec3 pos;
@@ -49,10 +50,9 @@ typedef struct GDF_Shader_T {
     /// Hot reloading is disabled in release builds
     #ifndef GDF_RELEASE
     GDF_SHADER_ORIGIN_FORMAT origin_format;
-
-    /// Either loaded from a file or not, only file reloading is hot reloadable.
-    GDF_BOOL origin_is_file;
+    /// Used in the context of reloading a shader
+    const char* file_path;
     #endif
 
-
+    VkShaderModule shader_module;
 } GDF_Shader_T;

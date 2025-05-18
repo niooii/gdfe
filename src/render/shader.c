@@ -3,6 +3,7 @@
 #include <i_subsystems.h>
 #include <shaderc/shaderc.h>
 
+#include "gdfe/collections/hashmap.h"
 #include "gdfe/render/vk/utils.h"
 #include "i_render/renderer.h"
 
@@ -10,6 +11,8 @@
 typedef struct gdfe_shader_state {
     shaderc_compiler_t        shaderc_compiler;
     shaderc_compile_options_t shaderc_options;
+
+    GDF_HashMap(GDF_Shader, GDF_LIST(VkPipeline));
 } gdfe_shader_state;
 
 static gdfe_shader_state STATE;
@@ -50,16 +53,78 @@ static FORCEINLINE VkShaderModule mk_module(const char* buf, u64 len)
     return shader_module;
 }
 
-GDF_Shader GDF_ShaderLoadStrSPIRV(const char* buf, u64 len)
+GDF_Shader GDF_ShaderLoadSPIRV(const char* buf, u64 len)
 {
-    TODO("unimplemented");
+    GDF_Shader_T* shader = GDF_Malloc(sizeof(GDF_Shader_T), GDF_MEMTAG_UNKNOWN);
+    NONNULL_OR_RET(shader);
+
+    VkShaderModule shader_module = mk_module(buf, len);
+    if (shader_module == VK_NULL_HANDLE)
+    {
+        GDF_Free(shader);
+        return GDF_NULL_HANDLE;
+    }
+
+    shader->shader_module = shader_module;
+
+    return shader;
 }
 
-GDF_Shader GDF_ShaderLoadStrGLSL(const char* buf, u64 len) { TODO("unimplemented"); }
 
-GDF_Shader GDF_ShaderLoadSPIRV(const char* path) { TODO("unimplemented"); }
+GDF_Shader GDF_ShaderLoadGLSL(const char* buf, u64 len, GDF_SHADER_TYPE type)
+{
+    u64 shader_type;
+    switch (type)
+    {
+    case GDF_SHADER_TYPE_VERT:
+        shader_type = shaderc_glsl_vertex_shader;
+        break;
 
-GDF_Shader GDF_ShaderLoadGLSL(const char* path) { TODO("unimplemented"); }
+    case GDF_SHADER_TYPE_FRAG:
+        shader_type = shaderc_glsl_fragment_shader;
+        break;
+
+    case GDF_SHADER_TYPE_COMP:
+        shader_type = shaderc_glsl_compute_shader;
+        break;
+
+    default:
+        return GDF_NULL_HANDLE;
+    }
+
+    shaderc_compilation_result_t result = shaderc_compile_into_spv(
+        STATE.shaderc_compiler, buf, len, shader_type, "shader", "main", STATE.shaderc_options);
+
+    if (shaderc_result_get_compilation_status(result) != shaderc_compilation_status_success)
+    {
+        const char* error_msg = shaderc_result_get_error_message(result);
+        LOG_ERR("GLSL compilation failed: %s\n", error_msg);
+        shaderc_result_release(result);
+        return GDF_NULL_HANDLE;
+    }
+
+    const char* spirv     = shaderc_result_get_bytes(result);
+    size_t      spirv_len = shaderc_result_get_length(result);
+
+    GDF_Shader shader = GDF_ShaderLoadSPIRV(spirv, spirv_len);
+
+    shaderc_result_release(result);
+
+    return shader;
+}
+
+GDF_Shader GDF_ShaderLoadGLSLFromFile(
+    const char* path, GDF_SHADER_TYPE type, GDF_SHADER_RELOAD_MODE reload_mode)
+{
+    u64 read_bytes;
+    const u8* buf = GDF_ReadFileExactLen(path, &read_bytes);
+    GDF_Shader shader = GDF_ShaderLoadGLSL(buf, read_bytes, reload_mode);
+
+#ifndef GDF_RELEASE
+    shader->origin_format = GDF_SHADER_ORIGIN_FORMAT_GLSL;
+    shader->file_path = path;
+#endif
+}
 
 GDF_BOOL GDF_ShaderReload(GDF_Shader shader) { TODO("unimplemented"); }
 

@@ -59,7 +59,7 @@ FORCEINLINE GDF_BOOL GDF_VkUtilsIsSuccess(VkResult result)
 }
 
 // Will return VK_NULL_HANDLE if failed.
-VkShaderModule GDF_VkUtilsLoadShader(const char* src_rel_path);
+// VkShaderModule GDF_VkUtilsLoadShader(const char* src_rel_path);
 
 i32 GDF_VkUtilsFindMemTypeIdx(u32 type_filter, u32 property_flags);
 

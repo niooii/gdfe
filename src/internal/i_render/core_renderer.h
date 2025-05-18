@@ -5,19 +5,11 @@
 #include "gdfe/gdfe.h"
 
 typedef struct gdfe_ui_pipeline {
-    VkPipeline       handle;
-    VkPipelineLayout layout;
-
-    VkShaderModule vert;
-    VkShaderModule frag;
+    GDF_VkPipelineBase base;
 } gdfe_ui_pipeline;
 
 typedef struct gdfe_grid_pipeline {
-    VkPipeline       handle;
-    VkPipelineLayout layout;
-
-    VkShaderModule vert;
-    VkShaderModule frag;
+    GDF_VkPipelineBase base;
 } gdfe_grid_pipeline;
 
 typedef struct CoreRendererPerFrame {
