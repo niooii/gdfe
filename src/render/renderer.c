@@ -29,6 +29,10 @@ GDF_BOOL GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
     vk_ctx->resource_idx         = vk_ctx->current_frame % vk_ctx->max_concurrent_frames;
     PerFrameResources* per_frame = &vk_ctx->per_frame[vk_ctx->resource_idx];
 
+    // TODO! have some beter way of handling this perhaps
+    if (!renderer->core_renderer.active_camera)
+        return GDF_TRUE;
+
     if (!vk_ctx->ready_for_use && !vk_ctx->pending_resize_event)
     {
         if (!GDF_VkUtilsIsSuccess(vkDeviceWaitIdle(device->handle)))
@@ -114,10 +118,10 @@ GDF_BOOL GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
     VkCommandBuffer cmd_buffer = per_frame->cmd_buffer;
     vkResetCommandBuffer(cmd_buffer, 0);
 
-    GDFP_START();
-
-    VkCommandBufferBeginInfo begin_info = { .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        .flags                                     = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT };
+    VkCommandBufferBeginInfo begin_info = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+    };
     vkBeginCommandBuffer(cmd_buffer, &begin_info);
 
     // make as similar to opengls as possible
@@ -130,7 +134,10 @@ GDF_BOOL GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(cmd_buffer, 0, 1, &viewport);
 
-    VkRect2D scissor = { .offset = { 0, 0 }, .extent = vk_ctx->swapchain.extent };
+    VkRect2D scissor = {
+        .offset = { 0, 0 },
+        .extent = vk_ctx->swapchain.extent,
+    };
     vkCmdSetScissor(cmd_buffer, 0, 1, &scissor);
 
     if (!core_renderer_draw(renderer, vk_ctx, &renderer->core_renderer))
@@ -142,8 +149,6 @@ GDF_BOOL GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
 
     if (vkEndCommandBuffer(cmd_buffer) != VK_SUCCESS)
         return GDF_FALSE;
-
-    GDFP_LOG_MSG_RESET("Finished recording commands.");
 
     // Submit the command buffer
     VkSubmitInfo submit_info = {
@@ -159,8 +164,6 @@ GDF_BOOL GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
     };
     vkQueueSubmit(device->graphics_queue, 1, &submit_info, per_frame->in_flight_fence);
 
-    GDFP_LOG_MSG_RESET("Finished graphics queue submission.");
-
     VkPresentInfoKHR present_info = {
         .sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
         .pImageIndices      = &img_idx,
@@ -173,8 +176,6 @@ GDF_BOOL GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
 
     vkQueuePresentKHR(vk_ctx->device.present_queue, &present_info);
 
-    GDFP_LOG_MSG_RESET("Finished present queue submission.");
-
     vk_ctx->current_frame++;
 
     if (renderer->callbacks->on_render_end)
@@ -185,10 +186,6 @@ GDF_BOOL GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
             return GDF_FALSE;
         }
     }
-
-    GDFP_LOG_MSG_RESET("Finished render function.");
-
-    GDFP_END();
 
     return GDF_TRUE;
 }

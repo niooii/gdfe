@@ -168,6 +168,11 @@ void GDF_CameraSetRotationQuaternion(GDF_Camera camera, quaternion rotation)
     camera->needs_dir_vecs_recalc = GDF_TRUE;
 }
 
+quaternion GDF_CameraGetRotationQuaternion(GDF_Camera camera)
+{
+    return camera->rotation;
+}
+
 void GDF_CameraAddPitch(GDF_Camera camera, f32 pitch)
 {
     if (pitch == 0)

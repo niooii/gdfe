@@ -321,8 +321,6 @@ GDF_Window GDF_CreateWindow(i16 x_, i16 y_, i16 w, i16 h, const char* title)
     // If initially maximized, use SW_SHOWMAXIMIZED : SW_MAXIMIZE
     ShowWindow(window->hwnd, show_window_command_flags);
 
-    LOG_WARN("%d, %d", window->client_w, window->client_h);
-
     GDF_ASSERT(GDF_HashmapInsert(windows, &handle, &window, NULL));
 
     return window;
@@ -341,7 +339,6 @@ void GDF_GetWindowSize(GDF_Window window, u16* w, u16* h)
 {
     *w = window->client_w;
     *h = window->client_h;
-    LOG_WARN("%d, %d", window->client_w, window->client_h);
 }
 
 GDF_BOOL pump_messages()

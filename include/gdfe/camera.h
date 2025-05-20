@@ -118,6 +118,13 @@ void GDF_CameraSetAbsoluteRotation(GDF_Camera camera, vec3 pyr);
 void GDF_CameraSetRotationQuaternion(GDF_Camera camera, quaternion rotation);
 
 /**
+ * @brief Get the internal rotation quaternion of the camera
+ *
+ * @param camera The camera
+ */
+quaternion GDF_CameraGetRotationQuaternion(GDF_Camera camera);
+
+/**
  * @brief Adds to the local pitch of the camera (rotation around the camera's local X axis)
  *
  * @param camera The camera to modify

@@ -74,7 +74,6 @@ GDF_BOOL core_renderer_draw(
     const PerFrameResources*    vk_per_frame   = &vk_ctx->per_frame[resource_idx];
     const CoreRendererPerFrame* core_per_frame = &ctx->per_frame[resource_idx];
     const VkCommandBuffer       cmd_buffer     = vk_per_frame->cmd_buffer;
-    const VkImage swapchain_img = vk_ctx->swapchain.images[vk_ctx->swapchain.current_img_idx];
 
     VkClearValue clear_values[2] = { { .color = { 0, 0, 0, 1 } }, { .depthStencil = { 1, 0 } } };
 
