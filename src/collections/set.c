@@ -189,9 +189,9 @@ GDF_BOOL GDF_SetRemove(GDF_Set set, void* value, void* out_val_p)
 
 u32 GDF_SetLen(GDF_Set set) { return set->num_entries; }
 
-SetIterator GDF_SetIter(GDF_Set set)
+GDF_SetIterator GDF_SetIter(GDF_Set set)
 {
-    SetIterator iter = { .__owner = set };
+    GDF_SetIterator iter = { .__owner = set };
     for (u32 i = 0; i < set->capacity; i++)
     {
         if (set->bucket[i] != NULL)
@@ -207,7 +207,7 @@ SetIterator GDF_SetIter(GDF_Set set)
     return iter;
 }
 
-void GDF_SetIterAdvance(SetIterator* iter)
+void GDF_SetIterAdvance(GDF_SetIterator* iter)
 {
     GDF_Set set = iter->__owner;
     u32     idx = iter->__idx + 1;
@@ -222,10 +222,9 @@ void GDF_SetIterAdvance(SetIterator* iter)
     }
 
     iter->curr = NULL;
-    return;
 }
 
-void GDF_SetIterConsume(SetIterator* iter, void* prev_val_p)
+void GDF_SetIterConsume(GDF_SetIterator* iter, void* prev_val_p)
 {
     GDF_Set set = iter->__owner;
     u32     idx = iter->__idx + 1;

@@ -7,8 +7,6 @@
 #include <gdfe/render/vk/utils.h>
 #include <i_render/mesh.h>
 
-GDF_BOOL create_shaders(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
-
 GDF_BOOL create_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
 GDF_BOOL create_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
 void     destroy_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
@@ -43,11 +41,6 @@ GDF_BOOL core_renderer_init(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext
     ctx->per_frame = GDF_ListReserve(CoreRendererPerFrame, vk_ctx->max_concurrent_frames);
     GDF_ListSetLen(ctx->per_frame, vk_ctx->max_concurrent_frames);
     gdfe_init_primitive_meshes();
-    if (!create_shaders(vk_ctx, ctx))
-    {
-        LOG_ERR("Failed to load builtin shaders.");
-        return GDF_FALSE;
-    }
     // if (!create_geometry_pass(vk_ctx, ctx))
     // {
     //     LOG_ERR("Failed to create renderpasses.");
@@ -137,10 +130,10 @@ GDF_BOOL core_renderer_draw(
 
     vkCmdBeginRendering(cmd_buffer, &rendering_info);
 
-    vkCmdBindDescriptorSets(cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->grid_pipeline.layout,
-        0, 1, &vk_per_frame->vp_ubo_set, 0, NULL);
+    vkCmdBindDescriptorSets(cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+        ctx->grid_pipeline.base.layout, 0, 1, &vk_per_frame->vp_ubo_set, 0, NULL);
 
-    vkCmdBindPipeline(cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->grid_pipeline.handle);
+    vkCmdBindPipeline(cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->grid_pipeline.base.handle);
 
     VkDeviceSize offsets[] = { 0 };
     vkCmdBindVertexBuffers(cmd_buffer, 0, 1, &ctx->up_facing_plane_vbo.handle, offsets);
@@ -148,7 +141,7 @@ GDF_BOOL core_renderer_draw(
         cmd_buffer, ctx->up_facing_plane_index_buffer.handle, 0, VK_INDEX_TYPE_UINT16);
 
     vec3 camera_pos = GDF_CameraGetPosition(camera);
-    vkCmdPushConstants(cmd_buffer, ctx->grid_pipeline.layout, VK_SHADER_STAGE_VERTEX_BIT, 0,
+    vkCmdPushConstants(cmd_buffer, ctx->grid_pipeline.base.layout, VK_SHADER_STAGE_VERTEX_BIT, 0,
         sizeof(vec3), &camera_pos);
 
     vkCmdDrawIndexed(cmd_buffer, 6, 1, 0, 0, 0);
@@ -186,24 +179,6 @@ GDF_BOOL core_renderer_resize(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererConte
 
 GDF_BOOL core_renderer_destroy(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
-    return GDF_TRUE;
-}
-
-GDF_BOOL create_shaders(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
-{
-    ctx->ui_pipeline.vert = GDF_VkUtilsLoadShader("resources/shaders/ui.vert.spv");
-    // TODO! should destroy all the other created resources.
-    VK_RETURN_FALSE_IF_NULLHANDLE(ctx->ui_pipeline.vert);
-
-    ctx->ui_pipeline.frag = GDF_VkUtilsLoadShader("resources/shaders/ui.frag.spv");
-    VK_RETURN_FALSE_IF_NULLHANDLE(ctx->ui_pipeline.frag);
-
-    ctx->grid_pipeline.vert = GDF_VkUtilsLoadShader("resources/shaders/grid.vert.spv");
-    VK_RETURN_FALSE_IF_NULLHANDLE(ctx->grid_pipeline.vert);
-
-    ctx->grid_pipeline.frag = GDF_VkUtilsLoadShader("resources/shaders/grid.frag.spv");
-    VK_RETURN_FALSE_IF_NULLHANDLE(ctx->grid_pipeline.frag);
-
     return GDF_TRUE;
 }
 

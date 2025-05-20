@@ -2,10 +2,14 @@
 #include <i_render/types.h>
 #include <i_subsystems.h>
 #include <shaderc/shaderc.h>
+#include <spirv_cross/spirv_cross_c.h>
 
 #include "gdfe/collections/hashmap.h"
 #include "gdfe/render/vk/utils.h"
 #include "i_render/renderer.h"
+#include "spirv_reflect/spirv_reflect.h"
+
+typedef struct gdfe_state {};
 
 /// Contains the global state related to rendering.
 typedef struct gdfe_shader_state {
@@ -26,6 +30,9 @@ void gdfe_shaders_init()
 
     shaderc_compile_options_set_optimization_level(
         STATE.shaderc_options, shaderc_optimization_level_performance);
+
+    shaderc_compile_options_set_target_env(
+        STATE.shaderc_options, shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_4);
 }
 
 void gdfe_shaders_shutdown()
@@ -55,21 +62,27 @@ static FORCEINLINE VkShaderModule mk_module(const char* buf, u64 len)
 
 GDF_Shader GDF_ShaderLoadSPIRV(const char* buf, u64 len)
 {
-    GDF_Shader_T* shader = GDF_Malloc(sizeof(GDF_Shader_T), GDF_MEMTAG_UNKNOWN);
-    NONNULL_OR_RET(shader);
+    // reflection stuff
+    SpvReflectShaderModule module;
+    SpvReflectResult       reflect_result = spvReflectCreateShaderModule(len, buf, &module);
+
+    GDF_ASSERT_MSG(reflect_result == SPV_REFLECT_RESULT_SUCCESS, "Reflection failure");
+
+    // do more stuff later idk
+    spvReflectDestroyShaderModule(&module);
 
     VkShaderModule shader_module = mk_module(buf, len);
-    if (shader_module == VK_NULL_HANDLE)
+    if (shader_module != VK_NULL_HANDLE)
     {
-        GDF_Free(shader);
-        return GDF_NULL_HANDLE;
+        GDF_Shader_T* shader = GDF_Malloc(sizeof(GDF_Shader_T), GDF_MEMTAG_UNKNOWN);
+        NONNULL_OR_RET_HANDLE(shader);
+
+        shader->shader_module = shader_module;
+        return shader;
     }
 
-    shader->shader_module = shader_module;
-
-    return shader;
+    return GDF_NULL_HANDLE;
 }
-
 
 GDF_Shader GDF_ShaderLoadGLSL(const char* buf, u64 len, GDF_SHADER_TYPE type)
 {
@@ -116,16 +129,58 @@ GDF_Shader GDF_ShaderLoadGLSL(const char* buf, u64 len, GDF_SHADER_TYPE type)
 GDF_Shader GDF_ShaderLoadGLSLFromFile(
     const char* path, GDF_SHADER_TYPE type, GDF_SHADER_RELOAD_MODE reload_mode)
 {
-    u64 read_bytes;
-    const u8* buf = GDF_ReadFileExactLen(path, &read_bytes);
-    GDF_Shader shader = GDF_ShaderLoadGLSL(buf, read_bytes, reload_mode);
+    u64        read_bytes;
+    const u8*  buf    = GDF_FileReadAll(path, &read_bytes);
+    GDF_Shader shader = GDF_ShaderLoadGLSL(buf, read_bytes, type);
+    NONNULL_OR_RET_HANDLE(shader);
 
 #ifndef GDF_RELEASE
     shader->origin_format = GDF_SHADER_ORIGIN_FORMAT_GLSL;
-    shader->file_path = path;
+    shader->file_path     = path;
 #endif
+
+    return shader;
 }
 
-GDF_BOOL GDF_ShaderReload(GDF_Shader shader) { TODO("unimplemented"); }
+VkShaderModule GDF_ShaderGetVkModule(GDF_Shader shader) { return shader->shader_module; }
+
+#ifndef GDF_RELEASE
+
+GDF_BOOL GDF_ShaderReload(GDF_Shader shader)
+{
+    if (!shader->linked_pipelines)
+    {
+        // nothing to reload, just return true
+        if (!shader->file_path)
+            return GDF_TRUE;
+        shader->linked_pipelines = GDF_SetCreate(GDF_VkPipelineBase*, GDF_FALSE);
+    }
+
+    // swap out pipelines and modules
+    // VK_RETURN_FALSE_ASSERT(vkDeviceWaitIdle(GDFE_INTERNAL_VK_CTX->device.handle));
+
+    for (GDF_SetIterator iter = GDF_SetIter(shader->linked_pipelines); iter.curr != NULL;
+        GDF_SetIterAdvance(&iter))
+    {
+    }
+
+    return GDF_TRUE;
+}
+
+void GDF_ShaderLinkPipeline(GDF_Shader shader, GDF_VkPipelineBase* pipeline)
+{
+    NONNULL_OR_RET(shader->linked_pipelines);
+
+    GDF_SetInsert(shader->linked_pipelines, &pipeline, NULL);
+}
+
+void GDF_ShaderUnlinkPipeline(GDF_Shader shader, GDF_VkPipelineBase* pipeline)
+{
+    NONNULL_OR_RET(shader->linked_pipelines);
+
+    GDF_SetRemove(shader->linked_pipelines, &pipeline, NULL);
+}
+
+#endif
 
 void GDF_ShaderDestroy(GDF_Shader shader) { TODO("unimplemented"); }

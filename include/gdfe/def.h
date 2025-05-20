@@ -49,10 +49,16 @@ typedef unsigned char byte;
 
 #define GDF_NULL_HANDLE ((void*)0)
 
-#define NONNULL_OR_RET(expr)  \
+#define NONNULL_OR_RET_HANDLE(expr)  \
     {                         \
         if (!(expr))          \
             return GDF_NULL_HANDLE; \
+    }
+
+#define NONNULL_OR_RET(expr)  \
+    {                         \
+        if (!(expr))          \
+            return; \
     }
 
 #define MB_TO_KB(mb) (mb * 1000)

@@ -9,7 +9,8 @@
 // Only supports SPIR-V for now. GLSL shaders must be compiled into SPIR-V first.
 VkShaderModule GDF_VkUtilsLoadShader(const char* src_rel_path)
 {
-    u64  src_size = GDF_GetFileSize(src_rel_path);
+    u64  src_size;
+    GDF_GetFileSize(src_rel_path, &src_size);
     char code[src_size];
     GDF_Memzero(code, src_size);
     if (!GDF_ReadFileOnce(src_rel_path, code, src_size))

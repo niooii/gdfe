@@ -77,12 +77,33 @@ typedef struct GDF_VkDevice {
     VkAllocationCallbacks* allocator;
 } GDF_VkDevice;
 
+typedef enum {
+    GDF_PIPELINE_TYPE_GRAPHICS,
+    GDF_PIPELINE_TYPE_COMPUTE
+} GDF_PipelineType;
+
+typedef struct GDF_VkPipelineCreateInfo {
+    GDF_PipelineType type;
+
+    union {
+        VkComputePipelineCreateInfo compute;
+        VkGraphicsPipelineCreateInfo graphics;
+    } create_info;
+} GDF_VkPipelineCreateInfo;
+
 typedef struct GDF_VkPipelineBase {
+    GDF_VkPipelineCreateInfo create_params;
+
     VkPipeline       handle;
     VkPipelineLayout layout;
 
-    VkShaderModule vert;
-    VkShaderModule frag;
+    union {
+        struct {
+            VkShaderModule vert;
+            VkShaderModule frag;
+        };
+        VkShaderModule comp;
+    };
 } GDF_VkPipelineBase;
 
 /* ======================================= */

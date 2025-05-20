@@ -14,11 +14,11 @@ typedef struct GDF_Set_T* GDF_Set;
 
 #define GDF_Set(type) GDF_Set
 
-typedef struct SetIterator {
+typedef struct GDF_SetIterator {
     void*   curr;
     GDF_Set __owner;
     u32     __idx;
-} SetIterator;
+} GDF_SetIterator;
 
 #ifndef __cplusplus
 
@@ -56,19 +56,19 @@ u32 GDF_SetLen(GDF_Set set);
 // Returns a SetIterator with .curr set to the element in the set (unordered).
 // Advance with GDF_SetIterNext. Functions like a linked list.
 // returns NULL if the map is empty.
-SetIterator GDF_SetIter(GDF_Set set);
+GDF_SetIterator GDF_SetIter(GDF_Set set);
 // Advances the iterator by finding the next element in the set.
 // Sets iter.val to NULL on end.
 // Pushing any new values to the set while iterating is undefined behavior.
 // However, removing the current value is well defined - although you may want to use SetIterConsume
 // for that purpose.
-void GDF_SetIterAdvance(SetIterator* iter);
+void GDF_SetIterAdvance(GDF_SetIterator* iter);
 // Advances the iterator by finding the next element in the set.
 // This function will remove the previous element, thus making it a consuming iterator.
 // Sets iter.val to NULL on end.
 // prev_val_p may be NULL. If it is not NULL, after advancing the iterator, the previous value
 // will be memcpy'd into prev_val_p.
 // Pushing any new values to the set while iterating is undefined behavior.
-void GDF_SetIterConsume(SetIterator* iter, void* prev_val_p);
+void GDF_SetIterConsume(GDF_SetIterator* iter, void* prev_val_p);
 
 EXTERN_C_END

@@ -4,12 +4,20 @@
 
 #include "gdfe/gdfe.h"
 
+typedef struct GDF_Shader_T* GDF_Shader;
+
 typedef struct gdfe_ui_pipeline {
     GDF_VkPipelineBase base;
+
+    GDF_Shader vert;
+    GDF_Shader frag;
 } gdfe_ui_pipeline;
 
 typedef struct gdfe_grid_pipeline {
     GDF_VkPipelineBase base;
+
+    GDF_Shader vert;
+    GDF_Shader frag;
 } gdfe_grid_pipeline;
 
 typedef struct CoreRendererPerFrame {

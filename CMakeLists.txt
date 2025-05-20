@@ -11,9 +11,10 @@ set(CMAKE_C_EXTENSIONS OFF)
 
 add_subdirectory(external/vma)
 
-set(SPIRV_CROSS_ENABLE_TESTS OFF CACHE BOOL "Enable SPIRV-Cross tests." FORCE)
-set(SPIRV_CROSS_CLI OFF CACHE BOOL "Build SPIRV-Cross CLI" FORCE)
-add_subdirectory(external/spirv_cross)
+#set(SPIRV_CROSS_ENABLE_TESTS OFF CACHE BOOL "Enable SPIRV-Cross tests." FORCE)
+set(SPIRV_REFLECT_EXECUTABLE OFF CACHE BOOL "Build spirv-reflect executable" FORCE)
+set(SPIRV_REFLECT_STATIC_LIB ON CACHE BOOL "Build a SPIRV-Reflect static library" FORCE)
+add_subdirectory(external/spirv_reflect)
 
 set(NO_WARNING_FLAGS "-Wno-deprecated-declarations -Wno-unused-parameter -Wno-missing-braces -Wno-unused-variable -Wno-ignored-qualifiers -Wno-missing-field-initializers")
 
@@ -31,21 +32,21 @@ find_src_files(GDFE_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 SET_SOURCE_FILES_PROPERTIES(${GDFE_SRC} ${GDFE_EXTERNAL} PROPERTIES LANGUAGE C)
 
-add_library(${PROJECT_NAME} ${GDFE_SRC} ${GDFE_EXTERNAL})
+add_library(gdfe ${GDFE_SRC} ${GDFE_EXTERNAL})
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(PROFILE_DIR "release")
     set(SHADERC_LIB_NAME shaderc_combined)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE GDF_RELEASE NDEBUG)
+    target_compile_definitions(gdfe PRIVATE GDF_RELEASE NDEBUG)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Ofast -fno-plt -fuse-ld=lld -funroll-loops -finline-functions -fomit-frame-pointer -fno-exceptions -ftree-vectorize -fvectorize -fslp-vectorize")
 else()
     set(PROFILE_DIR "debug")
     set(SHADERC_LIB_NAME shaderc_combinedd)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE DEBUG)
+    target_compile_definitions(gdfe PRIVATE DEBUG)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g3 -Og -fno-omit-frame-pointer")
 endif()
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE GDF_COLLECTIONS)
+target_compile_definitions(gdfe PRIVATE GDF_COLLECTIONS)
 
 if(DEFINED ENV{VULKAN_SDK})
     if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -73,19 +74,20 @@ if(NOT SHADERC_LIBRARY)
     message(FATAL_ERROR "Could not find shaderc library in Vulkan SDK")
 endif()
 
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(gdfe
         PRIVATE
         Vulkan::Vulkan
         ${SHADERC_LIBRARY}
+        spirv-reflect-static
 )
 
-target_include_directories(${PROJECT_NAME}
+target_include_directories(gdfe
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
 )
 
-target_include_directories(${PROJECT_NAME}
+target_include_directories(gdfe
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         PRIVATE
@@ -99,3 +101,19 @@ target_link_libraries(example_scene gdfe)
 
 add_executable(example_io examples/io/main.c)
 target_link_libraries(example_io gdfe)
+
+# copy resources dir
+file(GLOB_RECURSE RESOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/*")
+
+add_custom_command(
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/resources
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources
+        ${CMAKE_CURRENT_BINARY_DIR}/resources
+        DEPENDS ${RESOURCE_FILES}
+        COMMENT "Copying resources directory to build directory"
+)
+
+add_custom_target(copy_resources ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/resources)
+
+add_dependencies(gdfe copy_resources)

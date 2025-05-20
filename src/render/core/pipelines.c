@@ -1,6 +1,10 @@
+#include "gdfe/render/vk/pipelines.h"
+
+
 #include <gdfe/render/vk/utils.h>
 #include <i_render/core_renderer.h>
 #include "../../internal/i_render/gpu_types.h"
+#include "gdfe/render/shader.h"
 #include "gdfe/render/vk/types.h"
 
 GDF_BOOL create_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
@@ -109,8 +113,10 @@ GDF_BOOL create_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererConte
         .pushConstantRangeCount = 1,
     };
 
+    VkPipelineLayout pipeline_layout;
+
     VK_ASSERT(vkCreatePipelineLayout(
-        vk_ctx->device.handle, &layout_info, vk_ctx->device.allocator, &ctx->grid_pipeline.layout))
+        vk_ctx->device.handle, &layout_info, vk_ctx->device.allocator, &pipeline_layout))
 
     // Create dynamic state for pipeline (viewport & scissor)
     // TODO! eventually if the game is fixed size remove these and bake states
@@ -126,17 +132,22 @@ GDF_BOOL create_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererConte
         .pDynamicStates    = d_states,
     };
 
+    ctx->grid_pipeline.vert = GDF_ShaderLoadGLSLFromFile(
+        "resources/shaders/grid.vert", GDF_SHADER_TYPE_VERT, GDF_SHADER_RELOAD_NONE);
+    ctx->grid_pipeline.frag = GDF_ShaderLoadGLSLFromFile(
+        "resources/shaders/grid.frag", GDF_SHADER_TYPE_FRAG, GDF_SHADER_RELOAD_NONE);
+
     VkPipelineShaderStageCreateInfo grid_shaders[] = {
         {
             .sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
             .stage  = VK_SHADER_STAGE_VERTEX_BIT,
-            .module = ctx->grid_pipeline.vert,
+            .module = GDF_ShaderGetVkModule(ctx->grid_pipeline.vert),
             .pName  = "main",
         },
         {
             .sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
             .stage  = VK_SHADER_STAGE_FRAGMENT_BIT,
-            .module = ctx->grid_pipeline.frag,
+            .module = GDF_ShaderGetVkModule(ctx->grid_pipeline.frag),
             .pName  = "main",
         }
     };
@@ -157,13 +168,17 @@ GDF_BOOL create_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererConte
         .pMultisampleState   = &multisampling_state,
         .pDepthStencilState  = &depth_stencil_state,
         .pColorBlendState    = &color_blend_state,
-        .layout              = ctx->grid_pipeline.layout,
-        .pNext = &dyn_rendering_info,
-        .pDynamicState = &dynamic_states,
+        .layout              = pipeline_layout,
+        .pNext               = &dyn_rendering_info,
+        .pDynamicState       = &dynamic_states,
     };
 
-    VK_ASSERT(vkCreateGraphicsPipelines(vk_ctx->device.handle, VK_NULL_HANDLE, 1,
-        &pipeline_create_info, vk_ctx->device.allocator, &ctx->grid_pipeline.handle));
+    GDF_VkPipelineCreateInfo info = {
+        .create_info.graphics = pipeline_create_info,
+        .type                 = GDF_PIPELINE_TYPE_GRAPHICS,
+    };
+
+    GDF_VkCreatePipelineBase(&ctx->grid_pipeline.base, info);
 
     return GDF_TRUE;
 }
@@ -275,36 +290,36 @@ GDF_BOOL create_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext
         .pushConstantRangeCount = 1,
     };
 
-    VK_ASSERT(vkCreatePipelineLayout(
-        vk_ctx->device.handle, &layout_info, vk_ctx->device.allocator, &pipeline->layout));
-
-    // Create dynamic state for pipeline (viewport & scissor)
-    // TODO! eventually if the game is fixed size remove these and bake states
-    // into pipelines
-    VkDynamicState d_states[2] = {
-        VK_DYNAMIC_STATE_VIEWPORT,
-        VK_DYNAMIC_STATE_SCISSOR,
-    };
-    VkPipelineDynamicStateCreateInfo dynamic_states = {
-        .sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-        .dynamicStateCount = 2,
-        .pDynamicStates    = d_states,
-    };
-
-    VkPipelineShaderStageCreateInfo ui_shaders[] = {
-        {
-            .sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-            .stage  = VK_SHADER_STAGE_VERTEX_BIT,
-            .module = pipeline->vert,
-            .pName  = "main",
-        },
-        {
-            .sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-            .stage  = VK_SHADER_STAGE_FRAGMENT_BIT,
-            .module = pipeline->frag,
-            .pName  = "main",
-        }
-    };
+    // VK_ASSERT(vkCreatePipelineLayout(
+    //     vk_ctx->device.handle, &layout_info, vk_ctx->device.allocator, &pipeline->layout));
+    //
+    // // Create dynamic state for pipeline (viewport & scissor)
+    // // TODO! eventually if the game is fixed size remove these and bake states
+    // // into pipelines
+    // VkDynamicState d_states[2] = {
+    //     VK_DYNAMIC_STATE_VIEWPORT,
+    //     VK_DYNAMIC_STATE_SCISSOR,
+    // };
+    // VkPipelineDynamicStateCreateInfo dynamic_states = {
+    //     .sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+    //     .dynamicStateCount = 2,
+    //     .pDynamicStates    = d_states,
+    // };
+    //
+    // VkPipelineShaderStageCreateInfo ui_shaders[] = {
+    //     {
+    //         .sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+    //         .stage  = VK_SHADER_STAGE_VERTEX_BIT,
+    //         .module = pipeline->vert,
+    //         .pName  = "main",
+    //     },
+    //     {
+    //         .sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+    //         .stage  = VK_SHADER_STAGE_FRAGMENT_BIT,
+    //         .module = pipeline->frag,
+    //         .pName  = "main",
+    //     }
+    // };
 
     return GDF_TRUE;
 }

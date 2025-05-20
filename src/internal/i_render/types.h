@@ -4,6 +4,10 @@
 #include <gdfe/math/math.h>
 #include <vulkan/vulkan_core.h>
 
+#include "gdfe/collections/list.h"
+#include "gdfe/collections/set.h"
+#include "gdfe/render/vk/types.h"
+
 typedef struct GDF_Camera_T {
     vec3 pos;
 
@@ -47,12 +51,17 @@ typedef enum GDF_SHADER_ORIGIN_FORMAT {
 #endif
 
 typedef struct GDF_Shader_T {
-    /// Hot reloading is disabled in release builds
-    #ifndef GDF_RELEASE
+/// Hot reloading is disabled in release builds
+#ifndef GDF_RELEASE
+
     GDF_SHADER_ORIGIN_FORMAT origin_format;
     /// Used in the context of reloading a shader
     const char* file_path;
-    #endif
+    // A set of GDF_VkPipelineBase pointers that will be updated on a shader reload.
+    // The pointers should not be moved or freed.
+    GDF_Set(GDF_VkPipelineBase*) linked_pipelines;
+
+#endif
 
     VkShaderModule shader_module;
 } GDF_Shader_T;

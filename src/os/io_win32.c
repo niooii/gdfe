@@ -285,11 +285,11 @@ GDF_IO_RESULT GDF_ReadFileOnce(const char* rel_path, char* out_buf, size_t bytes
     return GDF_IO_RESULT_SUCCESS;
 }
 
-u8* GDF_ReadFileExactLen(const char* rel_path, u64* read_bytes)
+u8* GDF_FileReadAll(const char* rel_path, u64* read_bytes)
 {
     char path[MAX_PATH_LEN];
     GDF_GetAbsolutePath(rel_path, path);
-    *read_bytes      = GDF_GetFileSizeAbs(path);
+    GDF_GetFileSizeAbs(path, read_bytes);
     u8*    out_buf = GDF_Malloc(*read_bytes, GDF_MEMTAG_STRING);
     HANDLE   h       = CreateFile(path, GENERIC_READ, 0, 0, OPEN_EXISTING, 0, 0);
     GDF_BOOL success = h != INVALID_HANDLE_VALUE;
@@ -316,7 +316,7 @@ u8* GDF_ReadFileExactLen(const char* rel_path, u64* read_bytes)
         LOG_ERR("Unknown error (%d) reading file: %s", GetLastError(), path);
     }
 
-    LOG_DEBUG("%02X", out_buf);
+    LOG_DEBUG("%s", out_buf);
     CloseHandle(h);
     return out_buf;
 }
@@ -340,30 +340,43 @@ GDF_IO_RESULT GDF_CopyFile(const char* src_path, const char* dest_path, GDF_BOOL
     }
 }
 
-u64 GDF_GetFileSize(const char* rel_path)
+GDF_IO_RESULT GDF_GetFileSize(const char* rel_path, u64* out_size)
 {
     char path[MAX_PATH_LEN];
     GDF_GetAbsolutePath(rel_path, path);
 
-    return GDF_GetFileSizeAbs(path);
+    return GDF_GetFileSizeAbs(path, out_size);
 }
 
-u64 GDF_GetFileSizeAbs(const char* abs_path)
+GDF_IO_RESULT GDF_GetFileSizeAbs(const char* abs_path, u64* out_size)
 {
-    HANDLE hFile = CreateFileW(
+    HANDLE hFile = CreateFile(
         abs_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
-    // beter error handling later
-    // if (hFile == INVALID_HANDLE_VALUE) {
-    //     LOG_ERR("Error opening file. Error code: %lu\n", GetLastError());
-    //     return FALSE;
-    // }
+    if (hFile == INVALID_HANDLE_VALUE) {
+        DWORD error = GetLastError();
+        switch (error) {
+        case ERROR_ACCESS_DENIED:
+            return GDF_IO_RESULT_ACCESS_DENIED;
+        case ERROR_FILE_NOT_FOUND:
+        case ERROR_PATH_NOT_FOUND:
+            return GDF_IO_RESULT_PATH_NOT_FOUND;
+        default:
+            return GDF_IO_RESULT_FAIL;
+        }
+    }
 
     LARGE_INTEGER size;
-
     BOOL result = GetFileSizeEx(hFile, &size);
 
-    return size.QuadPart;
+    CloseHandle(hFile);
+
+    if (!result)
+        return GDF_IO_RESULT_FAIL;
+
+    *out_size = size.QuadPart;
+
+    return GDF_IO_RESULT_SUCCESS;
 }
 
 typedef struct GDF_Process_T {
