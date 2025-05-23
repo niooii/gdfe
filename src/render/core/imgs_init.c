@@ -2,12 +2,12 @@
 #include <gdfe/render/vk/utils.h>
 #include <i_render/core_renderer.h>
 
-GDF_BOOL create_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
+GDF_BOOL gdfe_init_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
     GDF_VkPhysicalDeviceInfo* pdevice = vk_ctx->device.physical_info;
-    for (int i = 0; i < vk_ctx->max_concurrent_frames; i++)
+    for (int i = 0; i < vk_ctx->fof; i++)
     {
-        CoreRendererPerFrame* per_frame = &ctx->per_frame[i];
+        CoreFrameResources* per_frame = &ctx->per_frame[i];
         VkImageCreateInfo     color_img_info = {
             .sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
             .imageType     = VK_IMAGE_TYPE_2D,
@@ -95,15 +95,12 @@ GDF_BOOL create_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRenderer
     return GDF_TRUE;
 }
 
-// TODO! destroy framebuffers
-void destroy_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
+void gdfe_destroy_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
-    for (int i = 0; i < vk_ctx->max_concurrent_frames; i++)
+    for (int i = 0; i < vk_ctx->fof; i++)
     {
-        CoreRendererPerFrame* per_frame = &ctx->per_frame[i];
+        CoreFrameResources* per_frame = &ctx->per_frame[i];
         GDF_VkImageDestroy(vk_ctx, &per_frame->msaa_image);
         GDF_VkImageDestroy(vk_ctx, &per_frame->depth_image);
-        vkDestroyFramebuffer(
-            vk_ctx->device.handle, per_frame->geometry_framebuffer, vk_ctx->device.allocator);
     }
 }

@@ -1,11 +1,13 @@
 #pragma once
 
-#include <gdfe/camera.h>
-
+#include <gdfe/render/camera.h>
 #include <gdfe/math/math.h>
 #include <gdfe/os/video.h>
-#include "vk/types.h"
+#include <gdfe/render/geometry.h>
 #include "mesh.h"
+#include "vk/types.h"
+
+/* The renderer is also a subsystem. */
 
 #define MAX_FRAMES_IN_FLIGHT 3
 
@@ -15,24 +17,31 @@ typedef enum GDF_RENDER_MODE {
     GDF_RENDER_MODE_MAX
 } GDF_RENDER_MODE;
 
-typedef struct GDF_RenderHandle_T* GDF_RenderHandle;
+/// Represents a traditional "object" in a general engine.
+/// Attach a mesh onto the handle to render a mesh.
+typedef struct GDF_Object_T* GDF_Object;
 
 EXTERN_C_BEGIN
 
-typedef struct GDF_Renderer_T* GDF_Renderer;
+void GDF_RendererResize(u16 width, u16 height);
 
-void GDF_RendererResize(GDF_Renderer renderer, u16 width, u16 height);
+GDF_BOOL GDF_RendererDrawFrame(f32 delta_time);
 
-GDF_BOOL GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time);
+void GDF_RendererSetActiveCamera(GDF_Camera camera);
 
-void GDF_RendererSetActiveCamera(GDF_Renderer renderer, GDF_Camera camera);
+void GDF_DebugDrawLine();
+void GDF_DebugDrawAABB();
 
-void GDF_DebugDrawLine(GDF_Renderer renderer);
-void GDF_DebugDrawAABB(GDF_Renderer renderer);
+// TODO! create an array of Transform objects or something idk
+GDF_Object GDF_ObjCreate();
+void GDF_ObjDestroy(GDF_Object handle);
+void GDF_ObjSetMesh(GDF_Object handle, GDF_Mesh mesh);
+GDF_Object GDF_ObjFromMesh(GDF_Mesh mesh);
+/// Returns a pointer to the transform owned by this object.
+/// The caller should modify the returned transform, but should never store the pointer.
+GDF_Transform* GDF_ObjGetTransform(GDF_Object handle);
 
-GDF_RenderHandle GDF_DrawMesh(GDF_Renderer renderer);
-
-void GDF_RendererSetRenderMode(GDF_Renderer renderer, GDF_RENDER_MODE mode);
-void GDF_RendererCycleRenderMode(GDF_Renderer renderer);
+void GDF_RendererSetRenderMode(GDF_RENDER_MODE mode);
+void GDF_RendererCycleRenderMode();
 
 EXTERN_C_END

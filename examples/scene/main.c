@@ -26,11 +26,16 @@ int main()
         .fov          = 77.0f,
         .aspect_ratio = 1.777f,
         .far_clip     = 1000,
-        .near_clip    = 0.1f,
+        .near_clip    = 0.01f,
     };
 
     GDF_Camera cam = GDF_CameraCreate(&camera_info);
-    GDF_RendererSetActiveCamera(gdfapp->renderer, cam);
+    GDF_RendererSetActiveCamera(cam);
+
+    GDF_Mesh sphere = GDF_MeshGetPrimitive(GDF_PRIMITIVE_MESH_TYPE_SPHERE);
+
+    // This should be rendered at (0, 0, 0)
+    GDF_Object sphere_object = GDF_ObjFromMesh(sphere);
 
     app.camera = cam;
 
@@ -77,8 +82,8 @@ GDF_BOOL on_loop(const GDF_AppState* app_state, f64 dt, void* state)
     ivec2 mouse_delta;
     GDF_GetMouseDelta(&mouse_delta);
 
-    GDF_CameraAddPitch(app->camera, mouse_delta.y * dt * 10);
-    GDF_CameraAddYaw(app->camera, mouse_delta.x * dt * 10);
+    GDF_CameraAddPitch(app->camera, mouse_delta.y * dt * 4);
+    GDF_CameraAddYaw(app->camera, mouse_delta.x * dt * 4);
 
     return GDF_TRUE;
 }

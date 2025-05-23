@@ -26,8 +26,8 @@ VkShaderModule GDF_VkUtilsLoadShader(const char* src_rel_path)
     };
 
     VkShaderModule shader_module = VK_NULL_HANDLE;
-    VkResult       res = vkCreateShaderModule(GDFE_INTERNAL_VK_CTX->device.handle, &create_info,
-              GDFE_INTERNAL_VK_CTX->device.allocator, &shader_module);
+    VkResult       res = vkCreateShaderModule(GDFE_VK_CTX->device.handle, &create_info,
+              GDFE_VK_CTX->device.allocator, &shader_module);
 
     if (res != VK_SUCCESS)
         return VK_NULL_HANDLE;
@@ -39,7 +39,7 @@ i32 GDF_VkUtilsFindMemTypeIdx(u32 type_filter, u32 property_flags)
 {
     VkPhysicalDeviceMemoryProperties memory_properties;
     vkGetPhysicalDeviceMemoryProperties(
-        GDFE_INTERNAL_VK_CTX->device.physical_info->handle, &memory_properties);
+        GDFE_VK_CTX->device.physical_info->handle, &memory_properties);
 
     for (u32 i = 0; i < memory_properties.memoryTypeCount; i++)
     {

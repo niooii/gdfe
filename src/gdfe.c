@@ -5,23 +5,10 @@
 #include <gdfe/strutils.h>
 #include <i_subsystems.h>
 #include <i_video.h>
+#include <i_gdfe.h>
 #include <i_render/renderer.h>
 
-typedef struct gdfe_state {
-    i16           width;
-    i16           height;
-    f64           last_time;
-    GDF_Stopwatch stopwatch;
-    GDF_BOOL      initialized;
-
-    GDF_AppCallbacks callbacks;
-    GDF_Config       conf;
-    GDF_AppState public;
-
-    GDF_BOOL mouse_lock_toggle;
-} gdfe_state;
-
-static gdfe_state APP_STATE;
+gdfe_state APP_STATE;
 
 GDF_BOOL default_events(u16 event_code, void* sender, void* listener_instance, GDF_EventContext ctx)
 {
@@ -49,7 +36,7 @@ GDF_BOOL default_events(u16 event_code, void* sender, void* listener_instance, G
                 }
             case GDF_KEYCODE_V:
                 {
-                    GDF_RendererCycleRenderMode(APP_STATE.public.renderer);
+                    GDF_RendererCycleRenderMode();
                 }
             }
             break;
@@ -70,7 +57,6 @@ GDF_BOOL default_events(u16 event_code, void* sender, void* listener_instance, G
 
 GDF_BOOL on_resize(u16 event_code, void* sender, void* listener_instance, GDF_EventContext ctx)
 {
-    GDF_Renderer renderer = listener_instance;
     u16          width    = ctx.data.u16[0];
     u16          height   = ctx.data.u16[1];
 
@@ -83,7 +69,7 @@ GDF_BOOL on_resize(u16 event_code, void* sender, void* listener_instance, GDF_Ev
     {
         LOG_INFO("Window is minimized kinda.");
     }
-    GDF_RendererResize(renderer, width, height);
+    GDF_RendererResize(width, height);
     // TODO! why doesn this work?
     // TODO! im an idiot i know why it doesnt work
     // if (width != old_w || height != old_h)
@@ -186,14 +172,9 @@ GDF_AppState* GDF_Init(GDF_InitInfo init_info)
         GDF_EventRegister(GDF_EVENT_INTERNAL_APP_QUIT, NULL, default_events);
     }
 
-    public->renderer = gdfe_renderer_init(public->window, &APP_STATE.public, &APP_STATE.callbacks);
-    if (!public->renderer)
-    {
-        LOG_ERR("Couldn't initialize renderer unlucky.");
-        return NULL;
-    }
+    RET_FALSE(gdfe_renderer_init(public->window));
 
-    GDF_EventRegister(GDF_EVENT_INTERNAL_WINDOW_RESIZE, public->renderer, on_resize);
+    GDF_EventRegister(GDF_EVENT_INTERNAL_WINDOW_RESIZE, NULL, on_resize);
 
     return public;
 }
@@ -235,7 +216,7 @@ f64 GDF_Run()
                 return -1;
 
         if (!APP_STATE.conf.disable_video)
-            GDF_RendererDrawFrame(public->renderer, dt);
+            GDF_RendererDrawFrame(dt);
 
         gdfe_input_update(public->window, dt);
 
@@ -275,7 +256,7 @@ f64 GDF_Run()
     GDF_StopwatchDestroy(running_timer);
     GDF_StopwatchDestroy(frame_timer);
 
-    gdfe_renderer_destroy(APP_STATE.public.renderer);
+    gdfe_renderer_shutdown();
 
     return time_ran_for;
 }

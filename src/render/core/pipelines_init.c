@@ -1,4 +1,4 @@
-#include "gdfe/render/vk/pipelines.h"
+#include "gdfe/render/vk/pipelines_init.h"
 
 
 #include <gdfe/render/vk/utils.h>
@@ -181,6 +181,14 @@ GDF_BOOL create_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererConte
     GDF_VkCreatePipelineBase(&ctx->grid_pipeline.base, info);
 
     return GDF_TRUE;
+}
+
+void destroy_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
+{
+    vkDestroyPipeline(vk_ctx->device.handle, ctx->grid_pipeline.base.handle, vk_ctx->device.allocator);
+    vkDestroyPipelineLayout(vk_ctx->device.handle, ctx->grid_pipeline.base.layout, vk_ctx->device.allocator);
+    vkDestroyShaderModule(vk_ctx->device.handle, ctx->grid_pipeline.base.vert, vk_ctx->device.allocator);
+    vkDestroyShaderModule(vk_ctx->device.handle, ctx->grid_pipeline.base.frag, vk_ctx->device.allocator);
 }
 
 GDF_BOOL create_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)

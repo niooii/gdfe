@@ -12,7 +12,6 @@ typedef struct GDF_AppState {
     /// A handle to the opened window.
     /// @note May be null if rendering was disabled via configuration
     GDF_Window   window;
-    GDF_Renderer renderer;
     /// The maximum amount of updates per second. Updates may happen with lower frequency under high
     /// loads.
     /// @note May be freely changed at any time. Set to 0 to disable.

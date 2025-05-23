@@ -1,4 +1,4 @@
-#include <gdfe/render/vk/pipelines.h>
+#include <gdfe/render/vk/pipelines_init.h>
 
 #include "i_render/renderer.h"
 
@@ -38,9 +38,9 @@ GDF_BOOL GDF_VkCreatePipelineBase(GDF_VkPipelineBase* out, GDF_VkPipelineCreateI
                 out->create_params.create_info.graphics.pStages = stages_copy;
             }
 
-            VkResult result = vkCreateGraphicsPipelines(GDFE_INTERNAL_VK_CTX->device.handle,
+            VkResult result = vkCreateGraphicsPipelines(GDFE_VK_CTX->device.handle,
                 VK_NULL_HANDLE, 1, &create_info.create_info.graphics,
-                GDFE_INTERNAL_VK_CTX->device.allocator, &out->handle);
+                GDFE_VK_CTX->device.allocator, &out->handle);
 
             VK_RETURN_FALSE_ASSERT(result);
         break;
@@ -54,9 +54,9 @@ GDF_BOOL GDF_VkCreatePipelineBase(GDF_VkPipelineBase* out, GDF_VkPipelineCreateI
                 out->comp = create_info.create_info.compute.stage.module;
             }
 
-            VkResult result = vkCreateComputePipelines(GDFE_INTERNAL_VK_CTX->device.handle,
+            VkResult result = vkCreateComputePipelines(GDFE_VK_CTX->device.handle,
                 VK_NULL_HANDLE, 1, &create_info.create_info.compute,
-                GDFE_INTERNAL_VK_CTX->device.allocator, &out->handle);
+                GDFE_VK_CTX->device.allocator, &out->handle);
 
             VK_RETURN_FALSE_ASSERT(result);
         break;
@@ -82,8 +82,8 @@ GDF_BOOL GDF_VkDestroyPipelineBase(GDF_VkPipelineBase* base)
 
     if (base->handle != VK_NULL_HANDLE)
     {
-        vkDestroyPipeline(GDFE_INTERNAL_VK_CTX->device.handle, base->handle,
-            GDFE_INTERNAL_VK_CTX->device.allocator);
+        vkDestroyPipeline(GDFE_VK_CTX->device.handle, base->handle,
+            GDFE_VK_CTX->device.allocator);
         base->handle = VK_NULL_HANDLE;
     }
 

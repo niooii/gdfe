@@ -6,7 +6,7 @@
 GDF_BOOL GDF_VkBufferCreate(
     u64 alloc_size, u32 usage_flags, u32 mem_property_flags, GDF_VkBuffer* out_buf)
 {
-    GDF_VkDevice*      device   = &GDFE_INTERNAL_VK_CTX->device;
+    GDF_VkDevice*      device   = &GDFE_VK_CTX->device;
     VkBufferCreateInfo buf_info = {
         .sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
         .size        = alloc_size,
@@ -25,7 +25,7 @@ GDF_BOOL GDF_VkBufferCreate(
         .memoryTypeIndex = GDF_VkUtilsFindMemTypeIdx(mem_req.memoryTypeBits, mem_property_flags),
     };
     VK_RETURN_FALSE_ASSERT(vkAllocateMemory(
-        device->handle, &alloc_info, GDFE_INTERNAL_VK_CTX->device.allocator, &out_buf->memory));
+        device->handle, &alloc_info, GDFE_VK_CTX->device.allocator, &out_buf->memory));
     VK_RETURN_FALSE_ASSERT(vkBindBufferMemory(device->handle, out_buf->handle, out_buf->memory, 0));
 
     out_buf->size = mem_req.size;
@@ -43,7 +43,7 @@ GDF_BOOL GDF_VkBufferCreateStorage(void* data, u64 data_size, GDF_VkBuffer* out_
         return GDF_FALSE;
     }
 
-    VK_RETURN_FALSE_ASSERT(vkMapMemory(GDFE_INTERNAL_VK_CTX->device.handle, out_buf->memory, 0,
+    VK_RETURN_FALSE_ASSERT(vkMapMemory(GDFE_VK_CTX->device.handle, out_buf->memory, 0,
         data_size, 0, &out_buf->mapped_data));
     if (data)
     {
@@ -62,7 +62,7 @@ GDF_BOOL GDF_VkBufferCreateVertex(
         return GDF_FALSE;
     }
 
-    VK_RETURN_FALSE_ASSERT(vkMapMemory(GDFE_INTERNAL_VK_CTX->device.handle, out_buf->memory, 0,
+    VK_RETURN_FALSE_ASSERT(vkMapMemory(GDFE_VK_CTX->device.handle, out_buf->memory, 0,
         vertex_count * vertex_size, 0, &out_buf->mapped_data));
     if (vertices)
     {
@@ -77,7 +77,7 @@ GDF_BOOL GDF_VkBufferCreateIndex(u16* indices, u32 index_count, GDF_VkBuffer* ou
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, out_buf))
         return GDF_FALSE;
 
-    VK_RETURN_FALSE_ASSERT(vkMapMemory(GDFE_INTERNAL_VK_CTX->device.handle, out_buf->memory, 0,
+    VK_RETURN_FALSE_ASSERT(vkMapMemory(GDFE_VK_CTX->device.handle, out_buf->memory, 0,
         index_count * sizeof(*indices), 0, &out_buf->mapped_data));
     if (indices)
         GDF_Memcpy(out_buf->mapped_data, indices, index_count * sizeof(*indices));
@@ -91,7 +91,7 @@ GDF_BOOL GDF_VkBufferCreateUniform(u32 size, GDF_VkUniformBuffer* out_uniform_bu
             &out_uniform_buf->buffer))
         return GDF_FALSE;
 
-    VK_RETURN_FALSE_ASSERT(vkMapMemory(GDFE_INTERNAL_VK_CTX->device.handle,
+    VK_RETURN_FALSE_ASSERT(vkMapMemory(GDFE_VK_CTX->device.handle,
         out_uniform_buf->buffer.memory, 0, size, 0, &out_uniform_buf->mapped_data));
     return GDF_TRUE;
 }
@@ -107,11 +107,11 @@ GDF_BOOL GDF_VkBufferUpdate(GDF_VkBuffer* buffer, void* data, u64 data_size)
 
 void GDF_VkBufferDestroy(GDF_VkBuffer* buf)
 {
-    vkUnmapMemory(GDFE_INTERNAL_VK_CTX->device.handle, buf->memory);
+    vkUnmapMemory(GDFE_VK_CTX->device.handle, buf->memory);
     vkFreeMemory(
-        GDFE_INTERNAL_VK_CTX->device.handle, buf->memory, GDFE_INTERNAL_VK_CTX->device.allocator);
+        GDFE_VK_CTX->device.handle, buf->memory, GDFE_VK_CTX->device.allocator);
     vkDestroyBuffer(
-        GDFE_INTERNAL_VK_CTX->device.handle, buf->handle, GDFE_INTERNAL_VK_CTX->device.allocator);
+        GDFE_VK_CTX->device.handle, buf->handle, GDFE_VK_CTX->device.allocator);
 }
 
 void GDF_VkBufferDestroyUniform(GDF_VkUniformBuffer* uniform_buf)
@@ -128,18 +128,18 @@ GDF_BOOL GDF_VkBufferCreateSingleUseCmd(VkCommandBuffer* out_command_buf)
 {
     VkCommandBufferAllocateInfo alloc_info = {
         .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .commandPool        = GDFE_INTERNAL_VK_CTX->transient_command_pool,
+        .commandPool        = GDFE_VK_CTX->transient_command_pool,
         .level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         .commandBufferCount = 1,
     };
     VK_RETURN_FALSE_ASSERT(vkAllocateCommandBuffers(
-        GDFE_INTERNAL_VK_CTX->device.handle, &alloc_info, out_command_buf));
+        GDFE_VK_CTX->device.handle, &alloc_info, out_command_buf));
 
     return GDF_TRUE;
 }
 
 void GDF_VkBufferDestroySingleUseCmd(VkCommandBuffer* command_buf)
 {
-    vkFreeCommandBuffers(GDFE_INTERNAL_VK_CTX->device.handle,
-        GDFE_INTERNAL_VK_CTX->transient_command_pool, 1, command_buf);
+    vkFreeCommandBuffers(GDFE_VK_CTX->device.handle,
+        GDFE_VK_CTX->transient_command_pool, 1, command_buf);
 }

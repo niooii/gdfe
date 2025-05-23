@@ -259,7 +259,7 @@ void gdfe_report_assert_fail(
         expression, message, file, line);
 }
 
-void report_todo(const char* message, const char* file, i32 line)
+void gdfe_report_todo(const char* message, const char* file, i32 line)
 {
     GDF_LogOutput(
         LOG_LEVEL_FATAL, "Unimplemented: '%s' in file: %s, line: %d\n", message, file, line);

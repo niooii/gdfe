@@ -1,10 +1,10 @@
 #pragma once
 
-#include <gdfe/prelude.h>
-#include <vulkan/vulkan.h>
-#include <vulkan/vk_enum_string_helper.h>
-#include <gdfe/camera.h>
+#include <gdfe/render/camera.h>
 #include <gdfe/collections/list.h>
+#include <gdfe/prelude.h>
+#include <vulkan/vk_enum_string_helper.h>
+#include <vulkan/vulkan.h>
 
 #define VK_ASSERT(expr) \
 { \
@@ -147,7 +147,7 @@ typedef struct vk_swapchain {
     u32 image_count;
 } vk_swapchain;
 
-typedef struct PerFrameResources {
+typedef struct VkFrameResources {
     VkFence in_flight_fence;
     VkSemaphore image_available_semaphore;
     VkSemaphore render_finished_semaphore;
@@ -159,7 +159,7 @@ typedef struct PerFrameResources {
     // the descriptor set for accessing the current camera's
     // view projection matrix
     VkDescriptorSet vp_ubo_set;
-} PerFrameResources;
+} VkFrameResources;
 
 typedef struct GDF_VkRenderContext {
     VkInstance instance;
@@ -174,9 +174,10 @@ typedef struct GDF_VkRenderContext {
     GDF_VkDevice device;
 
     u64 current_frame;
-    u32 max_concurrent_frames;
+    /// Frames in flight.
+    u32 fof;
 
-    GDF_LIST(PerFrameResources) per_frame;
+    GDF_LIST(VkFrameResources) per_frame;
     // Sync objects
     GDF_LIST(VkFence) images_in_flight;
     
@@ -187,8 +188,8 @@ typedef struct GDF_VkRenderContext {
     enum VkSampleCountFlagBits msaa_samples;
     u32 mip_levels;
 
-    // The index that should be used for accessing resources due to
-    // multiple possible frames in flight.
+    /// The index that should be used for accessing resources due to
+    /// multiple resource sets for each frame in flight.
     u32 resource_idx;
 
     // global view projection camera stuff

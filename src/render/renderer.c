@@ -14,23 +14,23 @@
 #include "gdfe/render/vk/utils.h"
 #include "i_render/vk_utils.h"
 
-void GDF_RendererResize(GDF_Renderer renderer, u16 width, u16 height)
+void GDF_RendererResize(u16 width, u16 height)
 {
-    renderer->vk_ctx.pending_resize_event = GDF_TRUE;
-    renderer->framebuffer_width           = width;
-    renderer->framebuffer_height          = height;
+    GDFE_RENDER_STATE.vk_ctx.pending_resize_event = GDF_TRUE;
+    GDFE_RENDER_STATE.framebuffer_width           = width;
+    GDFE_RENDER_STATE.framebuffer_height          = height;
 }
 
-GDF_BOOL GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
+GDF_BOOL GDF_RendererDrawFrame(f32 delta_time)
 {
-    GDF_VkRenderContext* vk_ctx = &renderer->vk_ctx;
+    GDF_VkRenderContext* vk_ctx = &GDFE_RENDER_STATE.vk_ctx;
     GDF_VkDevice*        device = &vk_ctx->device;
     // because there are separate resources for each frame in flight.
-    vk_ctx->resource_idx         = vk_ctx->current_frame % vk_ctx->max_concurrent_frames;
-    PerFrameResources* per_frame = &vk_ctx->per_frame[vk_ctx->resource_idx];
+    vk_ctx->resource_idx         = vk_ctx->current_frame % vk_ctx->fof;
+    VkFrameResources* per_frame = &vk_ctx->per_frame[vk_ctx->resource_idx];
 
     // TODO! have some beter way of handling this perhaps
-    if (!renderer->core_renderer.active_camera)
+    if (!GDFE_RENDER_STATE.core_renderer.active_camera)
         return GDF_TRUE;
 
     if (!vk_ctx->ready_for_use && !vk_ctx->pending_resize_event)
@@ -56,7 +56,7 @@ GDF_BOOL GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
 
         vk_ctx->ready_for_use = GDF_FALSE;
         // TODO! HANDLE MINIMIZES BETTER...
-        if (renderer->framebuffer_height == 0 || renderer->framebuffer_width == 0)
+        if (GDFE_RENDER_STATE.framebuffer_height == 0 || GDFE_RENDER_STATE.framebuffer_width == 0)
             return GDF_FALSE;
 
         vk_ctx->recreating_swapchain = GDF_TRUE;
@@ -64,19 +64,19 @@ GDF_BOOL GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
         gdfe_get_surface_capabilities(vk_ctx->device.physical_info->handle, vk_ctx->surface,
             &vk_ctx->device.physical_info->sc_support_info);
         gdfe_swapchain_destroy(vk_ctx);
-        if (!gdfe_swapchain_init(vk_ctx, renderer->framebuffer_width, renderer->framebuffer_height))
+        if (!gdfe_swapchain_init(vk_ctx, GDFE_RENDER_STATE.framebuffer_width, GDFE_RENDER_STATE.framebuffer_height))
         {
             LOG_FATAL("failed to recreate swapchain");
             return GDF_FALSE;
         }
 
-        if (!core_renderer_resize(vk_ctx, &renderer->core_renderer))
+        if (!core_renderer_resize(vk_ctx, &GDFE_RENDER_STATE.core_renderer))
             return GDF_FALSE;
 
-        if (renderer->callbacks->on_render_resize)
+        if (GDFE_RENDER_STATE.callbacks->on_render_resize)
         {
-            if (!renderer->callbacks->on_render_resize(
-                    vk_ctx, renderer->app_state, &renderer->callbacks->on_render_resize_state))
+            if (!GDFE_RENDER_STATE.callbacks->on_render_resize(
+                    vk_ctx, GDFE_RENDER_STATE.app_state, &GDFE_RENDER_STATE.callbacks->on_render_resize_state))
             {
                 LOG_ERR("Render resize callback failed.");
                 return GDF_FALSE;
@@ -127,9 +127,9 @@ GDF_BOOL GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
     // make as similar to opengls as possible
     VkViewport viewport;
     viewport.x        = 0.0f;
-    viewport.y        = (f32)renderer->framebuffer_height;
-    viewport.width    = (f32)renderer->framebuffer_width;
-    viewport.height   = -(f32)renderer->framebuffer_height;
+    viewport.y        = (f32)GDFE_RENDER_STATE.framebuffer_height;
+    viewport.width    = (f32)GDFE_RENDER_STATE.framebuffer_width;
+    viewport.height   = -(f32)GDFE_RENDER_STATE.framebuffer_height;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(cmd_buffer, 0, 1, &viewport);
@@ -140,7 +140,7 @@ GDF_BOOL GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
     };
     vkCmdSetScissor(cmd_buffer, 0, 1, &scissor);
 
-    if (!core_renderer_draw(renderer, vk_ctx, &renderer->core_renderer))
+    if (!core_renderer_draw(vk_ctx, &GDFE_RENDER_STATE.core_renderer))
     {
         // TODO! handle some weird sync stuff here
         LOG_ERR("Core renderer call failed.");
@@ -178,10 +178,10 @@ GDF_BOOL GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
 
     vk_ctx->current_frame++;
 
-    if (renderer->callbacks->on_render_end)
+    if (GDFE_RENDER_STATE.callbacks->on_render_end)
     {
-        if (!renderer->callbacks->on_render_end(
-                vk_ctx, renderer->app_state, renderer->callbacks->on_render_end_state))
+        if (!GDFE_RENDER_STATE.callbacks->on_render_end(
+                vk_ctx, GDFE_RENDER_STATE.app_state, GDFE_RENDER_STATE.callbacks->on_render_end_state))
         {
             return GDF_FALSE;
         }
@@ -191,22 +191,45 @@ GDF_BOOL GDF_RendererDrawFrame(GDF_Renderer renderer, f32 delta_time)
 }
 
 // Has no effect if the core renderer is disabled.
-void GDF_RendererSetActiveCamera(GDF_Renderer renderer, GDF_Camera camera)
+void GDF_RendererSetActiveCamera(GDF_Camera camera)
 {
-    renderer->core_renderer.active_camera = camera;
+    GDFE_RENDER_STATE.core_renderer.active_camera = camera;
 }
 
+/* The object API */
 
-void GDF_DebugDrawLine(GDF_Renderer renderer) { TODO("debug draw line"); }
-
-void GDF_DebugDrawAABB(GDF_Renderer renderer) { TODO("debug draw aabb"); }
-
-void GDF_RendererSetRenderMode(GDF_Renderer renderer, GDF_RENDER_MODE mode)
+GDF_Object GDF_ObjCreate()
 {
-    renderer->render_mode = mode;
+    GDF_Object_T* handle = GDF_Malloc(sizeof(GDF_Object_T), GDF_MEMTAG_APPLICATION);
+
+    handle->mesh = GDF_NULL_HANDLE;
+    handle->transform = GDF_TransformDefault();
+
+    GDF_ListPush(GDFE_RENDER_STATE.objects, handle);
+
+    return handle;
 }
 
-void GDF_RendererCycleRenderMode(GDF_Renderer renderer)
+void GDF_ObjSetMesh(GDF_Object handle, GDF_Mesh mesh)
 {
-    renderer->render_mode = ++renderer->render_mode % GDF_RENDER_MODE_MAX;
+    handle->mesh = mesh;
+}
+
+GDF_Object GDF_ObjFromMesh(GDF_Mesh mesh)
+{
+    GDF_Object handle = GDF_ObjCreate();
+
+    GDF_ObjSetMesh(handle, mesh);
+
+    return handle;
+}
+
+void GDF_RendererSetRenderMode(GDF_RENDER_MODE mode)
+{
+    GDFE_RENDER_STATE.render_mode = mode;
+}
+
+void GDF_RendererCycleRenderMode()
+{
+    GDFE_RENDER_STATE.render_mode = ++GDFE_RENDER_STATE.render_mode % GDF_RENDER_MODE_MAX;
 }

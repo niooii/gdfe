@@ -78,7 +78,7 @@ GDF_BOOL gdfe_swapchain_init(GDF_VkRenderContext* vk_ctx, u16 w, u16 h)
         &vk_ctx->swapchain.handle));
 
     // Allow triple buffering
-    vk_ctx->max_concurrent_frames = MAX_FRAMES_IN_FLIGHT;
+    vk_ctx->fof = MAX_FRAMES_IN_FLIGHT;
     VK_ASSERT(vkGetSwapchainImagesKHR(
         vk_ctx->device.handle, vk_ctx->swapchain.handle, &vk_ctx->swapchain.image_count, NULL))
 

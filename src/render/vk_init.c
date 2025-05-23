@@ -8,6 +8,7 @@
 #include <i_render/vk_utils.h>
 #include <vulkan/vk_enum_string_helper.h>
 #include <vulkan/vulkan.h>
+#include <i_gdfe.h>
 
 VKAPI_ATTR VkBool32 VKAPI_CALL __vk_dbg_callback(
     VkDebugUtilsMessageSeverityFlagBitsEXT      message_severity,
@@ -32,113 +33,6 @@ VKAPI_ATTR VkBool32 VKAPI_CALL __vk_dbg_callback(
     }
     return VK_FALSE;
 }
-
-// TODO! initialize lighting and postprocessing pipelines
-// and separate pass for postprocessing
-// GDF_BOOL __create_renderpasses(VkRenderContext* vk_ctx)
-// {
-//     /* ======================================== */
-//     /* ----- CREATE RENDERPASS AND SUBPASSES ----- */
-//     /* ======================================== */
-//
-//     // color
-//     VkAttachmentDescription color_attachment = {
-//         .format = vk_ctx->formats.image_format,
-//         .samples = vk_ctx->msaa_samples,
-//         .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-//         .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-//         .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-//         .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-//         .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-//         .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-//         .flags = 0
-//     };
-//
-//     // depth
-//     VkAttachmentDescription depth_attachment = {
-//         .format = vk_ctx->formats.depth_format,
-//         .samples = vk_ctx->msaa_samples,
-//         .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-//         .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-//         .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-//         .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-//         .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-//         .finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-//         .flags = 0
-//     };
-//
-//     // resolve
-//     VkAttachmentDescription resolved_attachment = {
-//         .format = vk_ctx->formats.image_format,
-//         .samples = VK_SAMPLE_COUNT_1_BIT,
-//         .loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-//         .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-//         .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-//         .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-//         .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-//         .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-//     };
-//
-//     VkAttachmentReference color_attachment_ref = {
-//         .attachment = 0,
-//         .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-//     };
-//
-//     VkAttachmentReference depth_attachment_ref = {
-//         .attachment = 1,
-//         .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-//     };
-//
-//     VkAttachmentReference resolved_attachment_ref = {
-//         .attachment = 2,
-//         .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-//     };
-//
-//     u32 attachment_counts = 3;
-//     VkAttachmentDescription attachments[] = {
-//         color_attachment, depth_attachment, resolved_attachment
-//     };
-//
-//     // TODO! multiple subpasses
-//     VkSubpassDescription subpass = {
-//         .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-//         .colorAttachmentCount = 1,
-//         .pColorAttachments = &color_attachment_ref,
-//         .pDepthStencilAttachment = &depth_attachment_ref,
-//         .pResolveAttachments = &resolved_attachment_ref
-//     };
-//
-//     VkSubpassDependency dependency = {
-//         .srcSubpass = VK_SUBPASS_EXTERNAL,
-//         .dstSubpass = 0,
-//         .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-//         .srcAccessMask = 0,
-//         .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-//         .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
-//         VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, .dependencyFlags = 0
-//     };
-//
-//     VkRenderPassCreateInfo rp_create_info = {
-//         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-//         .subpassCount = 1,
-//         .pSubpasses = &subpass,
-//         .dependencyCount = 1,
-//         .pDependencies = &dependency,
-//         .attachmentCount = attachment_counts,
-//         .pAttachments = attachments,
-//     };
-//
-//     VK_ASSERT(
-//         vkCreateRenderPass(
-//             vk_ctx->device.handle,
-//             &rp_create_info,
-//             vk_ctx->device.allocator,
-//             &vk_ctx->renderpasses[GDF_VK_RENDERPASS_INDEX_MAIN]
-//         )
-//     );
-//
-//     return GDF_TRUE;
-// }
 
 // filters the vk_ctx->physical_device_info list
 void __filter_available_devices(GDF_VkRenderContext* vk_ctx, GDF_VkPhysicalDeviceInfo* phys_list)
@@ -180,31 +74,31 @@ void __filter_available_devices(GDF_VkRenderContext* vk_ctx, GDF_VkPhysicalDevic
     }
 }
 
-// TODO! removeglobal context
-// eitehr just make it global or make it not man
-GDF_VkRenderContext*     GDFE_INTERNAL_VK_CTX   = NULL;
-GDF_CoreRendererContext* GDFE_INTERNAL_CORE_CTX = NULL;
-
-GDF_BOOL create_global_buffers(GDF_VkRenderContext* vk_ctx);
+GDF_BOOL gdfe_create_global_buffers(GDF_VkRenderContext* vk_ctx);
+void gdfe_destroy_global_buffers(GDF_VkRenderContext* vk_ctx);
 
 // ===== FORWARD DECLARATIONS END =====
-GDF_Renderer gdfe_renderer_init(
-    GDF_Window window, GDF_AppState* app_state, GDF_AppCallbacks* callbacks)
-{
-    if (GDFE_INTERNAL_VK_CTX)
-        return NULL;
 
-    GDF_Renderer renderer = GDF_Malloc(sizeof(GDF_Renderer_T), GDF_MEMTAG_RENDERER);
+gdfe_render_state GDFE_RENDER_STATE;
+GDF_VkRenderContext*     GDFE_VK_CTX   = NULL;
+GDF_CoreRendererContext* GDFE_CORE_CTX = NULL;
+
+GDF_BOOL gdfe_renderer_init(
+    GDF_Window window)
+{
+    if (GDFE_VK_CTX)
+        return GDF_FALSE;
+
     u16          w, h;
     GDF_GetWindowSize(window, &w, &h);
-    renderer->framebuffer_width  = w;
-    renderer->framebuffer_height = h;
-    renderer->callbacks          = &callbacks->render_callbacks;
-    renderer->app_state          = app_state;
+    GDFE_RENDER_STATE.framebuffer_width  = w;
+    GDFE_RENDER_STATE.framebuffer_height = h;
+    GDFE_RENDER_STATE.callbacks          = &APP_STATE.callbacks.render_callbacks;
+    GDFE_RENDER_STATE.app_state          = &APP_STATE.public;
 
-    GDF_VkRenderContext* vk_ctx = &renderer->vk_ctx;
-    GDFE_INTERNAL_VK_CTX        = vk_ctx;
-    GDFE_INTERNAL_CORE_CTX      = &renderer->core_renderer;
+    GDF_VkRenderContext* vk_ctx = &GDFE_RENDER_STATE.vk_ctx;
+    GDFE_VK_CTX        = vk_ctx;
+    GDFE_CORE_CTX      = &GDFE_RENDER_STATE.core_renderer;
 
     // TODO! custom allocator.
     vk_ctx->device.allocator = NULL;
@@ -275,7 +169,7 @@ GDF_Renderer gdfe_renderer_init(
     if (physical_device_count == 0)
     {
         LOG_FATAL("There are no devices supporting vulkan on your system.");
-        NULL;
+        return GDF_FALSE;
     }
     VkPhysicalDevice physical_devices[physical_device_count];
     VK_ASSERT(
@@ -316,8 +210,7 @@ GDF_Renderer gdfe_renderer_init(
     if (selected_physical_device == NULL)
     {
         LOG_FATAL("Could not find a device to use.");
-        GDF_Free(renderer);
-        return NULL;
+        return GDF_FALSE;
     }
 
     /* ======================================== */
@@ -442,7 +335,7 @@ GDF_Renderer gdfe_renderer_init(
     /* ======================================== */
     // TODO! msaa support checks
     vk_ctx->msaa_samples = VK_SAMPLE_COUNT_4_BIT;
-    gdfe_swapchain_init(vk_ctx, renderer->framebuffer_width, renderer->framebuffer_height);
+    gdfe_swapchain_init(vk_ctx, GDFE_RENDER_STATE.framebuffer_width, GDFE_RENDER_STATE.framebuffer_height);
     u32 image_count = vk_ctx->swapchain.image_count;
 
     LOG_TRACE("Created swapchain.");
@@ -464,12 +357,12 @@ GDF_Renderer gdfe_renderer_init(
         vk_ctx->device.allocator, &vk_ctx->transient_command_pool));
     LOG_TRACE("Transient command pool created.");
 
-    const u32 max_concurrent_frames = vk_ctx->max_concurrent_frames;
+    const u32 max_concurrent_frames = vk_ctx->fof;
 
     /* ======================================== */
     /* ----- Create per frame resources ----- */
     /* ======================================== */
-    vk_ctx->per_frame        = GDF_ListReserve(PerFrameResources, max_concurrent_frames);
+    vk_ctx->per_frame        = GDF_ListReserve(VkFrameResources, max_concurrent_frames);
     vk_ctx->images_in_flight = GDF_ListReserve(VkFence, max_concurrent_frames);
 
     VkSemaphoreCreateInfo semaphore_info = {
@@ -499,45 +392,51 @@ GDF_Renderer gdfe_renderer_init(
             &vk_ctx->per_frame[i].in_flight_fence));
     }
 
-    GDF_ASSERT(create_global_buffers(vk_ctx));
+    GDF_ASSERT(gdfe_create_global_buffers(vk_ctx));
 
-    if (!core_renderer_init(vk_ctx, &renderer->core_renderer))
+    if (!core_renderer_init(vk_ctx, &GDFE_RENDER_STATE.core_renderer))
     {
         LOG_FATAL("Failed to init core renderer.");
-        GDF_Free(renderer);
-        return NULL;
+        return GDF_FALSE;
     }
     LOG_TRACE("Initialized core renderer");
 
-    if (callbacks->render_callbacks.on_render_init)
+    GDF_RenderCallbacks* callbacks = GDFE_RENDER_STATE.callbacks;
+
+    if (callbacks->on_render_init)
     {
-        if (!callbacks->render_callbacks.on_render_init(
-                vk_ctx, app_state, callbacks->render_callbacks.on_render_init_state))
+        if (!callbacks->on_render_init(
+                vk_ctx, GDFE_RENDER_STATE.app_state, callbacks->on_render_init_state))
         {
-            GDF_Free(renderer);
-            return NULL;
+            return GDF_FALSE;
         }
     }
 
     vk_ctx->ready_for_use = GDF_TRUE;
 
-    return renderer;
+    GDFE_RENDER_STATE.objects = GDF_ListReserve(GDF_Object, 128);
+
+    return GDF_TRUE;
 }
 
-void gdfe_renderer_destroy(GDF_Renderer renderer)
+void gdfe_renderer_shutdown()
 {
-    GDF_VkRenderContext*   vk_ctx    = &renderer->vk_ctx;
+    GDF_VkRenderContext*   vk_ctx    = &GDFE_RENDER_STATE.vk_ctx;
     VkDevice               device    = vk_ctx->device.handle;
     VkAllocationCallbacks* allocator = vk_ctx->device.allocator;
 
-    if (renderer->callbacks->on_render_destroy)
+    vkDeviceWaitIdle(device);
+
+    if (GDFE_RENDER_STATE.callbacks->on_render_destroy)
     {
-        renderer->callbacks->on_render_destroy(
-            vk_ctx, renderer->app_state, renderer->callbacks->on_render_destroy_state);
+        GDFE_RENDER_STATE.callbacks->on_render_destroy(
+            vk_ctx, GDFE_RENDER_STATE.app_state, GDFE_RENDER_STATE.callbacks->on_render_destroy_state);
     }
 
     // Destroy a bunch of pipelines
-    core_renderer_destroy(&renderer->vk_ctx, &renderer->core_renderer);
+    core_renderer_destroy(&GDFE_RENDER_STATE.vk_ctx, &GDFE_RENDER_STATE.core_renderer);
+
+    gdfe_destroy_global_buffers(vk_ctx);
 
     u32 swapchain_image_count = vk_ctx->swapchain.image_count;
     for (u32 i = 0; i < swapchain_image_count; i++)
@@ -552,8 +451,6 @@ void gdfe_renderer_destroy(GDF_Renderer renderer)
     vkDestroyCommandPool(device, vk_ctx->persistent_command_pool, allocator);
     vkDestroyCommandPool(device, vk_ctx->transient_command_pool, allocator);
 
-    vkDestroySwapchainKHR(device, vk_ctx->swapchain.handle, allocator);
-
     LOG_TRACE("Destroying Vulkan device...");
     vkDestroyDevice(vk_ctx->device.handle, vk_ctx->device.allocator);
 
@@ -561,7 +458,6 @@ void gdfe_renderer_destroy(GDF_Renderer renderer)
     if (vk_ctx->surface)
     {
         vkDestroySurfaceKHR(vk_ctx->instance, vk_ctx->surface, vk_ctx->device.allocator);
-        vk_ctx->surface = 0;
     }
 
     LOG_TRACE("Destroying Vulkan debugger...");

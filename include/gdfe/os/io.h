@@ -93,7 +93,7 @@ GDF_IO_RESULT GDF_GetFileSizeAbs(const char* abs_path, u64* out_size);
 
 /// @brief Creates and starts a new child process.
 /// @param command       The executable to run.
-/// @param args          Array of command-line arguments (NULL-terminated).
+/// @param args          Array of comm and-line arguments (NULL-terminated).
 /// @param working_dir   Working directory (NULL uses current directory).
 /// @param env           Environment variables (NULL-terminated, and NULL inherits parent environment).
 /// @return              A process handle, or NULL on failure.

@@ -17,7 +17,10 @@ void gdfe_input_shutdown();
 
 /// Initializes the windowing and input subsystem.
 GDF_BOOL gdfe_video_init();
-void gdfe_video_shutdown();
+void     gdfe_video_shutdown();
+
+GDF_BOOL gdfe_renderer_init(GDF_Window window);
+void     gdfe_renderer_shutdown();
 
 void gdfe_shaders_init();
 void gdfe_shaders_shutdown();
@@ -38,4 +41,3 @@ void gdfe_misc_shutdown();
 
 GDF_BOOL gdfe_sock_init();
 void     gdfe_sock_shutdown();
-

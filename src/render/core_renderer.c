@@ -8,14 +8,16 @@
 #include <i_render/mesh.h>
 
 GDF_BOOL create_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+void     destroy_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+
 GDF_BOOL create_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
-void     destroy_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
-GDF_BOOL create_framebufs_and_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+
+void     gdfe_destroy_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+GDF_BOOL gdfe_init_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
 // GDF_BOOL create_geometry_pass(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
 
 // The initial transitions for the images used in rendering
-void prepare_images(
-    GDF_Renderer renderer, GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+void prepare_images(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
 
 // Resolves the msaa image to the current swapchain image
 // void resolve_msaa_image(
@@ -23,8 +25,7 @@ void prepare_images(
 
 // The final transitions for rendering to be "finished". For now, only transitions
 // the swapchain image to VK_IMAGE_LAYOUT_PRESENT_SRC_KHR.
-void finalize_images(
-    GDF_Renderer renderer, GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+void finalize_images(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
 
 // Up facing plane vertices
 static const Vertex3d plane_vertices[] = {
@@ -38,15 +39,15 @@ static const u16 plane_indices[] = { 0, 1, 2, 2, 3, 0 };
 
 GDF_BOOL core_renderer_init(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
-    ctx->per_frame = GDF_ListReserve(CoreRendererPerFrame, vk_ctx->max_concurrent_frames);
-    GDF_ListSetLen(ctx->per_frame, vk_ctx->max_concurrent_frames);
+    ctx->per_frame = GDF_ListReserve(CoreFrameResources, vk_ctx->fof);
+    GDF_ListSetLen(ctx->per_frame, vk_ctx->fof);
     gdfe_init_primitive_meshes();
     // if (!create_geometry_pass(vk_ctx, ctx))
     // {
     //     LOG_ERR("Failed to create renderpasses.");
     //     return GDF_FALSE;
     // }
-    if (!create_framebufs_and_imgs(vk_ctx, ctx))
+    if (!gdfe_init_imgs(vk_ctx, ctx))
     {
         LOG_ERR("Failed to create framebuffers and images.");
         return GDF_FALSE;
@@ -66,14 +67,13 @@ GDF_BOOL core_renderer_init(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext
 }
 
 // TODO! config to disable specific passes
-GDF_BOOL core_renderer_draw(
-    GDF_Renderer renderer, GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
+GDF_BOOL core_renderer_draw(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
-    const GDF_RenderCallbacks*  callbacks      = renderer->callbacks;
-    const u32                   resource_idx   = vk_ctx->resource_idx;
-    const PerFrameResources*    vk_per_frame   = &vk_ctx->per_frame[resource_idx];
-    const CoreRendererPerFrame* core_per_frame = &ctx->per_frame[resource_idx];
-    const VkCommandBuffer       cmd_buffer     = vk_per_frame->cmd_buffer;
+    const GDF_RenderCallbacks* callbacks      = GDFE_RENDER_STATE.callbacks;
+    const u32                  resource_idx   = vk_ctx->resource_idx;
+    const VkFrameResources*    vk_per_frame   = &vk_ctx->per_frame[resource_idx];
+    const CoreFrameResources*  core_per_frame = &ctx->per_frame[resource_idx];
+    const VkCommandBuffer      cmd_buffer     = vk_per_frame->cmd_buffer;
 
     VkClearValue clear_values[2] = { { .color = { 0, 0, 0, 1 } }, { .depthStencil = { 1, 0 } } };
 
@@ -125,7 +125,7 @@ GDF_BOOL core_renderer_draw(
     };
 
     // transition into right layouts
-    prepare_images(renderer, vk_ctx, ctx);
+    prepare_images(vk_ctx, ctx);
 
     vkCmdBeginRendering(cmd_buffer, &rendering_info);
 
@@ -147,8 +147,8 @@ GDF_BOOL core_renderer_draw(
 
     if (callbacks->on_render)
     {
-        if (!callbacks->on_render(
-                vk_ctx, renderer->render_mode, renderer->app_state, callbacks->on_render_state))
+        if (!callbacks->on_render(vk_ctx, GDFE_RENDER_STATE.render_mode,
+                GDFE_RENDER_STATE.app_state, callbacks->on_render_state))
         {
             LOG_ERR("User geometry pass callback failure.");
             return false;
@@ -159,15 +159,15 @@ GDF_BOOL core_renderer_draw(
 
     // resolve_msaa_image(renderer, vk_ctx, ctx);
 
-    finalize_images(renderer, vk_ctx, ctx);
+    finalize_images(vk_ctx, ctx);
 
     return GDF_TRUE;
 }
 
 GDF_BOOL core_renderer_resize(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
-    destroy_framebufs_and_imgs(vk_ctx, ctx);
-    if (!create_framebufs_and_imgs(vk_ctx, ctx))
+    gdfe_destroy_imgs(vk_ctx, ctx);
+    if (!gdfe_init_imgs(vk_ctx, ctx))
     {
         LOG_ERR("Failed to create framebuffers and images.");
         return GDF_FALSE;
@@ -178,18 +178,21 @@ GDF_BOOL core_renderer_resize(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererConte
 
 GDF_BOOL core_renderer_destroy(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
+    GDF_VkBufferDestroy(&ctx->up_facing_plane_vbo);
+    GDF_VkBufferDestroy(&ctx->up_facing_plane_index_buffer);
+    destroy_grid_pipeline(vk_ctx, ctx);
+    gdfe_destroy_imgs(vk_ctx, ctx);
     return GDF_TRUE;
 }
 
 /* Forward declared purpose specific functions */
 
-void prepare_images(
-    GDF_Renderer renderer, GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
+void prepare_images(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
-    const u32                   resource_idx   = vk_ctx->resource_idx;
-    const PerFrameResources*    vk_per_frame   = &vk_ctx->per_frame[resource_idx];
-    const CoreRendererPerFrame* core_per_frame = &ctx->per_frame[resource_idx];
-    const VkCommandBuffer       cmd_buffer     = vk_per_frame->cmd_buffer;
+    const u32                 resource_idx   = vk_ctx->resource_idx;
+    const VkFrameResources*   vk_per_frame   = &vk_ctx->per_frame[resource_idx];
+    const CoreFrameResources* core_per_frame = &ctx->per_frame[resource_idx];
+    const VkCommandBuffer     cmd_buffer     = vk_per_frame->cmd_buffer;
 
     // msaa image to COLOR_ATTACHMENT_OPTIMAL
     VkImageMemoryBarrier pre_render_barriers[2] = {
@@ -330,12 +333,11 @@ void prepare_images(
 //         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &resolve_region);
 // }
 
-void finalize_images(
-    GDF_Renderer renderer, GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
+void finalize_images(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
-    const u32                resource_idx = vk_ctx->resource_idx;
-    const PerFrameResources* vk_per_frame = &vk_ctx->per_frame[resource_idx];
-    const VkCommandBuffer    cmd_buffer   = vk_per_frame->cmd_buffer;
+    const u32               resource_idx = vk_ctx->resource_idx;
+    const VkFrameResources* vk_per_frame = &vk_ctx->per_frame[resource_idx];
+    const VkCommandBuffer   cmd_buffer   = vk_per_frame->cmd_buffer;
     const VkImage swapchain_img = vk_ctx->swapchain.images[vk_ctx->swapchain.current_img_idx];
 
     VkImageMemoryBarrier present_barrier = {

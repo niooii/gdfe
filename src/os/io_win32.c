@@ -316,7 +316,6 @@ u8* GDF_FileReadAll(const char* rel_path, u64* read_bytes)
         LOG_ERR("Unknown error (%d) reading file: %s", GetLastError(), path);
     }
 
-    LOG_DEBUG("%s", out_buf);
     CloseHandle(h);
     return out_buf;
 }

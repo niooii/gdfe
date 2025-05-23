@@ -3,20 +3,19 @@
 #include <gdfe/prelude.h>
 #include <gdfe/math/math.h>
 
-typedef struct Transform {
+typedef struct GDF_Transform {
     vec3 pos;
     // Rotation is always in radians.
     // Represents pitch, yaw and roll.
     vec3 rot;
     vec3 scale;
-    mat4 model_matrix;
-} Transform;
+} GDF_Transform;
 
 EXTERN_C_BEGIN
 
-FORCEINLINE void transform_recalc_model_matrix(Transform* transform)
+FORCEINLINE mat4 GDF_TransformModelMatrix(GDF_Transform* transform)
 {
-    transform->model_matrix = mat4_mul(
+    return mat4_mul(
         mat4_mul(
             mat4_scale(transform->scale), 
             mat4_rotation(transform->rot)
@@ -25,10 +24,11 @@ FORCEINLINE void transform_recalc_model_matrix(Transform* transform)
     );
 }
 
-FORCEINLINE void transform_init_default(Transform* out_transform)
+FORCEINLINE GDF_Transform GDF_TransformDefault()
 {
-    out_transform->scale = vec3_new(1,1,1);
-    transform_recalc_model_matrix(out_transform);
+    return (GDF_Transform) {
+        .pos = vec3_new(1.0f, 1.0f, 1.0f),
+    };
 }
 
 EXTERN_C_END

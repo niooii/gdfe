@@ -51,8 +51,8 @@ static FORCEINLINE VkShaderModule mk_module(const char* buf, u64 len)
     };
 
     VkShaderModule shader_module = VK_NULL_HANDLE;
-    VkResult       res = vkCreateShaderModule(GDFE_INTERNAL_VK_CTX->device.handle, &create_info,
-              GDFE_INTERNAL_VK_CTX->device.allocator, &shader_module);
+    VkResult       res = vkCreateShaderModule(GDFE_VK_CTX->device.handle, &create_info,
+              GDFE_VK_CTX->device.allocator, &shader_module);
 
     if (res != VK_SUCCESS)
         return VK_NULL_HANDLE;
