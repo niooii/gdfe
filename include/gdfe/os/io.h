@@ -78,7 +78,7 @@ GDF_IO_RESULT GDF_ReadFileOnce(const char* rel_path, char* out_buf, size_t bytes
 // must be freed with GDF_Free
 // returns NULL on error
 /// @note read_bytes cannot be NULL.
-u8* GDF_FileReadAll(const char* rel_path, u64* read_bytes);
+GDF_IO_RESULT GDF_FileReadAll(const char* rel_path, u64* read_size, u8** read_bytes);
 
 // returns GDF_FALSE if overwrite_existing is GDF_FALSE and a file already exists at dest_path,
 // or the src_path or dest_path is invalid.

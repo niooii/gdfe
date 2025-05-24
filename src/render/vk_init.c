@@ -98,7 +98,7 @@ GDF_BOOL gdfe_renderer_init(
 
     GDF_VkRenderContext* vk_ctx = &GDFE_RENDER_STATE.vk_ctx;
     GDFE_VK_CTX        = vk_ctx;
-    GDFE_CORE_CTX      = &GDFE_RENDER_STATE.core_renderer;
+    GDFE_CORE_CTX      = &GDFE_RENDER_STATE.core_ctx;
 
     // TODO! custom allocator.
     vk_ctx->device.allocator = NULL;
@@ -394,7 +394,7 @@ GDF_BOOL gdfe_renderer_init(
 
     GDF_ASSERT(gdfe_create_global_buffers(vk_ctx));
 
-    if (!core_renderer_init(vk_ctx, &GDFE_RENDER_STATE.core_renderer))
+    if (!core_renderer_init(vk_ctx, &GDFE_RENDER_STATE.core_ctx))
     {
         LOG_FATAL("Failed to init core renderer.");
         return GDF_FALSE;
@@ -434,7 +434,7 @@ void gdfe_renderer_shutdown()
     }
 
     // Destroy a bunch of pipelines
-    core_renderer_destroy(&GDFE_RENDER_STATE.vk_ctx, &GDFE_RENDER_STATE.core_renderer);
+    core_renderer_destroy(&GDFE_RENDER_STATE.vk_ctx, &GDFE_RENDER_STATE.core_ctx);
 
     gdfe_destroy_global_buffers(vk_ctx);
 

@@ -33,8 +33,8 @@ typedef enum GDF_SHADER_TYPE {
 
 EXTERN_C_BEGIN
 
-GDF_Shader GDF_ShaderLoadSPIRV(const char* buf, u64 len);
-GDF_Shader GDF_ShaderLoadGLSL(const char* buf, u64 len, GDF_SHADER_TYPE type);
+GDF_Shader GDF_ShaderLoadSPIRV(const u8* buf, u64 len);
+GDF_Shader GDF_ShaderLoadGLSL(const u8* buf, u64 len, GDF_SHADER_TYPE type);
 
 GDF_Shader GDF_ShaderLoadGLSLFromFile(
     const char* path, GDF_SHADER_TYPE type, GDF_SHADER_RELOAD_MODE reload_mode);

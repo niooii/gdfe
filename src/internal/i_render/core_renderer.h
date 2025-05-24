@@ -20,6 +20,14 @@ typedef struct gdfe_grid_pipeline {
     GDF_Shader frag;
 } gdfe_grid_pipeline;
 
+typedef struct gdfe_object_pipeline {
+    GDF_VkPipelineBase wireframe_base;
+    GDF_VkPipelineBase base;
+
+    GDF_Shader vert;
+    GDF_Shader frag;
+} gdfe_object_pipeline;
+
 typedef struct CoreFrameResources {
     GDF_VkImage depth_image;
     GDF_VkImage msaa_image;
@@ -32,11 +40,7 @@ typedef struct GDF_CoreRendererContext {
 
     gdfe_grid_pipeline grid_pipeline;
     gdfe_ui_pipeline   ui_pipeline;
-
-    // TODO! why do i even need this for a debug grid plane thingy just generate
-    // vertices on the fly
-    GDF_VkBuffer up_facing_plane_vbo;
-    GDF_VkBuffer up_facing_plane_index_buffer;
+    gdfe_object_pipeline object_pipeline;
 
     // TODO! add a configuration structure for these effects
     struct {

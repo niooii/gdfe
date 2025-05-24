@@ -30,7 +30,7 @@ GDF_BOOL GDF_RendererDrawFrame(f32 delta_time)
     VkFrameResources* per_frame = &vk_ctx->per_frame[vk_ctx->resource_idx];
 
     // TODO! have some beter way of handling this perhaps
-    if (!GDFE_RENDER_STATE.core_renderer.active_camera)
+    if (!GDFE_RENDER_STATE.core_ctx.active_camera)
         return GDF_TRUE;
 
     if (!vk_ctx->ready_for_use && !vk_ctx->pending_resize_event)
@@ -70,7 +70,7 @@ GDF_BOOL GDF_RendererDrawFrame(f32 delta_time)
             return GDF_FALSE;
         }
 
-        if (!core_renderer_resize(vk_ctx, &GDFE_RENDER_STATE.core_renderer))
+        if (!core_renderer_resize(vk_ctx, &GDFE_RENDER_STATE.core_ctx))
             return GDF_FALSE;
 
         if (GDFE_RENDER_STATE.callbacks->on_render_resize)
@@ -140,7 +140,7 @@ GDF_BOOL GDF_RendererDrawFrame(f32 delta_time)
     };
     vkCmdSetScissor(cmd_buffer, 0, 1, &scissor);
 
-    if (!core_renderer_draw(vk_ctx, &GDFE_RENDER_STATE.core_renderer))
+    if (!core_renderer_draw(vk_ctx, &GDFE_RENDER_STATE.core_ctx))
     {
         // TODO! handle some weird sync stuff here
         LOG_ERR("Core renderer call failed.");
@@ -193,7 +193,7 @@ GDF_BOOL GDF_RendererDrawFrame(f32 delta_time)
 // Has no effect if the core renderer is disabled.
 void GDF_RendererSetActiveCamera(GDF_Camera camera)
 {
-    GDFE_RENDER_STATE.core_renderer.active_camera = camera;
+    GDFE_RENDER_STATE.core_ctx.active_camera = camera;
 }
 
 /* The object API */
@@ -224,6 +224,11 @@ GDF_Object GDF_ObjFromMesh(GDF_Mesh mesh)
     return handle;
 }
 
+GDF_Transform* GDF_ObjGetTransform(GDF_Object handle)
+{
+    return &handle->transform;
+}
+
 void GDF_RendererSetRenderMode(GDF_RENDER_MODE mode)
 {
     GDFE_RENDER_STATE.render_mode = mode;
@@ -231,5 +236,5 @@ void GDF_RendererSetRenderMode(GDF_RENDER_MODE mode)
 
 void GDF_RendererCycleRenderMode()
 {
-    GDFE_RENDER_STATE.render_mode = ++GDFE_RENDER_STATE.render_mode % GDF_RENDER_MODE_MAX;
+    GDFE_RENDER_STATE.render_mode = ++GDFE_RENDER_STATE.render_mode % gdfe_render_mode_max;
 }

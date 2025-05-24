@@ -10,6 +10,9 @@
 GDF_BOOL create_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
 void     destroy_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
 
+GDF_BOOL create_obj_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+void     destroy_obj_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+
 GDF_BOOL create_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
 
 void     gdfe_destroy_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
@@ -27,41 +30,25 @@ void prepare_images(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
 // the swapchain image to VK_IMAGE_LAYOUT_PRESENT_SRC_KHR.
 void finalize_images(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
 
-// Up facing plane vertices
-static const Vertex3d plane_vertices[] = {
-    { { -0.5f, 0.5f, -0.5f } },
-    { { 0.5f, 0.5f, -0.5f } },
-    { { 0.5f, 0.5f, 0.5f } },
-    { { -0.5f, 0.5f, 0.5f } },
-};
-
-static const u16 plane_indices[] = { 0, 1, 2, 2, 3, 0 };
-
 GDF_BOOL core_renderer_init(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
     ctx->per_frame = GDF_ListReserve(CoreFrameResources, vk_ctx->fof);
     GDF_ListSetLen(ctx->per_frame, vk_ctx->fof);
     gdfe_init_primitive_meshes();
-    // if (!create_geometry_pass(vk_ctx, ctx))
-    // {
-    //     LOG_ERR("Failed to create renderpasses.");
-    //     return GDF_FALSE;
-    // }
+
     if (!gdfe_init_imgs(vk_ctx, ctx))
     {
         LOG_ERR("Failed to create framebuffers and images.");
         return GDF_FALSE;
     }
-    if (!create_grid_pipeline(vk_ctx, ctx) || !create_ui_pipeline(vk_ctx, ctx))
+
+    // separate these bc if one fails we should destroy all the resources of the previous ones
+    if (!create_grid_pipeline(vk_ctx, ctx) || !create_ui_pipeline(vk_ctx, ctx) ||
+        !create_obj_pipeline(vk_ctx, ctx))
     {
         LOG_ERR("Failed to create builtin pipelines.");
         return GDF_FALSE;
     }
-
-    GDF_VkBufferCreateVertex(plane_vertices, sizeof(plane_vertices) / sizeof(*plane_vertices),
-        sizeof(*plane_vertices), &ctx->up_facing_plane_vbo);
-    GDF_VkBufferCreateIndex(plane_indices, sizeof(plane_indices) / sizeof(*plane_indices),
-        &ctx->up_facing_plane_index_buffer);
 
     return GDF_TRUE;
 }
@@ -135,15 +122,44 @@ GDF_BOOL core_renderer_draw(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext
     vkCmdBindPipeline(cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->grid_pipeline.base.handle);
 
     VkDeviceSize offsets[] = { 0 };
-    vkCmdBindVertexBuffers(cmd_buffer, 0, 1, &ctx->up_facing_plane_vbo.handle, offsets);
+
+    GDF_Mesh plane_mesh = GDF_MeshGetPrimitive(GDF_PRIMITIVE_MESH_TYPE_PLANE);
+    vkCmdBindVertexBuffers(cmd_buffer, 0, 1, &plane_mesh->vertex_buffer.handle, offsets);
     vkCmdBindIndexBuffer(
-        cmd_buffer, ctx->up_facing_plane_index_buffer.handle, 0, VK_INDEX_TYPE_UINT16);
+        cmd_buffer, plane_mesh->index_buffer.handle, 0, VK_INDEX_TYPE_UINT32);
 
     vec3 camera_pos = GDF_CameraGetPosition(camera);
     vkCmdPushConstants(cmd_buffer, ctx->grid_pipeline.base.layout, VK_SHADER_STAGE_VERTEX_BIT, 0,
         sizeof(vec3), &camera_pos);
 
     vkCmdDrawIndexed(cmd_buffer, 6, 1, 0, 0, 0);
+
+    // quick naive implementation of drawing objects for my dopamine increase
+    if (GDFE_RENDER_STATE.render_mode == GDF_RENDER_MODE_WIREFRAME)
+        vkCmdBindPipeline(
+        cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->object_pipeline.wireframe_base.handle);
+    else
+        vkCmdBindPipeline(
+        cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->object_pipeline.base.handle);
+
+    vkCmdBindDescriptorSets(cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+    ctx->object_pipeline.base.layout, 0, 1, &vk_per_frame->vp_ubo_set, 0, NULL);
+
+    const u64 num_objs = GDF_ListLen(GDFE_RENDER_STATE.objects);
+    for (u64 i = 0; i < num_objs; i++)
+    {
+        const GDF_Object obj  = GDFE_RENDER_STATE.objects[i];
+        const GDF_Mesh   mesh = obj->mesh;
+
+        vkCmdBindIndexBuffer(cmd_buffer, mesh->index_buffer.handle, 0, VK_INDEX_TYPE_UINT32);
+        vkCmdBindVertexBuffers(cmd_buffer, 0, 1, &mesh->vertex_buffer.handle, offsets);
+
+        const mat4 transform = GDF_TransformModelMatrix(&obj->transform);
+        vkCmdPushConstants(cmd_buffer, ctx->object_pipeline.base.layout, VK_SHADER_STAGE_VERTEX_BIT,
+            0, sizeof(mat4), &transform);
+
+        vkCmdDrawIndexed(cmd_buffer, mesh->index_count, 1, 0, 0, 0);
+    }
 
     if (callbacks->on_render)
     {
@@ -178,9 +194,9 @@ GDF_BOOL core_renderer_resize(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererConte
 
 GDF_BOOL core_renderer_destroy(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
-    GDF_VkBufferDestroy(&ctx->up_facing_plane_vbo);
-    GDF_VkBufferDestroy(&ctx->up_facing_plane_index_buffer);
+    gdfe_destroy_primitive_meshes();
     destroy_grid_pipeline(vk_ctx, ctx);
+    destroy_obj_pipeline(vk_ctx, ctx);
     gdfe_destroy_imgs(vk_ctx, ctx);
     return GDF_TRUE;
 }

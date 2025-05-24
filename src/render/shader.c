@@ -42,7 +42,7 @@ void gdfe_shaders_shutdown()
 }
 
 // utility to make a vk shader module from a spirv buffer
-static FORCEINLINE VkShaderModule mk_module(const char* buf, u64 len)
+static FORCEINLINE VkShaderModule mk_module(const u8* buf, u64 len)
 {
     VkShaderModuleCreateInfo create_info = {
         .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
@@ -60,7 +60,7 @@ static FORCEINLINE VkShaderModule mk_module(const char* buf, u64 len)
     return shader_module;
 }
 
-GDF_Shader GDF_ShaderLoadSPIRV(const char* buf, u64 len)
+GDF_Shader GDF_ShaderLoadSPIRV(const u8* buf, u64 len)
 {
     // reflection stuff
     SpvReflectShaderModule module;
@@ -84,7 +84,7 @@ GDF_Shader GDF_ShaderLoadSPIRV(const char* buf, u64 len)
     return GDF_NULL_HANDLE;
 }
 
-GDF_Shader GDF_ShaderLoadGLSL(const char* buf, u64 len, GDF_SHADER_TYPE type)
+GDF_Shader GDF_ShaderLoadGLSL(const u8* buf, u64 len, GDF_SHADER_TYPE type)
 {
     u64 shader_type;
     switch (type)
@@ -130,7 +130,10 @@ GDF_Shader GDF_ShaderLoadGLSLFromFile(
     const char* path, GDF_SHADER_TYPE type, GDF_SHADER_RELOAD_MODE reload_mode)
 {
     u64        read_bytes;
-    const u8*  buf    = GDF_FileReadAll(path, &read_bytes);
+    const u8* buf;
+    if (GDF_FileReadAll(path, &read_bytes, &buf) != GDF_IO_RESULT_SUCCESS)
+        return GDF_NULL_HANDLE;
+
     GDF_Shader shader = GDF_ShaderLoadGLSL(buf, read_bytes, type);
     NONNULL_OR_RET_HANDLE(shader);
 

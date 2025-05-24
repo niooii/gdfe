@@ -19,7 +19,7 @@ typedef struct gdfe_render_state {
     GDF_VkRenderContext     vk_ctx;
     GDF_RenderCallbacks*    callbacks;
     GDF_AppState*           app_state;
-    GDF_CoreRendererContext core_renderer;
+    GDF_CoreRendererContext core_ctx;
 
     // TODO! super naive implementation do instanced rendering
     GDF_LIST(GDF_Object) objects;

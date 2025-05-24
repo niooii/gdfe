@@ -14,7 +14,7 @@
 typedef enum GDF_RENDER_MODE {
     GDF_RENDER_MODE_FULL,
     GDF_RENDER_MODE_WIREFRAME,
-    GDF_RENDER_MODE_MAX
+    gdfe_render_mode_max
 } GDF_RENDER_MODE;
 
 /// Represents a traditional "object" in a general engine.

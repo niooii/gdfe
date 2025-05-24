@@ -28,7 +28,7 @@ GDF_BOOL GDF_VkBufferCreateVertex(
 );
 
 GDF_BOOL GDF_VkBufferCreateIndex(
-    u16* indices,
+    u32* indices,
     u32 index_count,
     GDF_VkBuffer* out_buf
 );

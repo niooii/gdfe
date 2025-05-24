@@ -96,8 +96,8 @@ target_include_directories(gdfe
 )
 
 # build examples
-add_executable(example_scene examples/scene/main.c)
-target_link_libraries(example_scene gdfe)
+add_executable(example_bouncing examples/bouncing/main.c)
+target_link_libraries(example_bouncing gdfe)
 
 add_executable(example_io examples/io/main.c)
 target_link_libraries(example_io gdfe)

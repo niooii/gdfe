@@ -27,7 +27,7 @@ FORCEINLINE mat4 GDF_TransformModelMatrix(GDF_Transform* transform)
 FORCEINLINE GDF_Transform GDF_TransformDefault()
 {
     return (GDF_Transform) {
-        .pos = vec3_new(1.0f, 1.0f, 1.0f),
+        .scale = vec3_new(1.0f, 1.0f, 1.0f),
     };
 }
 

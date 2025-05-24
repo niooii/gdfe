@@ -285,39 +285,37 @@ GDF_IO_RESULT GDF_ReadFileOnce(const char* rel_path, char* out_buf, size_t bytes
     return GDF_IO_RESULT_SUCCESS;
 }
 
-u8* GDF_FileReadAll(const char* rel_path, u64* read_bytes)
+GDF_IO_RESULT GDF_FileReadAll(const char* rel_path, u64* read_size, u8** read_bytes)
 {
     char path[MAX_PATH_LEN];
+    GDF_IO_RESULT result;
     GDF_GetAbsolutePath(rel_path, path);
-    GDF_GetFileSizeAbs(path, read_bytes);
-    u8*    out_buf = GDF_Malloc(*read_bytes, GDF_MEMTAG_STRING);
+    result = GDF_GetFileSizeAbs(path, read_size);
+
+    if (result != GDF_IO_RESULT_SUCCESS)
+        return result;
+
+    u8*      out_buf = GDF_Malloc(*read_size, GDF_MEMTAG_STRING);
     HANDLE   h       = CreateFile(path, GENERIC_READ, 0, 0, OPEN_EXISTING, 0, 0);
     GDF_BOOL success = h != INVALID_HANDLE_VALUE;
+
     if (!success)
     {
         if (GetLastError() == ERROR_FILE_NOT_FOUND)
         {
-            LOG_ERR("Could not read non-existent file: %s", path);
+            return GDF_IO_RESULT_PATH_NOT_FOUND;
         }
-        else
-        {
-            LOG_WARN("Unknown error opening read handle to file: %s", path);
-        }
-        return NULL;
+
+        return GDF_IO_RESULT_FAIL;
     }
     DWORD    bytes_read = 0;
-    GDF_BOOL w_success  = ReadFile(h, (LPVOID)out_buf, *read_bytes, &bytes_read, NULL);
-    if (w_success)
-    {
-        // LOG_INFO("Read fil %s", path);
-    }
-    else
-    {
-        LOG_ERR("Unknown error (%d) reading file: %s", GetLastError(), path);
-    }
+    GDF_BOOL w_success  = ReadFile(h, (LPVOID)out_buf, *read_size, &bytes_read, NULL);
+    if (!w_success)
+        return GDF_IO_RESULT_FAIL;
 
     CloseHandle(h);
-    return out_buf;
+    *read_bytes = out_buf;
+    return GDF_IO_RESULT_SUCCESS;
 }
 
 GDF_IO_RESULT GDF_CopyFile(const char* src_path, const char* dest_path, GDF_BOOL overwrite_existing)
@@ -352,9 +350,11 @@ GDF_IO_RESULT GDF_GetFileSizeAbs(const char* abs_path, u64* out_size)
     HANDLE hFile = CreateFile(
         abs_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
-    if (hFile == INVALID_HANDLE_VALUE) {
+    if (hFile == INVALID_HANDLE_VALUE)
+    {
         DWORD error = GetLastError();
-        switch (error) {
+        switch (error)
+        {
         case ERROR_ACCESS_DENIED:
             return GDF_IO_RESULT_ACCESS_DENIED;
         case ERROR_FILE_NOT_FOUND:
@@ -366,7 +366,7 @@ GDF_IO_RESULT GDF_GetFileSizeAbs(const char* abs_path, u64* out_size)
     }
 
     LARGE_INTEGER size;
-    BOOL result = GetFileSizeEx(hFile, &size);
+    BOOL          result = GetFileSizeEx(hFile, &size);
 
     CloseHandle(hFile);
 

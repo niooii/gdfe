@@ -12,7 +12,7 @@ GDF_BOOL create_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererConte
     // Vertex input configuration
     VkVertexInputBindingDescription bindings = {
         .binding   = 0,
-        .stride    = sizeof(Vertex3d),
+        .stride    = sizeof(GDF_MeshVertex),
         .inputRate = VK_VERTEX_INPUT_RATE_VERTEX,
     };
 
@@ -21,7 +21,7 @@ GDF_BOOL create_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererConte
             .binding  = 0,
             .location = 0,
             .format   = VK_FORMAT_R32G32B32_SFLOAT,
-            .offset   = offsetof(Vertex3d, pos),
+            .offset   = offsetof(GDF_MeshVertex, pos),
         },
     };
 
@@ -66,11 +66,11 @@ GDF_BOOL create_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererConte
         .rasterizationSamples = vk_ctx->msaa_samples,
     };
 
-    // Depths stencil configuration
+    // Depth stencil configuration
     VkPipelineDepthStencilStateCreateInfo depth_stencil_state = {
         .sType                 = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
         .depthTestEnable       = VK_TRUE,
-        .depthWriteEnable      = VK_TRUE,
+        .depthWriteEnable      = VK_FALSE,
         .depthCompareOp        = VK_COMPARE_OP_LESS,
         .depthBoundsTestEnable = VK_FALSE,
         .stencilTestEnable     = VK_FALSE,
@@ -185,20 +185,22 @@ GDF_BOOL create_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererConte
 
 void destroy_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
-    vkDestroyPipeline(vk_ctx->device.handle, ctx->grid_pipeline.base.handle, vk_ctx->device.allocator);
-    vkDestroyPipelineLayout(vk_ctx->device.handle, ctx->grid_pipeline.base.layout, vk_ctx->device.allocator);
-    vkDestroyShaderModule(vk_ctx->device.handle, ctx->grid_pipeline.base.vert, vk_ctx->device.allocator);
-    vkDestroyShaderModule(vk_ctx->device.handle, ctx->grid_pipeline.base.frag, vk_ctx->device.allocator);
+    vkDestroyPipeline(
+        vk_ctx->device.handle, ctx->grid_pipeline.base.handle, vk_ctx->device.allocator);
+    vkDestroyPipelineLayout(
+        vk_ctx->device.handle, ctx->grid_pipeline.base.layout, vk_ctx->device.allocator);
+    vkDestroyShaderModule(
+        vk_ctx->device.handle, ctx->grid_pipeline.base.vert, vk_ctx->device.allocator);
+    vkDestroyShaderModule(
+        vk_ctx->device.handle, ctx->grid_pipeline.base.frag, vk_ctx->device.allocator);
 }
 
-GDF_BOOL create_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
+GDF_BOOL create_obj_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
-    gdfe_ui_pipeline* pipeline = &ctx->ui_pipeline;
-
     // Vertex input configuration
     VkVertexInputBindingDescription bindings = {
         .binding   = 0,
-        .stride    = sizeof(Vertex3d),
+        .stride    = sizeof(GDF_MeshVertex),
         .inputRate = VK_VERTEX_INPUT_RATE_VERTEX,
     };
 
@@ -207,7 +209,13 @@ GDF_BOOL create_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext
             .binding  = 0,
             .location = 0,
             .format   = VK_FORMAT_R32G32B32_SFLOAT,
-            .offset   = offsetof(Vertex3d, pos),
+            .offset   = offsetof(GDF_MeshVertex, pos),
+        },
+        {
+            .binding  = 0,
+            .location = 1,
+            .format   = VK_FORMAT_R32G32B32_SFLOAT,
+            .offset   = offsetof(GDF_MeshVertex, normal),
         },
     };
 
@@ -215,7 +223,7 @@ GDF_BOOL create_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext
         .sType                         = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
         .vertexBindingDescriptionCount = 1,
         .pVertexBindingDescriptions    = &bindings,
-        .vertexAttributeDescriptionCount = sizeof(attributes) / sizeof(attributes[0]),
+        .vertexAttributeDescriptionCount = sizeof(attributes) / sizeof(*attributes),
         .pVertexAttributeDescriptions    = attributes,
     };
 
@@ -240,7 +248,7 @@ GDF_BOOL create_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext
         .rasterizerDiscardEnable = VK_FALSE,
         .polygonMode             = VK_POLYGON_MODE_FILL,
         .lineWidth               = 1.0f,
-        .cullMode                = VK_CULL_MODE_NONE,
+        .cullMode                = VK_CULL_MODE_BACK_BIT,
         .frontFace               = VK_FRONT_FACE_CLOCKWISE,
         .depthBiasEnable         = VK_FALSE,
     };
@@ -252,7 +260,7 @@ GDF_BOOL create_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext
         .rasterizationSamples = vk_ctx->msaa_samples,
     };
 
-    // Depths stencil configuration
+    // Depth stencil configuration
     VkPipelineDepthStencilStateCreateInfo depth_stencil_state = {
         .sType                 = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
         .depthTestEnable       = VK_TRUE,
@@ -263,16 +271,17 @@ GDF_BOOL create_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext
     };
 
     // Color blending configuration
-    VkPipelineColorBlendAttachmentState color_blend_attachment = { .colorWriteMask =
-                                                                       VK_COLOR_COMPONENT_R_BIT |
-            VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
+    VkPipelineColorBlendAttachmentState color_blend_attachment = {
+        .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+            VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
         .blendEnable         = VK_TRUE,
         .srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
         .dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
         .colorBlendOp        = VK_BLEND_OP_ADD,
         .srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
         .dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
-        .alphaBlendOp        = VK_BLEND_OP_ADD };
+        .alphaBlendOp        = VK_BLEND_OP_ADD,
+    };
 
     VkPipelineColorBlendStateCreateInfo color_blend_state = {
         .sType           = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
@@ -282,14 +291,14 @@ GDF_BOOL create_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext
         .blendConstants  = { 0.0f, 0.0f, 0.0f, 0.0f },
     };
 
+    // for player position
     VkPushConstantRange push_constant_range = {
         .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
         .offset     = 0,
-        .size       = sizeof(vec3),
+        .size       = sizeof(mat4),
     };
 
     // Pipeline layout
-    // TODO! dont need uniform matrices
     VkPipelineLayoutCreateInfo layout_info = {
         .sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
         .pSetLayouts            = &vk_ctx->vp_ubo_layout,
@@ -298,36 +307,98 @@ GDF_BOOL create_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext
         .pushConstantRangeCount = 1,
     };
 
-    // VK_ASSERT(vkCreatePipelineLayout(
-    //     vk_ctx->device.handle, &layout_info, vk_ctx->device.allocator, &pipeline->layout));
-    //
-    // // Create dynamic state for pipeline (viewport & scissor)
-    // // TODO! eventually if the game is fixed size remove these and bake states
-    // // into pipelines
-    // VkDynamicState d_states[2] = {
-    //     VK_DYNAMIC_STATE_VIEWPORT,
-    //     VK_DYNAMIC_STATE_SCISSOR,
-    // };
-    // VkPipelineDynamicStateCreateInfo dynamic_states = {
-    //     .sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-    //     .dynamicStateCount = 2,
-    //     .pDynamicStates    = d_states,
-    // };
-    //
-    // VkPipelineShaderStageCreateInfo ui_shaders[] = {
-    //     {
-    //         .sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-    //         .stage  = VK_SHADER_STAGE_VERTEX_BIT,
-    //         .module = pipeline->vert,
-    //         .pName  = "main",
-    //     },
-    //     {
-    //         .sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-    //         .stage  = VK_SHADER_STAGE_FRAGMENT_BIT,
-    //         .module = pipeline->frag,
-    //         .pName  = "main",
-    //     }
-    // };
+    VkPipelineLayout pipeline_layout;
+
+    VK_ASSERT(vkCreatePipelineLayout(
+        vk_ctx->device.handle, &layout_info, vk_ctx->device.allocator, &pipeline_layout))
+
+    // Create dynamic state for pipeline (viewport & scissor)
+    // TODO! eventually if the game is fixed size remove these and bake states
+    // into pipelines
+    VkDynamicState d_states[2] = {
+        VK_DYNAMIC_STATE_VIEWPORT,
+        VK_DYNAMIC_STATE_SCISSOR,
+    };
+
+    VkPipelineDynamicStateCreateInfo dynamic_states = {
+        .sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+        .dynamicStateCount = 2,
+        .pDynamicStates    = d_states,
+    };
+
+    ctx->object_pipeline.vert = GDF_ShaderLoadGLSLFromFile(
+        "resources/shaders/objects.vert", GDF_SHADER_TYPE_VERT, GDF_SHADER_RELOAD_NONE);
+    ctx->object_pipeline.frag = GDF_ShaderLoadGLSLFromFile(
+        "resources/shaders/objects.frag", GDF_SHADER_TYPE_FRAG, GDF_SHADER_RELOAD_NONE);
+
+    VkPipelineShaderStageCreateInfo grid_shaders[] = {
+        {
+            .sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+            .stage  = VK_SHADER_STAGE_VERTEX_BIT,
+            .module = GDF_ShaderGetVkModule(ctx->object_pipeline.vert),
+            .pName  = "main",
+        },
+        {
+            .sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+            .stage  = VK_SHADER_STAGE_FRAGMENT_BIT,
+            .module = GDF_ShaderGetVkModule(ctx->object_pipeline.frag),
+            .pName  = "main",
+        }
+    };
+
+    // Info for dynamic renderign
+    VkPipelineRenderingCreateInfo dyn_rendering_info = {};
+    GDF_VkPipelineInitRenderingInfo(vk_ctx, &dyn_rendering_info);
+
+    // Put all configuration in graphics pipeline info struct
+    VkGraphicsPipelineCreateInfo pipeline_create_info = {
+        .sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+        .stageCount          = sizeof(grid_shaders) / sizeof(VkPipelineShaderStageCreateInfo),
+        .pStages             = grid_shaders,
+        .pVertexInputState   = &vertex_input_info,
+        .pInputAssemblyState = &input_assembly,
+        .pViewportState      = &viewport_state,
+        .pRasterizationState = &rasterizer_state,
+        .pMultisampleState   = &multisampling_state,
+        .pDepthStencilState  = &depth_stencil_state,
+        .pColorBlendState    = &color_blend_state,
+        .layout              = pipeline_layout,
+        .pNext               = &dyn_rendering_info,
+        .pDynamicState       = &dynamic_states,
+    };
+
+    GDF_VkPipelineCreateInfo info = {
+        .create_info.graphics = pipeline_create_info,
+        .type                 = GDF_PIPELINE_TYPE_GRAPHICS,
+    };
+
+    GDF_VkCreatePipelineBase(&ctx->object_pipeline.base, info);
+
+    rasterizer_state.polygonMode = VK_POLYGON_MODE_LINE;
+
+    GDF_VkCreatePipelineBase(&ctx->object_pipeline.wireframe_base, info);
+
+    return GDF_TRUE;
+}
+
+void destroy_obj_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
+{
+    vkDestroyPipeline(
+        vk_ctx->device.handle, ctx->object_pipeline.base.handle, vk_ctx->device.allocator);
+    vkDestroyPipeline(
+        vk_ctx->device.handle, ctx->object_pipeline.wireframe_base.handle, vk_ctx->device.allocator);
+    vkDestroyPipelineLayout(
+        vk_ctx->device.handle, ctx->object_pipeline.base.layout, vk_ctx->device.allocator);
+    vkDestroyShaderModule(
+        vk_ctx->device.handle, ctx->object_pipeline.base.vert, vk_ctx->device.allocator);
+    vkDestroyShaderModule(
+        vk_ctx->device.handle, ctx->object_pipeline.base.frag, vk_ctx->device.allocator);
+}
+
+GDF_BOOL create_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
+{
+    gdfe_ui_pipeline* pipeline = &ctx->ui_pipeline;
+
 
     return GDF_TRUE;
 }

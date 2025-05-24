@@ -71,9 +71,9 @@ GDF_BOOL GDF_VkBufferCreateVertex(
     return GDF_TRUE;
 }
 
-GDF_BOOL GDF_VkBufferCreateIndex(u16* indices, u32 index_count, GDF_VkBuffer* out_buf)
+GDF_BOOL GDF_VkBufferCreateIndex(u32* indices, u32 index_count, GDF_VkBuffer* out_buf)
 {
-    if (!GDF_VkBufferCreate(sizeof(u16) * index_count, VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+    if (!GDF_VkBufferCreate(sizeof(*indices) * index_count, VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, out_buf))
         return GDF_FALSE;
 
