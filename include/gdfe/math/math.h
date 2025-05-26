@@ -75,6 +75,7 @@ typedef union mat4_u {
 #define SQRT_ONE_OVER_THREE 0.57735026918962576450f
 #define DEG_TO_RAD(deg)     (PI * deg / 180.0f)
 #define RAD_TO_DEG(radians) (180.0f * radians / PI)
+#define PHI                 1.61803398874989484820f
 
 // The multiplier to convert seconds to milliseconds.
 #define SEC_TO_MS 1000.0f
@@ -107,11 +108,32 @@ FORCEINLINE f32 gabs(f32 x) { return fabsf(x); }
 
 FORCEINLINE f32 gpowf(f32 x, f32 pow) { return powf(x, pow); }
 
+FORCEINLINE i64 gpow(i64 x, i64 pow)
+{
+    if (pow < 0)
+        return -1;
+
+    int result = 1;
+    while (pow)
+    {
+        if (pow & 1)
+            result *= x;
+        pow >>= 1;
+        x *= x;
+    }
+
+    return result;
+}
+
+FORCEINLINE f32 ginvsqrt(f32 x) { return 1.0f / gsqrt(x); }
+
 i32 GDF_Random();
 i32 GDF_RandomRange(i32 min, i32 max);
 
 f32 GDF_FRandom();
 f32 GDF_FRandomRange(f32 min, f32 max);
+
+f32 FORCEINLINE GDF_Lerp(f32 a, f32 b, f32 t) { return a + (b - a) * t; }
 
 // ------------------------------------------
 // Vector 2

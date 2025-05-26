@@ -13,6 +13,8 @@ typedef PACKED_STRUCT GDF_MeshVertex
 }
 GDF_MeshVertex END_PACKED_STRUCT;
 
+typedef u32 GDF_MeshIndex;
+
 #define GDF_MESH_VERTEX_SIZE (sizeof(MeshVertex))
 
 typedef enum GDF_PRIMITIVE_MESH_TYPE {

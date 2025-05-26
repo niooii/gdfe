@@ -15,7 +15,7 @@ typedef struct App {
     GDF_LIST(BouncingCube) cubes;
 } App;
 
-#define NUM_CUBES 10000
+#define NUM_CUBES 1000
 #define XZ_BOUNDS 150
 
 GDF_BOOL on_loop(const GDF_AppState* app_state, f64 dt, void* state);
@@ -48,12 +48,17 @@ int main()
     GDF_RendererSetActiveCamera(cam);
 
     GDF_Mesh cube_mesh = GDF_MeshGetPrimitive(GDF_PRIMITIVE_MESH_TYPE_CUBE);
+    GDF_Mesh sphere_mesh = GDF_MeshGetPrimitive(GDF_PRIMITIVE_MESH_TYPE_SPHERE);
+
+    GDF_Object sphere = GDF_ObjFromMesh(sphere_mesh);
+    GDF_Object cube = GDF_ObjFromMesh(cube_mesh);
 
     app.cubes = GDF_ListReserve(BouncingCube, NUM_CUBES);
 
     for (int i = 0; i < NUM_CUBES; i++)
     {
-        app.cubes[i].object   = GDF_ObjFromMesh(cube_mesh);
+        GDF_Mesh mesh = i % 2 == 0 ? cube_mesh : sphere_mesh;
+        app.cubes[i].object   = GDF_ObjFromMesh(mesh);
         app.cubes[i].velocity = vec3_new(0.0f, 0.0f, 0.0f);
 
         GDF_Transform* transform = GDF_ObjGetTransform(app.cubes[i].object);
@@ -108,8 +113,8 @@ GDF_BOOL on_loop(const GDF_AppState* app_state, f64 dt, void* state)
     ivec2 mouse_delta;
     GDF_GetMouseDelta(&mouse_delta);
 
-    GDF_CameraAddPitch(app->camera, mouse_delta.y * dt * 2);
-    GDF_CameraAddYaw(app->camera, mouse_delta.x * dt * 2);
+    GDF_CameraAddPitch(app->camera, mouse_delta.y * 0.002);
+    GDF_CameraAddYaw(app->camera, mouse_delta.x * 0.002);
 
     // Update cube simulation
 
