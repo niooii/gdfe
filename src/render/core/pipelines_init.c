@@ -1,13 +1,11 @@
 #include "gdfe/render/vk/pipelines_init.h"
 
-
 #include <gdfe/render/vk/utils.h>
 #include <i_render/core_renderer.h>
-#include "../../internal/i_render/gpu_types.h"
 #include "gdfe/render/shader.h"
 #include "gdfe/render/vk/types.h"
 
-GDF_BOOL create_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
+GDF_BOOL cr_create_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
     // Vertex input configuration
     VkVertexInputBindingDescription bindings = {
@@ -183,7 +181,7 @@ GDF_BOOL create_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererConte
     return GDF_TRUE;
 }
 
-void destroy_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
+void cr_destroy_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
     vkDestroyPipeline(
         vk_ctx->device.handle, ctx->grid_pipeline.base.handle, vk_ctx->device.allocator);
@@ -195,7 +193,7 @@ void destroy_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext*
         vk_ctx->device.handle, ctx->grid_pipeline.base.frag, vk_ctx->device.allocator);
 }
 
-GDF_BOOL create_obj_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
+GDF_BOOL cr_create_obj_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
     // Vertex input configuration
     VkVertexInputBindingDescription bindings = {
@@ -381,12 +379,12 @@ GDF_BOOL create_obj_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContex
     return GDF_TRUE;
 }
 
-void destroy_obj_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
+void cr_destroy_obj_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
     vkDestroyPipeline(
         vk_ctx->device.handle, ctx->object_pipeline.base.handle, vk_ctx->device.allocator);
-    vkDestroyPipeline(
-        vk_ctx->device.handle, ctx->object_pipeline.wireframe_base.handle, vk_ctx->device.allocator);
+    vkDestroyPipeline(vk_ctx->device.handle, ctx->object_pipeline.wireframe_base.handle,
+        vk_ctx->device.allocator);
     vkDestroyPipelineLayout(
         vk_ctx->device.handle, ctx->object_pipeline.base.layout, vk_ctx->device.allocator);
     vkDestroyShaderModule(
@@ -395,10 +393,12 @@ void destroy_obj_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* 
         vk_ctx->device.handle, ctx->object_pipeline.base.frag, vk_ctx->device.allocator);
 }
 
-GDF_BOOL create_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
+GDF_BOOL cr_create_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
     gdfe_ui_pipeline* pipeline = &ctx->ui_pipeline;
 
 
     return GDF_TRUE;
 }
+
+void cr_destroy_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx) {}

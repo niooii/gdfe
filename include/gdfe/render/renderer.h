@@ -40,6 +40,9 @@ GDF_Object GDF_ObjFromMesh(GDF_Mesh mesh);
 /// Returns a pointer to the transform owned by this object.
 /// The caller should modify the returned transform, but should never store the pointer.
 GDF_Transform* GDF_ObjGetTransform(GDF_Object handle);
+/// Temporary, maybe find a better way to structure the API.
+/// This just updates the model matrix in the instance data buffer for now.
+void GDF_ObjSyncInstanceData(GDF_Object handle);
 
 void GDF_RendererSetRenderMode(GDF_RENDER_MODE mode);
 void GDF_RendererCycleRenderMode();

@@ -2,7 +2,7 @@
 #include <gdfe/render/vk/utils.h>
 #include <i_render/core_renderer.h>
 
-GDF_BOOL gdfe_init_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
+GDF_BOOL cr_init_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
     GDF_VkPhysicalDeviceInfo* pdevice = vk_ctx->device.physical_info;
     for (int i = 0; i < vk_ctx->fof; i++)
@@ -95,7 +95,7 @@ GDF_BOOL gdfe_init_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ct
     return GDF_TRUE;
 }
 
-void gdfe_destroy_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
+void cr_destroy_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
     for (int i = 0; i < vk_ctx->fof; i++)
     {

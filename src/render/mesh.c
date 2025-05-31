@@ -1,16 +1,33 @@
 #include <gdfe/render/mesh.h>
 #include <i_render/mesh.h>
+#include <i_render/renderer.h>
 
 static GDF_Mesh PRIM_MESH_HANDLES[gdfe_primitive_mesh_type_max];
 
-FORCEINLINE static void init_mesh(GDF_Mesh mesh) {}
+// helper to allocate and initialize meshes, does not allocate vertex data, index data, and
+// the vulkan buffers.
+FORCEINLINE static GDF_Mesh alloc_mesh()
+{
+    GDF_Mesh mesh = GDF_Malloc(sizeof(GDF_Mesh_T), GDF_MEMTAG_APPLICATION);
+    mesh->instance_data = GDF_ListCreate(GDF_ObjInstanceData);
 
-FORCEINLINE static void deinit_mesh(GDF_Mesh mesh) {}
+    GDF_ListPush(GDFE_RENDER_STATE.core_ctx.meshes, mesh);
+    LOG_DEBUG("PUSH NEW LEN: %d", GDF_ListLen(GDFE_RENDER_STATE.core_ctx.meshes));
+
+    return mesh;
+}
+
+FORCEINLINE static void dealloc_mesh(GDF_Mesh mesh)
+{
+    GDF_ListDestroy(mesh->instance_data);
+    GDF_Free(mesh);
+}
 
 GDF_Mesh GDF_MeshCreateIcosphere(u8 subdivisions)
 {
     const u32 four_to_n               = 1 << 2 * subdivisions;
     const u32 num_vertices            = 10 * four_to_n + 2;
+    // TODO! dont use list just alloc
     GDF_LIST(GDF_MeshVertex) vertices = GDF_ListReserve(GDF_MeshVertex, num_vertices);
     const u32 num_indices             = 60 * four_to_n;
     GDF_LIST(GDF_MeshIndex) indices   = GDF_ListReserve(GDF_MeshIndex, num_indices);
@@ -34,6 +51,8 @@ GDF_Mesh GDF_MeshCreateIcosphere(u8 subdivisions)
     vertices[9]  = (GDF_MeshVertex){ .pos = { phi_norm, 0, -one_norm, }, };
     vertices[10] = (GDF_MeshVertex){ .pos = { -phi_norm, 0, one_norm, }, };
     vertices[11] = (GDF_MeshVertex){ .pos = { -phi_norm, 0, -one_norm, }, };
+
+    GDF_ListSetLen(vertices, 12);
 
     const u32 initial_faces[][3] = {
         { 0, 2, 8 },
@@ -63,32 +82,57 @@ GDF_Mesh GDF_MeshCreateIcosphere(u8 subdivisions)
 
     GDF_Memcpy(indices, initial_faces, sizeof(initial_faces));
 
+    GDF_ListSetLen(indices, 80);
+
+    for (u32 i = 0; i < 60; i += 3)
+    {
+        const GDF_MeshIndex i0 = indices[i];
+        const GDF_MeshIndex i1 = indices[i + 1];
+        const GDF_MeshIndex i2 = indices[i + 2];
+
+        const GDF_MeshVertex* v0 = vertices + i0;
+        const GDF_MeshVertex* v1 = vertices + i1;
+        const GDF_MeshVertex* v2 = vertices + i2;
+
+        vec3 m0 = vec3_mul_scalar(vec3_add(v0->pos, v1->pos), 0.5f);
+        vec3 m1 = vec3_mul_scalar(vec3_add(v1->pos, v2->pos), 0.5f);
+        vec3 m2  = vec3_mul_scalar(vec3_add(v2->pos, v0->pos), 0.5f);
+        vec3 mid = {
+            .x = (m0.x + m1.x + m2.x) / 3.f,
+            .y = (m0.y + m1.y + m2.y) / 3.f,
+            .z = (m0.z + m1.z + m2.z) / 3.f,
+        };
+        LOG_DEBUG("%f, %f, %f", mid.x, mid.y, mid.z);
+        // just push for now
+        GDF_ListPush(vertices, mid);
+        const u64 pushed_vertex_idx = GDF_ListLen(vertices) - 1;
+
+        // GDF_ListPush(indices, i1);
+        // GDF_ListPush(indices, pushed_vertex_idx);
+        // GDF_ListPush(indices, i0);
+
+        // GDF_ListPush(indices, i1);
+        // GDF_ListPush(indices, pushed_vertex_idx);
+        // GDF_ListPush(indices, i2);
+
+        // GDF_ListPush(indices, i2);
+        // GDF_ListPush(indices, pushed_vertex_idx);
+        // GDF_ListPush(indices, i0);
+    }
+
     // TODO! subdivisions
-    GDF_Mesh mesh = GDF_Malloc(sizeof(GDF_Mesh_T), GDF_MEMTAG_APPLICATION);
-    // mesh->index_count  = num_indices;
-    // mesh->vertex_count = num_vertices;
-    const u32 temp_vert_count = 12;
-    const u32 temp_idx_count  = 60;
-    mesh->index_count         = temp_idx_count;
-    mesh->vertex_count        = temp_vert_count;
+    GDF_Mesh mesh = alloc_mesh();
+    mesh->index_count  = num_indices;
+    mesh->vertex_count = num_vertices;
+    // const u32 temp_vert_count = 12;
+    // const u32 temp_idx_count  = 60;
+    // mesh->index_count         = temp_idx_count;
+    // mesh->vertex_count        = temp_vert_count;
     GDF_VkBufferCreateVertex(
-        vertices, temp_vert_count, sizeof(GDF_MeshVertex), &mesh->vertex_buffer);
-    GDF_VkBufferCreateIndex(indices, temp_idx_count, &mesh->index_buffer);
+        vertices, mesh->vertex_count, sizeof(GDF_MeshVertex), &mesh->vertex_buffer);
+    GDF_VkBufferCreateIndex(indices, mesh->index_count, &mesh->index_buffer);
 
     return mesh;
-
-    // for (u32 i = 0; i < num_indices; i += 3)
-    // {
-    //     const GDF_MeshIndex i0 = indices[i];
-    //     const GDF_MeshIndex i1 = indices[i + 1];
-    //     const GDF_MeshIndex i2 = indices[i + 2];
-    //
-    //     const GDF_MeshVertex* v0 = vertices + i0;
-    //     const GDF_MeshVertex* v1 = vertices + i1;
-    //     const GDF_MeshVertex* v2 = vertices + i2;
-    //
-    //     vec3 mid = vec3_add()
-    // }
 }
 
 void gdfe_init_primitive_meshes()
@@ -135,7 +179,7 @@ void gdfe_init_primitive_meshes()
         static const u32 indices[] = { 0, 1, 2, 2, 3, 0, 4, 7, 6, 6, 5, 4, 3, 2, 6, 6, 7, 3, 0, 4,
             5, 5, 1, 0, 0, 3, 7, 7, 4, 0, 1, 5, 6, 6, 2, 1 };
 
-        GDF_Mesh cube = GDF_Malloc(sizeof(GDF_Mesh_T), GDF_MEMTAG_APPLICATION);
+        GDF_Mesh cube = alloc_mesh();
 
         cube->vertices     = vertices;
         cube->vertex_count = 8;
@@ -175,7 +219,7 @@ void gdfe_init_primitive_meshes()
 
         static const u32 indices[] = { 0, 3, 2, 2, 1, 0 };
 
-        GDF_Mesh plane = GDF_Malloc(sizeof(GDF_Mesh_T), GDF_MEMTAG_APPLICATION);
+        GDF_Mesh plane = alloc_mesh();
 
         plane->vertices     = vertices;
         plane->vertex_count = 4;

@@ -20,13 +20,14 @@ typedef struct gdfe_render_state {
     GDF_RenderCallbacks*    callbacks;
     GDF_AppState*           app_state;
     GDF_CoreRendererContext core_ctx;
-
-    // TODO! super naive implementation do instanced rendering
-    GDF_LIST(GDF_Object) objects;
 } gdfe_render_state;
 
 typedef struct GDF_Object_T {
     GDF_Transform transform;
+
+    /// The index to use to index into the instance data buffer.
+    /// This does not reflect the instance id in the shader.
+    u64 instance_index;
     GDF_Mesh mesh;
 } GDF_Object_T;
 

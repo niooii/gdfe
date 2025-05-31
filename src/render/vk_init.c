@@ -414,8 +414,6 @@ GDF_BOOL gdfe_renderer_init(
 
     vk_ctx->ready_for_use = GDF_TRUE;
 
-    GDFE_RENDER_STATE.objects = GDF_ListReserve(GDF_Object, 128);
-
     return GDF_TRUE;
 }
 

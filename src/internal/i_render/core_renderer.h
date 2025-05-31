@@ -46,6 +46,10 @@ typedef struct GDF_CoreRendererContext {
     struct {
 
     } post_process_pipelines;
+
+    // TODO! super naive implementation do instanced rendering
+    // GDF_LIST(GDF_Object) objects;
+    GDF_LIST(GDF_Mesh) meshes;
 } GDF_CoreRendererContext;
 
 GDF_BOOL core_renderer_init(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);

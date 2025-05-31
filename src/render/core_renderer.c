@@ -7,20 +7,23 @@
 #include <gdfe/render/vk/utils.h>
 #include <i_render/mesh.h>
 
-GDF_BOOL create_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
-void     destroy_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+GDF_BOOL cr_create_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+void     cr_destroy_grid_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
 
-GDF_BOOL create_obj_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
-void     destroy_obj_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+GDF_BOOL cr_create_obj_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+void     cr_destroy_obj_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
 
-GDF_BOOL create_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+GDF_BOOL cr_create_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+void     cr_destroy_ui_pipeline(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
 
-void     gdfe_destroy_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
-GDF_BOOL gdfe_init_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
-// GDF_BOOL create_geometry_pass(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+GDF_BOOL cr_init_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+void     cr_destroy_imgs(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+
+GDF_BOOL cr_init_global_descriptors(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+void     cr_destroy_global_descriptors(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
 
 // The initial transitions for the images used in rendering
-void prepare_images(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+void cr_prepare_images(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
 
 // Resolves the msaa image to the current swapchain image
 // void resolve_msaa_image(
@@ -28,27 +31,31 @@ void prepare_images(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
 
 // The final transitions for rendering to be "finished". For now, only transitions
 // the swapchain image to VK_IMAGE_LAYOUT_PRESENT_SRC_KHR.
-void finalize_images(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
+void cr_finalize_images(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx);
 
 GDF_BOOL core_renderer_init(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
     ctx->per_frame = GDF_ListReserve(CoreFrameResources, vk_ctx->fof);
+    ctx->meshes = GDF_ListReserve(GDF_Mesh, 16);
     GDF_ListSetLen(ctx->per_frame, vk_ctx->fof);
     gdfe_init_primitive_meshes();
 
-    if (!gdfe_init_imgs(vk_ctx, ctx))
+    if (!cr_init_imgs(vk_ctx, ctx))
     {
         LOG_ERR("Failed to create framebuffers and images.");
         return GDF_FALSE;
     }
 
     // separate these bc if one fails we should destroy all the resources of the previous ones
-    if (!create_grid_pipeline(vk_ctx, ctx) || !create_ui_pipeline(vk_ctx, ctx) ||
-        !create_obj_pipeline(vk_ctx, ctx))
+    if (!cr_create_grid_pipeline(vk_ctx, ctx) || !cr_create_ui_pipeline(vk_ctx, ctx) ||
+        !cr_create_obj_pipeline(vk_ctx, ctx))
     {
         LOG_ERR("Failed to create builtin pipelines.");
         return GDF_FALSE;
     }
+
+    if (!cr_init_global_descriptors(vk_ctx, ctx))
+        return GDF_FALSE;
 
     return GDF_TRUE;
 }
@@ -112,7 +119,7 @@ GDF_BOOL core_renderer_draw(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext
     };
 
     // transition into right layouts
-    prepare_images(vk_ctx, ctx);
+    cr_prepare_images(vk_ctx, ctx);
 
     vkCmdBeginRendering(cmd_buffer, &rendering_info);
 
@@ -125,8 +132,7 @@ GDF_BOOL core_renderer_draw(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext
 
     GDF_Mesh plane_mesh = GDF_MeshGetPrimitive(GDF_PRIMITIVE_MESH_TYPE_PLANE);
     vkCmdBindVertexBuffers(cmd_buffer, 0, 1, &plane_mesh->vertex_buffer.handle, offsets);
-    vkCmdBindIndexBuffer(
-        cmd_buffer, plane_mesh->index_buffer.handle, 0, VK_INDEX_TYPE_UINT32);
+    vkCmdBindIndexBuffer(cmd_buffer, plane_mesh->index_buffer.handle, 0, VK_INDEX_TYPE_UINT32);
 
     vec3 camera_pos = GDF_CameraGetPosition(camera);
     vkCmdPushConstants(cmd_buffer, ctx->grid_pipeline.base.layout, VK_SHADER_STAGE_VERTEX_BIT, 0,
@@ -136,29 +142,36 @@ GDF_BOOL core_renderer_draw(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext
 
     // quick naive implementation of drawing objects for my dopamine increase
     if (GDFE_RENDER_STATE.render_mode == GDF_RENDER_MODE_WIREFRAME)
-        vkCmdBindPipeline(
-        cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->object_pipeline.wireframe_base.handle);
+        vkCmdBindPipeline(cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+            ctx->object_pipeline.wireframe_base.handle);
     else
         vkCmdBindPipeline(
-        cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->object_pipeline.base.handle);
+            cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->object_pipeline.base.handle);
 
     vkCmdBindDescriptorSets(cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-    ctx->object_pipeline.base.layout, 0, 1, &vk_per_frame->vp_ubo_set, 0, NULL);
+        ctx->object_pipeline.base.layout, 0, 1, &vk_per_frame->vp_ubo_set, 0, NULL);
 
-    const u64 num_objs = GDF_ListLen(GDFE_RENDER_STATE.objects);
-    for (u64 i = 0; i < num_objs; i++)
+    const u64 num_meshes = GDF_ListLen(ctx->meshes);
+    for (u64 i = 0; i < num_meshes; i++)
     {
-        const GDF_Object obj  = GDFE_RENDER_STATE.objects[i];
-        const GDF_Mesh   mesh = obj->mesh;
+        GDF_Mesh mesh = ctx->meshes[i];
+
+        // TODO! instanced
+        const u64 num_objs = GDF_ListLen(mesh->instance_data);
+
+        if (!num_objs)
+            continue;
 
         vkCmdBindIndexBuffer(cmd_buffer, mesh->index_buffer.handle, 0, VK_INDEX_TYPE_UINT32);
         vkCmdBindVertexBuffers(cmd_buffer, 0, 1, &mesh->vertex_buffer.handle, offsets);
 
-        const mat4 transform = GDF_TransformModelMatrix(&obj->transform);
-        vkCmdPushConstants(cmd_buffer, ctx->object_pipeline.base.layout, VK_SHADER_STAGE_VERTEX_BIT,
-            0, sizeof(mat4), &transform);
+        for (u64 j = 0; j < num_objs; j++)
+        {
+            vkCmdPushConstants(cmd_buffer, ctx->object_pipeline.base.layout, VK_SHADER_STAGE_VERTEX_BIT,
+            0, sizeof(GDF_ObjInstanceData), &mesh->instance_data[j]);
 
-        vkCmdDrawIndexed(cmd_buffer, mesh->index_count, 1, 0, 0, 0);
+            vkCmdDrawIndexed(cmd_buffer, mesh->index_count, 1, 0, 0, 0);
+        }
     }
 
     if (callbacks->on_render)
@@ -175,15 +188,15 @@ GDF_BOOL core_renderer_draw(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext
 
     // resolve_msaa_image(renderer, vk_ctx, ctx);
 
-    finalize_images(vk_ctx, ctx);
+    cr_finalize_images(vk_ctx, ctx);
 
     return GDF_TRUE;
 }
 
 GDF_BOOL core_renderer_resize(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
-    gdfe_destroy_imgs(vk_ctx, ctx);
-    if (!gdfe_init_imgs(vk_ctx, ctx))
+    cr_destroy_imgs(vk_ctx, ctx);
+    if (!cr_init_imgs(vk_ctx, ctx))
     {
         LOG_ERR("Failed to create framebuffers and images.");
         return GDF_FALSE;
@@ -195,15 +208,17 @@ GDF_BOOL core_renderer_resize(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererConte
 GDF_BOOL core_renderer_destroy(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
     gdfe_destroy_primitive_meshes();
-    destroy_grid_pipeline(vk_ctx, ctx);
-    destroy_obj_pipeline(vk_ctx, ctx);
-    gdfe_destroy_imgs(vk_ctx, ctx);
+    cr_destroy_ui_pipeline(vk_ctx, ctx);
+    cr_destroy_grid_pipeline(vk_ctx, ctx);
+    cr_destroy_obj_pipeline(vk_ctx, ctx);
+    cr_destroy_imgs(vk_ctx, ctx);
+    GDF_ListDestroy(ctx->meshes);
     return GDF_TRUE;
 }
 
 /* Forward declared purpose specific functions */
 
-void prepare_images(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
+void cr_prepare_images(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
     const u32                 resource_idx   = vk_ctx->resource_idx;
     const VkFrameResources*   vk_per_frame   = &vk_ctx->per_frame[resource_idx];
@@ -349,7 +364,7 @@ void prepare_images(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 //         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &resolve_region);
 // }
 
-void finalize_images(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
+void cr_finalize_images(GDF_VkRenderContext* vk_ctx, GDF_CoreRendererContext* ctx)
 {
     const u32               resource_idx = vk_ctx->resource_idx;
     const VkFrameResources* vk_per_frame = &vk_ctx->per_frame[resource_idx];

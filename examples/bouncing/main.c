@@ -51,7 +51,9 @@ int main()
     GDF_Mesh sphere_mesh = GDF_MeshGetPrimitive(GDF_PRIMITIVE_MESH_TYPE_SPHERE);
 
     GDF_Object sphere = GDF_ObjFromMesh(sphere_mesh);
-    GDF_Object cube = GDF_ObjFromMesh(cube_mesh);
+    GDF_Transform* sphere_transform = GDF_ObjGetTransform(sphere);
+    sphere_transform->scale = vec3_new(4, 4, 4);
+    // GDF_Object cube = GDF_ObjFromMesh(cube_mesh);
 
     app.cubes = GDF_ListReserve(BouncingCube, NUM_CUBES);
 
@@ -64,6 +66,7 @@ int main()
         GDF_Transform* transform = GDF_ObjGetTransform(app.cubes[i].object);
         transform->pos = vec3_new(GDF_FRandomRange(-XZ_BOUNDS, XZ_BOUNDS), GDF_FRandomRange(2, 30),
             GDF_FRandomRange(-XZ_BOUNDS, XZ_BOUNDS));
+        GDF_ObjSyncInstanceData(app.cubes[i].object);
     }
 
     app.camera = cam;
@@ -125,7 +128,7 @@ GDF_BOOL on_loop(const GDF_AppState* app_state, f64 dt, void* state)
     for (int i = 0; i < NUM_CUBES; i++)
     {
         BouncingCube*  cube      = &app->cubes[i];
-        GDF_Transform* transform = GDF_ObjGetTransform(app->cubes[i].object);
+        GDF_Transform* transform = GDF_ObjGetTransform(cube->object);
 
         cube->velocity = vec3_add(cube->velocity, vec3_mul_scalar(accel, dt));
 
@@ -138,6 +141,7 @@ GDF_BOOL on_loop(const GDF_AppState* app_state, f64 dt, void* state)
             f32 rebound_y = -transform->pos.y;
             transform->pos.y = rebound_y;
         }
+        GDF_ObjSyncInstanceData(cube->object);
     }
 
     return GDF_TRUE;

@@ -10,6 +10,9 @@
 #include "../../include/gdfe/gdfe.h"
 #define GDFP_DISABLE
 
+#include <i_render/mesh.h>
+
+
 #include "gdfe/profiler.h"
 #include "gdfe/render/vk/utils.h"
 #include "i_render/vk_utils.h"
@@ -205,13 +208,24 @@ GDF_Object GDF_ObjCreate()
     handle->mesh = GDF_NULL_HANDLE;
     handle->transform = GDF_TransformDefault();
 
-    GDF_ListPush(GDFE_RENDER_STATE.objects, handle);
-
     return handle;
 }
 
 void GDF_ObjSetMesh(GDF_Object handle, GDF_Mesh mesh)
 {
+    if (handle->mesh != GDF_NULL_HANDLE)
+    {
+        // do some stuff and remove instance data from that mesh
+    }
+
+    u64 instance_id = GDF_ListLen(mesh->instance_data);
+    handle->instance_index = instance_id;
+
+    GDF_ObjInstanceData instance_data = {
+        .model = GDF_TransformModelMatrix(&handle->transform)
+    };
+
+    GDF_ListPushPtr(mesh->instance_data, &instance_data);
     handle->mesh = mesh;
 }
 
@@ -227,6 +241,12 @@ GDF_Object GDF_ObjFromMesh(GDF_Mesh mesh)
 GDF_Transform* GDF_ObjGetTransform(GDF_Object handle)
 {
     return &handle->transform;
+}
+
+void GDF_ObjSyncInstanceData(GDF_Object handle)
+{
+    handle->mesh->instance_data[handle->instance_index].model =
+        GDF_TransformModelMatrix(&handle->transform);
 }
 
 void GDF_RendererSetRenderMode(GDF_RENDER_MODE mode)
