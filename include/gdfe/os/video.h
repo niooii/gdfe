@@ -16,6 +16,8 @@
 // update: ill do it next week. - 8/7/2024
 // update: ill do it after i get chunk meshing working. - 2/24/2025
 // update: I DID IT GUYS - 3/6/2025
+
+/// A handle to a window.
 typedef struct GDF_Window_T* GDF_Window;
 
 typedef struct GDF_DisplayInfo {
@@ -25,16 +27,19 @@ typedef struct GDF_DisplayInfo {
 
 EXTERN_C_BEGIN
 
-GDF_Window GDF_CreateWindow(i16 x, i16 y, i16 w, i16 h, const char* title);
-GDF_BOOL   GDF_DestroyWindow(GDF_Window window);
+GDF_Window GDF_WinCreate(i16 x, i16 y, i16 w, i16 h, const char* title);
+GDF_BOOL   GDF_WinDestroy(GDF_Window window);
 
-GDF_BOOL GDF_SetWindowPos(GDF_Window window, i16 dest_x, i16 dest_y);
+GDF_BOOL GDF_WinSetPos(GDF_Window window, i16 dest_x, i16 dest_y);
 
-void GDF_GetWindowPos(GDF_Window window, i16* x, i16* y);
+void GDF_WinGetPos(GDF_Window window, i16* x, i16* y);
 
-void GDF_GetWindowSize(GDF_Window window, u16* w, u16* h);
+void GDF_WinGetSize(GDF_Window window, u16* w, u16* h);
 
-void GDF_SetShowCursor(GDF_Window window);
+void GDF_WinShowCursor(GDF_Window window);
+
+void GDF_WinGrabCursor(GDF_Window window, GDF_Rect rect);
+void GDF_WinReleaseCursor(GDF_Window window);
 
 void GDF_GetDisplayInfo(GDF_DisplayInfo* display_info);
 

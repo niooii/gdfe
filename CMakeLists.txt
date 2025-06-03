@@ -46,6 +46,16 @@ else()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g3 -Og -fno-omit-frame-pointer")
 endif()
 
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(SHADERC_LIB_NAME shaderc_combinedd)
+else()
+    if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+        set(SHADERC_LIB_NAME shaderc_combinedd)
+    else()
+        set(SHADERC_LIB_NAME shaderc_combined)
+    endif()
+endif()
+
 target_compile_definitions(gdfe PRIVATE GDF_COLLECTIONS)
 
 if(DEFINED ENV{VULKAN_SDK})
@@ -70,8 +80,12 @@ find_library(SHADERC_LIBRARY
     NO_DEFAULT_PATH
 )
 
+message("searched ${Vulkan_LIBRARY_DIRS}")
+message("lf ${SHADERC_LIB_NAME}")
+message("got ${SHADERC_LIBRARY}")
+
 if(NOT SHADERC_LIBRARY)
-    message(FATAL_ERROR "Could not find shaderc library in Vulkan SDK")
+    message(FATAL_ERROR "Could not find shaderc library.")
 endif()
 
 target_link_libraries(gdfe

@@ -7,6 +7,7 @@
 // me when i cant test if my stuff works on a mac without a mac
 #endif
 
+#include <stddef.h>
 #include <stdint.h>
 
 typedef unsigned char GDF_BOOL;
@@ -17,6 +18,7 @@ typedef uint8_t       u8;
 typedef uint16_t      u16;
 typedef uint32_t      u32;
 typedef uint64_t      u64;
+typedef size_t        isize;
 typedef int8_t        i8;
 typedef int16_t       i16;
 typedef int32_t       i32;
@@ -25,6 +27,13 @@ typedef float         f32;
 typedef double        f64;
 typedef unsigned char byte;
 #define i32_MAX 2147483647
+
+typedef struct GDF_Rect {
+    i32 left;
+    i32 top;
+    i32 right;
+    i32 bottom;
+} GDF_Rect;
 
 // TODO! move some of these defines into a private defs.h
 

@@ -37,10 +37,10 @@ static void __update_mouse_confinement_rect(GDF_Window window)
     // TODO! rename misc.h to misc.h and slap a (CROSS PLATFORM) GDF_ShowCursor & GDF_ClipCursor in
     // there and call that instead.
     i16 screen_offset_x, screen_offset_y;
-    GDF_GetWindowPos(window, &screen_offset_x, &screen_offset_y);
+    GDF_WinGetPos(window, &screen_offset_x, &screen_offset_y);
     // LOG_INFO("%d, %d", screen_offset_x, screen_offset_y);
     u16 w, h;
-    GDF_GetWindowSize(window, &w, &h);
+    GDF_WinGetSize(window, &w, &h);
     // LOG_WARN("Window size: %i, %i", w, h);
     mouse_confinement_rect.bottom = screen_offset_y + h / 2;
     mouse_confinement_rect.top    = screen_offset_y + h / 2;

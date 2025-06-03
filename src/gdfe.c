@@ -160,7 +160,7 @@ GDF_AppState* GDF_Init(GDF_InitInfo init_info)
     gdfe_shaders_init();
 
     GDF_AppState* public = &APP_STATE.public;
-    public->window = GDF_CreateWindow(init_info.window.x, init_info.window.y, init_info.window.w,
+    public->window = GDF_WinCreate(init_info.window.x, init_info.window.y, init_info.window.w,
         init_info.window.h, init_info.window.title);
 
     if (public->window != NULL)
