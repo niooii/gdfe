@@ -29,6 +29,12 @@ int main()
             .on_loop = on_loop,
             .on_loop_state = &app,
         },
+        .window = {
+            // If not specified this should still work, but see comments on
+            // GDF_GetDisplayInfo.
+            .w = 800,
+            .h = 800,
+        },
         .config = {
             .updates_per_sec = 144,
         }

@@ -2,7 +2,6 @@
 #include <gdfe/input.h>
 #include <gdfe/math/math.h>
 #include <gdfe/os/video.h>
-#include <windows.h>
 
 typedef struct keyboard_state {
     // TODO! bitmap maybe
@@ -30,7 +29,7 @@ static input_state state;
 static GDF_CURSOR_LOCK_STATE cursor_lock_state      = GDF_CURSOR_LOCK_STATE_Free;
 static GDF_CURSOR_LOCK_STATE prev_cursor_lock_state = GDF_CURSOR_LOCK_STATE_Free;
 
-static RECT mouse_confinement_rect;
+static GDF_Rect mouse_confinement_rect;
 
 static void __update_mouse_confinement_rect(GDF_Window window)
 {
@@ -60,7 +59,7 @@ static GDF_BOOL __input_system_on_event(u16 event_code, void* sender, void* list
             {
                 if (cursor_lock_state == GDF_CURSOR_LOCK_STATE_Locked)
                 {
-                    ClipCursor(&mouse_confinement_rect);
+                    GDF_WinGrabCursor((GDF_Window)sender, mouse_confinement_rect);
                 }
             }
             break;
@@ -108,13 +107,13 @@ void gdfe_input_update(GDF_Window active, f64 delta_time)
         switch (cursor_lock_state)
         {
         case GDF_CURSOR_LOCK_STATE_Free:
-            ClipCursor(NULL);
-            ShowCursor(TRUE);
+            GDF_WinReleaseCursor(active);
+            GDF_WinShowCursor(active);
             break;
         case GDF_CURSOR_LOCK_STATE_Locked:
             __update_mouse_confinement_rect(active);
-            ClipCursor(&mouse_confinement_rect);
-            ShowCursor(FALSE);
+            GDF_WinGrabCursor(active, mouse_confinement_rect);
+            GDF_WinHideCursor(active);
         }
         prev_cursor_lock_state = cursor_lock_state;
         // return;
@@ -184,7 +183,10 @@ void GDF_GetPrevMousePos(ivec2* prev)
     prev->y = state.mpos_previous.y;
 }
 
-void GDF_SetMouseLockState(GDF_CURSOR_LOCK_STATE lock_state) { cursor_lock_state = lock_state; }
+void GDF_SetMouseLockState(GDF_CURSOR_LOCK_STATE lock_state)
+{
+    cursor_lock_state = lock_state;
+}
 
 void GDF_GetMouseDelta(ivec2* d)
 {

@@ -7,7 +7,7 @@ project(gdfe
 
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_EXTENSIONS OFF)
+set(CMAKE_C_EXTENSIONS ON)
 
 add_subdirectory(external/vma)
 
@@ -36,24 +36,30 @@ add_library(gdfe ${GDFE_SRC} ${GDFE_EXTERNAL})
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(PROFILE_DIR "release")
-    set(SHADERC_LIB_NAME shaderc_combined)
     target_compile_definitions(gdfe PRIVATE GDF_RELEASE NDEBUG)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Ofast -fno-plt -fuse-ld=lld -funroll-loops -finline-functions -fomit-frame-pointer -fno-exceptions -ftree-vectorize -fvectorize -fslp-vectorize")
 else()
     set(PROFILE_DIR "debug")
-    set(SHADERC_LIB_NAME shaderc_combinedd)
     target_compile_definitions(gdfe PRIVATE DEBUG)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g3 -Og -fno-omit-frame-pointer")
 endif()
 
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    set(SHADERC_LIB_NAME shaderc_combinedd)
-else()
-    if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-        set(SHADERC_LIB_NAME shaderc_combinedd)
-    else()
+# Platform specific libraries to be linked
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(PLATFORM_LIBS user32 gdi32 kernel32)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(PLATFORM_LIBS X11 Xi Xrandr stdc++ m rt pthread)
+endif()
+
+# weird ahh naming conventions
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
         set(SHADERC_LIB_NAME shaderc_combined)
+    else()
+        set(SHADERC_LIB_NAME shaderc_combinedd)
     endif()
+else()
+    set(SHADERC_LIB_NAME shaderc_shared)
 endif()
 
 target_compile_definitions(gdfe PRIVATE GDF_COLLECTIONS)
@@ -77,7 +83,6 @@ endif()
 find_library(SHADERC_LIBRARY
     NAMES ${SHADERC_LIB_NAME}
     PATHS ${Vulkan_LIBRARY_DIRS}
-    NO_DEFAULT_PATH
 )
 
 message("searched ${Vulkan_LIBRARY_DIRS}")
@@ -91,6 +96,7 @@ endif()
 target_link_libraries(gdfe
         PRIVATE
         Vulkan::Vulkan
+        ${PLATFORM_LIBS}
         ${SHADERC_LIBRARY}
         spirv-reflect-static
 )

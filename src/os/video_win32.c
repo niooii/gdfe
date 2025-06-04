@@ -249,7 +249,7 @@ void gdfe_windowing_shutdown()
     // even though it should be automatic but its fine
 }
 
-GDF_Window GDF_CreateWindow(i16 x_, i16 y_, i16 w, i16 h, const char* title)
+GDF_Window GDF_WinCreate(i16 x_, i16 y_, i16 w, i16 h, const char* title)
 {
     // TODO!
     i16 x = x_ == GDF_WIN_CENTERED ? 300 /*calc later*/ : x_;
@@ -327,9 +327,9 @@ GDF_Window GDF_CreateWindow(i16 x_, i16 y_, i16 w, i16 h, const char* title)
 }
 
 // TODO! this is DEFINITELY INCOMPLETE.
-GDF_BOOL GDF_SetWindowPos(GDF_Window window, i16 dest_x, i16 dest_y) { return GDF_FALSE; }
+GDF_BOOL GDF_WinSetPos(GDF_Window window, i16 dest_x, i16 dest_y) { return GDF_FALSE; }
 
-void GDF_GetWindowPos(GDF_Window window, i16* x, i16* y)
+void GDF_WinGetPos(GDF_Window window, i16* x, i16* y)
 {
     *x = window->x;
     *y = window->y;
@@ -339,6 +339,29 @@ void GDF_GetWindowSize(GDF_Window window, u16* w, u16* h)
 {
     *w = window->client_w;
     *h = window->client_h;
+}
+
+void GDF_WinHideCursor(GDF_Window window)
+{
+    ShowCursor(FALSE);
+}
+
+void GDF_WinShowCursor(GDF_Window window)
+{
+    ShowCursor(TRUE);
+}
+
+void GDF_WinGrabCursor(GDF_Window window, GDF_Rect rect)
+{
+    // TODO! this may not work, use the windows API rect
+    ClipCursor(&rect);
+
+}
+
+void GDF_WinReleaseCursor(GDF_Window window)
+{
+    ClipCursor(NULL);
+    ShowCursor(TRUE);
 }
 
 GDF_BOOL pump_messages()
@@ -361,7 +384,7 @@ GDF_BOOL set_internal_size(GDF_Window window, i16 w, i16 h)
     return GDF_TRUE;
 }
 
-GDF_BOOL GDF_DestroyWindow(GDF_Window window)
+GDF_BOOL GDF_WinDestroy(GDF_Window window)
 {
     GDF_ASSERT(GDF_HashmapRemove(windows, &window->hwnd, NULL));
     DestroyWindow(window->hwnd);
@@ -396,6 +419,8 @@ GDF_BOOL GDF_VK_CreateSurface(GDF_Window window, GDF_VkRenderContext* context)
     LOG_DEBUG("Created Vulkan surface.");
     return GDF_TRUE;
 }
+
+
 
 void GDF_GetDisplayInfo(GDF_DisplayInfo* display_info)
 {

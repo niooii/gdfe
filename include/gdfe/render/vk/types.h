@@ -3,7 +3,7 @@
 #include <gdfe/render/camera.h>
 #include <gdfe/collections/list.h>
 #include <gdfe/prelude.h>
-#include <vulkan/vk_enum_string_helper.h>
+#include <gdfe/render/vk/enum_string_helper.h>
 #include <vulkan/vulkan.h>
 
 #define VK_ASSERT(expr) \

@@ -99,7 +99,7 @@ typedef enum TEXT_BG_COLOR {
 } TEXT_BG_COLOR;
 
 static const ColorCombination log_level_color_combinations[] = {
-    [LOG_LEVEL_FATAL] = { .fg = TC_WHITE, .bg = BG_RED },
+    [LOG_LEVEL_FATAL] = { .fg = TC_BLACK, .bg = BG_RED },
     [LOG_LEVEL_ERR]   = { .fg = TC_RED, .bg = TC_RED },
     [LOG_LEVEL_DEBUG] = { .fg = TC_BLUE, .bg = TC_BLUE },
     [LOG_LEVEL_INFO]  = { .fg = TC_GREEN, .bg = TC_GREEN },

@@ -6,7 +6,7 @@
 #include <i_render/renderer.h>
 #include <i_render/vk_os.h>
 #include <i_render/vk_utils.h>
-#include <vulkan/vk_enum_string_helper.h>
+#include <gdfe/render/vk/enum_string_helper.h>
 #include <vulkan/vulkan.h>
 #include <i_gdfe.h>
 

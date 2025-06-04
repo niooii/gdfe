@@ -5,9 +5,8 @@
 
 #include <gdfe/render/renderer.h>
 #include <inttypes.h>
-#include <vulkan/vk_enum_string_helper.h>
+#include <gdfe/render/vk/enum_string_helper.h>
 
-#include "../../include/gdfe/gdfe.h"
 #define GDFP_DISABLE
 
 #include <i_render/mesh.h>

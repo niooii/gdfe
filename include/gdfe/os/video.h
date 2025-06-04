@@ -36,11 +36,15 @@ void GDF_WinGetPos(GDF_Window window, i16* x, i16* y);
 
 void GDF_WinGetSize(GDF_Window window, u16* w, u16* h);
 
+void GDF_WinHideCursor(GDF_Window window);
 void GDF_WinShowCursor(GDF_Window window);
 
 void GDF_WinGrabCursor(GDF_Window window, GDF_Rect rect);
 void GDF_WinReleaseCursor(GDF_Window window);
 
+/// This does not work on linux systems using wayland. Even though
+/// the user may be running XWayland, the display info will be 0 for the
+/// width and height.
 void GDF_GetDisplayInfo(GDF_DisplayInfo* display_info);
 
 EXTERN_C_END
