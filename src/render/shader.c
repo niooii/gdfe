@@ -2,7 +2,6 @@
 #include <i_render/types.h>
 #include <i_subsystems.h>
 #include <shaderc/shaderc.h>
-#include <spirv_cross/spirv_cross_c.h>
 
 #include "gdfe/collections/hashmap.h"
 #include "gdfe/render/vk/utils.h"

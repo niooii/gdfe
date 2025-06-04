@@ -88,7 +88,7 @@ GDF_BOOL on_resize(u16 event_code, void* sender, void* listener_instance, GDF_Ev
     return GDF_FALSE;
 }
 
-void set_defaults(GDF_InitInfo* info)
+void set_window_defaults(GDF_InitInfo* info)
 {
     GDF_DisplayInfo display_info;
     GDF_GetDisplayInfo(&display_info);
@@ -141,11 +141,10 @@ GDF_AppState* GDF_Init(GDF_InitInfo init_info)
 
     if (APP_STATE.initialized)
     {
-        LOG_WARN("Cannot initialize twice - this will be added in the future.");
+        LOG_ERR("Cannot initialize twice - this may be added in the future.");
         return &APP_STATE.public;
     }
 
-    set_defaults(&init_info);
     APP_STATE.callbacks = init_info.callbacks;
     APP_STATE.conf      = init_info.config;
 
@@ -157,10 +156,11 @@ GDF_AppState* GDF_Init(GDF_InitInfo init_info)
         return &APP_STATE.public;
 
     RET_FALSE(gdfe_video_init());
+    set_window_defaults(&init_info);
     gdfe_shaders_init();
 
     GDF_AppState* public = &APP_STATE.public;
-    public->window = GDF_CreateWindow(init_info.window.x, init_info.window.y, init_info.window.w,
+    public->window = GDF_WinCreate(init_info.window.x, init_info.window.y, init_info.window.w,
         init_info.window.h, init_info.window.title);
 
     if (public->window != NULL)

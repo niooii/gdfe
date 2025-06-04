@@ -28,7 +28,7 @@ typedef struct GDF_DirInfoNode {
 
 typedef struct GDF_DirInfo {
     GDF_DirInfoNode** nodes;
-    size_t num_nodes;
+    isize num_nodes;
 } GDF_DirInfo;
 
 typedef struct GDF_Process_T *GDF_Process;
@@ -73,7 +73,7 @@ GDF_IO_RESULT GDF_MakeDirAbs(const char* abs_path);
 // WILL OVERWRITE CONTENTS OF FILE
 GDF_IO_RESULT GDF_WriteFileOnce(const char* rel_path, const char* buf, u64 len);
 
-GDF_IO_RESULT GDF_ReadFileOnce(const char* rel_path, char* out_buf, size_t bytes_to_read);
+GDF_IO_RESULT GDF_ReadFileOnce(const char* rel_path, char* out_buf, isize bytes_to_read);
 
 // must be freed with GDF_Free
 // returns NULL on error

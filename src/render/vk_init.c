@@ -6,7 +6,7 @@
 #include <i_render/renderer.h>
 #include <i_render/vk_os.h>
 #include <i_render/vk_utils.h>
-#include <vulkan/vk_enum_string_helper.h>
+#include <gdfe/render/vk/enum_string_helper.h>
 #include <vulkan/vulkan.h>
 #include <i_gdfe.h>
 
@@ -90,7 +90,7 @@ GDF_BOOL gdfe_renderer_init(
         return GDF_FALSE;
 
     u16          w, h;
-    GDF_GetWindowSize(window, &w, &h);
+    GDF_WinGetSize(window, &w, &h);
     GDFE_RENDER_STATE.framebuffer_width  = w;
     GDFE_RENDER_STATE.framebuffer_height = h;
     GDFE_RENDER_STATE.callbacks          = &APP_STATE.callbacks.render_callbacks;
