@@ -47,8 +47,8 @@ static void __update_mouse_confinement_rect(GDF_Window window)
     mouse_confinement_rect.left   = screen_offset_x + w / 2;
 }
 
-static GDF_BOOL __input_system_on_event(u16 event_code, void* sender, void* listener_instance,
-                                        GDF_EventContext ctx)
+static GDF_BOOL __input_system_on_event(
+    u16 event_code, void* sender, void* listener_instance, GDF_EventContext ctx)
 {
     switch (event_code)
     {
@@ -100,7 +100,7 @@ void gdfe_input_update(GDF_Window active, f64 delta_time)
     // Copy current states to previous states.
     GDF_Memcpy(&state.keyboard_previous, &state.keyboard_current, sizeof(keyboard_state));
     GDF_Memcpy(&state.mbutton_states_previous, &state.mbutton_states_current,
-               sizeof(state.mbutton_states_current));
+        sizeof(state.mbutton_states_current));
     GDF_Memzero(&state.mouse_delta, sizeof(state.mouse_delta));
     if (cursor_lock_state != prev_cursor_lock_state)
     {
@@ -183,10 +183,7 @@ void GDF_GetPrevMousePos(ivec2* prev)
     prev->y = state.mpos_previous.y;
 }
 
-void GDF_SetMouseLockState(GDF_CURSOR_LOCK_STATE lock_state)
-{
-    cursor_lock_state = lock_state;
-}
+void GDF_SetMouseLockState(GDF_CURSOR_LOCK_STATE lock_state) { cursor_lock_state = lock_state; }
 
 void GDF_GetMouseDelta(ivec2* d)
 {
@@ -210,7 +207,7 @@ void __input_process_key(GDF_KEYCODE key, GDF_BOOL pressed)
         GDF_EventContext context;
         context.data.u16[0] = key;
         GDF_EventFire(pressed ? GDF_EVENT_INTERNAL_KEY_PRESSED : GDF_EVENT_INTERNAL_KEY_RELEASED,
-                      NULL, context);
+            NULL, context);
     }
 }
 
@@ -222,9 +219,9 @@ void __input_process_button(GDF_MBUTTON button, GDF_BOOL pressed)
         state.mbutton_states_current[button] = pressed;
         GDF_EventContext context;
         context.data.u16[0] = button;
-        GDF_EventFire(pressed ? GDF_EVENT_INTERNAL_MBUTTON_PRESSED :
-                                GDF_EVENT_INTERNAL_MBUTTON_RELEASED,
-                      NULL, context);
+        GDF_EventFire(
+            pressed ? GDF_EVENT_INTERNAL_MBUTTON_PRESSED : GDF_EVENT_INTERNAL_MBUTTON_RELEASED,
+            NULL, context);
     }
 }
 

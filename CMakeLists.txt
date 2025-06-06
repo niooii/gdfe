@@ -32,7 +32,8 @@ find_src_files(GDFE_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 SET_SOURCE_FILES_PROPERTIES(${GDFE_SRC} ${GDFE_EXTERNAL} PROPERTIES LANGUAGE C)
 
-add_library(gdfe ${GDFE_SRC} ${GDFE_EXTERNAL})
+add_library(gdfe ${GDFE_SRC} ${GDFE_EXTERNAL}
+        src/render/vk_alloc.c)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(PROFILE_DIR "release")

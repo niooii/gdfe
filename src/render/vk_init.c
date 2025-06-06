@@ -1,14 +1,14 @@
 #include <gdfe/collections/list.h>
 #include <gdfe/gdfe.h>
 #include <gdfe/render/renderer.h>
+#include <gdfe/render/vk/enum_string_helper.h>
 #include <gdfe/render/vk/utils.h>
+#include <i_gdfe.h>
 #include <i_render/core_renderer.h>
 #include <i_render/renderer.h>
 #include <i_render/vk_os.h>
 #include <i_render/vk_utils.h>
-#include <gdfe/render/vk/enum_string_helper.h>
 #include <vulkan/vulkan.h>
-#include <i_gdfe.h>
 
 VKAPI_ATTR VkBool32 VKAPI_CALL __vk_dbg_callback(
     VkDebugUtilsMessageSeverityFlagBitsEXT      message_severity,
@@ -75,21 +75,20 @@ void __filter_available_devices(GDF_VkRenderContext* vk_ctx, GDF_VkPhysicalDevic
 }
 
 GDF_BOOL gdfe_create_global_buffers(GDF_VkRenderContext* vk_ctx);
-void gdfe_destroy_global_buffers(GDF_VkRenderContext* vk_ctx);
+void     gdfe_destroy_global_buffers(GDF_VkRenderContext* vk_ctx);
 
 // ===== FORWARD DECLARATIONS END =====
 
-gdfe_render_state GDFE_RENDER_STATE;
+gdfe_render_state        GDFE_RENDER_STATE;
 GDF_VkRenderContext*     GDFE_VK_CTX   = NULL;
 GDF_CoreRendererContext* GDFE_CORE_CTX = NULL;
 
-GDF_BOOL gdfe_renderer_init(
-    GDF_Window window)
+GDF_BOOL gdfe_renderer_init(GDF_Window window)
 {
     if (GDFE_VK_CTX)
         return GDF_FALSE;
 
-    u16          w, h;
+    u16 w, h;
     GDF_WinGetSize(window, &w, &h);
     GDFE_RENDER_STATE.framebuffer_width  = w;
     GDFE_RENDER_STATE.framebuffer_height = h;
@@ -97,8 +96,8 @@ GDF_BOOL gdfe_renderer_init(
     GDFE_RENDER_STATE.app_state          = &APP_STATE.public;
 
     GDF_VkRenderContext* vk_ctx = &GDFE_RENDER_STATE.vk_ctx;
-    GDFE_VK_CTX        = vk_ctx;
-    GDFE_CORE_CTX      = &GDFE_RENDER_STATE.core_ctx;
+    GDFE_VK_CTX                 = vk_ctx;
+    GDFE_CORE_CTX               = &GDFE_RENDER_STATE.core_ctx;
 
     // TODO! custom allocator.
     vk_ctx->device.allocator = NULL;
@@ -280,7 +279,17 @@ GDF_BOOL gdfe_renderer_init(
         .shaderInt64       = VK_TRUE,
     };
 
-    VkDeviceCreateInfo device_create_info   = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
+    VkPhysicalDeviceDescriptorIndexingFeatures indexing_features = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES,
+        .descriptorBindingPartiallyBound               = VK_TRUE,
+        .runtimeDescriptorArray                        = VK_TRUE,
+        .descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE,
+    };
+
+    VkDeviceCreateInfo device_create_info = {
+        .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+        .pNext = &indexing_features,
+    };
     device_create_info.queueCreateInfoCount = index_count;
     device_create_info.pQueueCreateInfos    = queue_create_infos;
     const char* extension_names[]           = {
@@ -335,7 +344,8 @@ GDF_BOOL gdfe_renderer_init(
     /* ======================================== */
     // TODO! msaa support checks
     vk_ctx->msaa_samples = VK_SAMPLE_COUNT_4_BIT;
-    gdfe_swapchain_init(vk_ctx, GDFE_RENDER_STATE.framebuffer_width, GDFE_RENDER_STATE.framebuffer_height);
+    gdfe_swapchain_init(
+        vk_ctx, GDFE_RENDER_STATE.framebuffer_width, GDFE_RENDER_STATE.framebuffer_height);
     u32 image_count = vk_ctx->swapchain.image_count;
 
     LOG_TRACE("Created swapchain.");
@@ -427,8 +437,8 @@ void gdfe_renderer_shutdown()
 
     if (GDFE_RENDER_STATE.callbacks->on_render_destroy)
     {
-        GDFE_RENDER_STATE.callbacks->on_render_destroy(
-            vk_ctx, GDFE_RENDER_STATE.app_state, GDFE_RENDER_STATE.callbacks->on_render_destroy_state);
+        GDFE_RENDER_STATE.callbacks->on_render_destroy(vk_ctx, GDFE_RENDER_STATE.app_state,
+            GDFE_RENDER_STATE.callbacks->on_render_destroy_state);
     }
 
     // Destroy a bunch of pipelines

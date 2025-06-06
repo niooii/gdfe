@@ -240,8 +240,8 @@ void gdfe_destroy_primitive_meshes()
     GDF_VkBufferDestroy(&PRIM_MESH_HANDLES[GDF_PRIMITIVE_MESH_TYPE_CUBE]->vertex_buffer);
 
     // TODO! spheres dont exist yet real
-    // GDF_VkBufferDestroy(&PRIM_MESH_HANDLES[GDF_PRIMITIVE_MESH_TYPE_SPHERE].index_buffer);
-    // GDF_VkBufferDestroy(&PRIM_MESH_HANDLES[GDF_PRIMITIVE_MESH_TYPE_SPHERE].vertex_buffer);
+    GDF_VkBufferDestroy(&PRIM_MESH_HANDLES[GDF_PRIMITIVE_MESH_TYPE_SPHERE]->index_buffer);
+    GDF_VkBufferDestroy(&PRIM_MESH_HANDLES[GDF_PRIMITIVE_MESH_TYPE_SPHERE]->vertex_buffer);
 
     GDF_VkBufferDestroy(&PRIM_MESH_HANDLES[GDF_PRIMITIVE_MESH_TYPE_PLANE]->index_buffer);
     GDF_VkBufferDestroy(&PRIM_MESH_HANDLES[GDF_PRIMITIVE_MESH_TYPE_PLANE]->vertex_buffer);
