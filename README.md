@@ -12,4 +12,4 @@ Not really a game dev final engine..
 - Motion blur
 
 # Usage
-Don't use it.  
+Soon
