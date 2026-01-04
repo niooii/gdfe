@@ -2,14 +2,5 @@
 
 Not really a game dev final engine..
 
-# TODO
-- Separate core rendering logic and make configurable
-- Integrate render callbacks
-- IMPORTANT: Text rendering with font loading (optionally UI for now)
-- Check if frames in flight is being done properly
-- Async runtime/thread pool
-- Deferred lighting
-- Motion blur
-
-# Usage
-Soon
+# What this is
+I made it as a final project for my game development class in high school, but I never got to turn it in. The project has been rewritten and moved [here](https://github.com/niooii/v)
